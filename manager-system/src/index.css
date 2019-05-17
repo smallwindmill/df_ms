@@ -1,0 +1,130 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* background-color: #282c34; */
+}
+
+header{
+    height: 55px;padding: 1rem 2rem 0;
+}
+header>div:nth-child(1){
+    flex: 1;
+}
+header>div:nth-child(2){
+    flex: 3;text-align: right;
+}
+.btn{padding: 7px 5px;overflow: hidden;cursor: pointer;}
+#messagebar{
+    font-size: 16px;
+    font-weight: normal;    white-space: nowrap;
+}
+.text-red{
+    color: #f44336!important;
+}
+.text-blue{
+    color: #2196f3!important;
+}
+.bg-success{
+    background: #21f396!important;color: #fff;
+}
+
+.bg-primary{
+    background: #2196f3!important;color: #fff;
+}
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+
+
+.MuiListItemText-inset:first-child{
+    padding-left: 1rem!important;
+}
+div[class*="MuiButtonBase-root"]{
+     padding-top: 0!important;padding-bottom: 0!important;
+}
+#leftMenu a{
+    width: 100%;color:#333;padding: 11px 0;
+}
+.secondaryList>div>div{
+    padding-left: 2rem!important;
+    padding-top: 0!important;padding-bottom: 0!important;
+}
+
+.MuiTypography-subheading-60 {
+    width: 5rem;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.absoluteCenter{
+    position: absolute;top: 50%;left: 50%;
+    -webkit-transform: translate(-50%, -90%);
+       -moz-transform: translate(-50%, -90%);
+        -ms-transform: translate(-50%, -90%);
+         -o-transform: translate(-50%, -90%);
+            transform: translate(-50%, -90%);
+}
+.pointer{
+    cursor: pointer;
+}
+/* table */
+#rightContent>div{margin-top: 0;height: 100%;}
+.MuiTablePagination-root-137:last-child {
+    padding: 0;
+    position: absolute;
+    bottom: 0;
+    right: 50px;}
+/* message */
+.mail-message{
+    list-style: none;min-width: 400px;
+}
+
+.right{
+    position: absolute;right: 5rem;
+}
+
+.produceShowTable{
+    border-collapse: collapse;
+}
+.produceShowTable tr{
+    padding: 4px 0;
+}
+.produceShowTable td,.produceShowTable  th{
+    padding: 7px 2px;border:1px solid #ccc;
+    border-left: 0;
+    border-right: 0;
+}
+.produceShowTable th{
+    border-bottom:0;border-top:0;padding-bottom: 1rem;/* background: #333;color: #fff; */
+}
+
+.myConfirm div[class*="MuiDialog-paperWidthSm"]{
+    margin-top: -150px;
+}
+.select.leftSelect{width: 80px!important;}
+.addProcedureBtn:hover{
+    color: #3399dd;
+}
+
+#rightContent div[class*='MuiTablePagination-root'] div[class*='MuiInputBase-root'] > div,
+#rightContent div[class*='MuiTablePagination-root'] span[class*='MuiTablePagination-caption']:nth-child(2)
+{display: none;}
+
+
+div[class*='MuiFormLabel-root'] {
+    color: rgba(0, 0, 0, 0.54);
+    padding: 0;
+    font-size: .75rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    line-height: 1;
+}
+.nowrap, table{
+    white-space: nowrap;
+}

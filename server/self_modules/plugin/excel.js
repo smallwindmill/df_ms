@@ -1,0 +1,1 @@
+/** 组长功能*/function verifyUse(str){    if(str){        return str;    }else{        return '';    }}const resolveXls = (app,multipartMiddleware,fs,moment,connection,backManager) =>{}module.exports = resolveXls;
