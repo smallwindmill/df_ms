@@ -44,10 +44,10 @@ import Confirm from './Confirm';
 import config from './config';
 
 let counter = 0;
-function createData( erp, materialCode, materialName, planNum, planFinishDate, planeOnline,
+function createData( erp, materialCode, materialName, planNum, planFinishDate, planOnline,
 actualStart, actualFinish, status, priority, ifNew, remark, feedback, templateID) {
   counter += 1;
-  return { id: counter, erp, materialCode, materialName, planNum, planFinishDate, planeOnline,
+  return { id: counter, erp, materialCode, materialName, planNum, planFinishDate, planOnline,
 actualStart, actualFinish, status, priority, ifNew, remark, feedback, templateID };
 }
 
@@ -91,6 +91,7 @@ const rows = [
   { id: 'protein', numeric: true, disablePadding: false, label: '是否新品' },
   { id: 'protein', numeric: true, disablePadding: false, label: '备注' },
   { id: 'protein', numeric: true, disablePadding: false, label: '反馈' },
+  { id: 'protein', numeric: true, disablePadding: false, label: '模板编号'},
   { id: 'protein', numeric: true, disablePadding: false, label: '操作' }
 ];
 
@@ -197,10 +198,13 @@ class EnhancedTableToolbar extends React.Component{
       queryEnd = new Date(new Date()-1000*60*60*24*365).format('yyyy-MM-dd');
     }
 
-    fetch(config.server.queryWorkHourByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
-      console.log(data);
+    fetch(config.server.listAllIndentByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
+      if(data.code!=200){
+        this.tips(data.msg);return;
+      }
       this.props.changeIndentData(data.results || []);
-    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+      this.tips('查询成功');
+    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
 
   }
 
@@ -235,35 +239,23 @@ class EnhancedTableToolbar extends React.Component{
         }).then(data => {
           console.log(data);
           if(data.code!=200){
-              that.tips('文件上传出错，请稍后再试','1000');
+              this.tips('文件上传出错，请稍后再试','1000');return;
               // nextFunction();
-          }else{
-            that.tips( '', '5000');
-            that.tips(<span>本次共上传<span class="text-blue">{data.results.total}</span>条数据，<span class="text-red">{data.results.success}</span>条失败，<span class="text-blue">{data.results.fail}</span>条成功</span>, 'stay');
           }
+
+          this.tips(<span>本次共上传<span class="text-blue">{data.results.total}</span>条数据，<span class="text-red">{data.results.success}</span>条失败，<span class="text-blue">{data.results.fail}</span>条成功</span>, 'stay');
+          this.setState({ open: false });
 
        }).catch(error=>{
             console.log(error);
         })
 
     } else {
-        that.tips('暂不支持该文件格式');
+        this.tips('暂不支持该文件格式');
     }
   }
 
-  tips = (msg, type) => {
-    if(msg){
-      this.setState({tipInfo:msg});
-    }
-    this.setState({tipsOpen: true});
-
-    if(type!="stay"){
-      setTimeout(()=>{
-        this.setState({tipsOpen: false});
-      },2000);
-    }
-
-  }
+  tips = this.props.tips;
 
   // 添加订单弹窗
   addTemplateModal = ()=>{
@@ -333,14 +325,6 @@ class EnhancedTableToolbar extends React.Component{
 
     </Dialog>
 
-        <Snackbar style={{marginTop:'70px'}}
-          anchorOrigin={{horizontal:"center",vertical:"top"}}
-          open={this.state.tipsOpen}
-          onClose={()=>this.setState({tipsOpen: false})}
-          ContentProps={{
-            'className':'info'
-          }}
-          message={this.state.tipInfo}  />
     </div>)
   }
 
@@ -394,7 +378,7 @@ class HandleIndent extends React.Component {
     page: 0,
     rowsPerPage: 10,
     open: false,
-    deleteOpen: false,
+    confirmOpen: false,
     title: "确认",
     selectedData: {},
     selectedDataCopy: {},
@@ -455,17 +439,26 @@ class HandleIndent extends React.Component {
   // 更新订单
   setIndentSure=()=>{
     var { selectedData,selectedDataCopy } = this.state;
-    var { id,planNum,planFinishDate,planeOnline,actualFinish,priority,ifNew,ifOutsource,duty,status,remark } = this.state.selectedDataCopy;
+    var { id,planNum,planFinishDate,planOnline,actualFinish,priority,ifNew,ifOutsource,duty,status,remark } = this.state.selectedDataCopy;
 
-    console.log(id,planNum,planFinishDate,planeOnline,actualFinish,priority,ifNew,ifOutsource,duty,status,remark);
+    console.log(id,planNum,planFinishDate,planOnline,actualFinish,priority,ifNew,ifOutsource,duty,status,remark);
 
-    fetch(this.state.updateIndentInfo,{method:"POST",
-      body:JSON.stringify({id: id, planNum: planNum,planFinishDate: planFinishDate,planeOnline: planeOnline,actualFinish: actualFinish,priority: priority,ifNew: ifNew,ifOutsource: ifOutsource,duty: duty,status: status,remark: remark})
+    fetch(config.server.updateIndentInfo,{method:"POST",
+      headers:{
+          'Content-Type': 'application/json',
+      },
+      body:JSON.stringify({id: id, planNum: planNum,planFinishDate: planFinishDate,planOnline: planOnline,actualFinish: actualFinish,priority: priority,ifNew: ifNew,ifOutsource: ifOutsource,duty: duty,status: status,remark: remark})
     }).then(res=>res.json()).then(data=>{
       // console.log(data);
+      if(data.code!=200){
+          this.tips(data.msg);return;
+      }
+      this.tips('订单信息更新成功');
+      console.log(selectedData);
       selectedData = selectedDataCopy;
       // 新增数据
       this.changeIndentData('', 2);
+      this.setState({open: false});
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
   }
 
@@ -475,6 +468,7 @@ class HandleIndent extends React.Component {
       this.state.data.push(data);
       this.setState({data: this.state.data});
     }else if(type==2){
+      console.log(this.state.data);
       this.setState({data: this.state.data});
       // this.state.data[this.state.editNum] = data;
     }else{
@@ -485,12 +479,37 @@ class HandleIndent extends React.Component {
 
   // 删除用户弹窗
   deleteUser=()=>{
-    this.setState({deleteOpen: true})
+    this.setState({confirmOpen: true})
   }
 
   // 关闭删除用户弹窗
-  deleteModalClose=()=>{
-    this.setState({deleteOpen: false})
+  confirmClose=()=>{
+    this.setState({confirmOpen: false})
+  }
+
+  finishIndent = (data, index) => {
+    var nexFun = ()=>{
+      // 设置订单为完成状态
+      fetch(config.server.updateIndentInfo,{method:"POST",
+        headers:{
+            'Content-Type': 'application/json',
+        },
+        body:JSON.stringify({id: data.id, status: 1,remark: data.remark})
+      }).then(res=>res.json()).then(data=>{
+        // console.log(data);
+        if(data.code!=200){
+            this.tips(data.msg);return;
+        }
+        this.tips('订单已完成');
+        data.status = 1;
+        // 新增数据
+        this.changeIndentData('', 2);
+        this.setState({open: false});
+      }).catch(e=>this.tips('网络出错了，请稍候再试'));
+
+    };
+
+    this.setState({confirmOpen: true,title: "确认",content: "确定修改该订单为完成状态吗？",sureFun: nexFun});
   }
 
   // 更新订单信息弹窗
@@ -523,7 +542,8 @@ class HandleIndent extends React.Component {
     });
 
     var { selectedDataCopy } = this.state;
-    var { name, actualFinish, status, priority, ifNew, remark, feedback} = this.state.selectedDataCopy;
+
+    var { name, planNum, planFinishDate, planOnline, actualFinish, status, priority, ifNew, remark, feedback} = this.state.selectedDataCopy;
 
     return (<Dialog
       aria-labelledby="customized-dialog-title"
@@ -536,8 +556,32 @@ class HandleIndent extends React.Component {
         <Grid container spacing={24}>
 
           <Grid item xs={6} style={{paddingTop:0}}>
+            <FormLabel component="legend">计划生产数量</FormLabel>
+            <TextField fullWidth style={{marginTop:0}}
+              placeholder="请输入计划生产数量"
+              className={classes.textField}
+              value = {planNum}
+              onChange={(e)=>{selectedDataCopy.planNum=e.target.value;this.setState({selectedDataCopy: selectedDataCopy})}}
+              margin="normal"
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={6} style={{paddingTop:0}}>
+            <FormLabel component="legend">计划完成时间</FormLabel>
+            <DateFormatInput  className="inline-block" name='date-input' value={ planFinishDate?new Date(planFinishDate):new Date() } onChange={(date)=>{selectedDataCopy.planFinishDate = date.format('yyyy-MM-dd');this.setState({ selectedDataCopy: selectedDataCopy })} } style={{marginbottom:'2rem'}} />
+          </Grid>
+
+          <Grid item xs={6} style={{paddingTop:0}}>
+            <FormLabel component="legend">计划上线时间</FormLabel>
+            <DateFormatInput  className="inline-block" name='date-input' value={ planOnline?new Date(planOnline):new Date() } onChange={(date)=>{selectedDataCopy.planOnline = date.format('yyyy-MM-dd');this.setState({ selectedDataCopy: selectedDataCopy })} } style={{marginbottom:'2rem'}} />
+          </Grid>
+
+          <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">实际完成时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={actualFinish || new Date() } onChange={(date)=>{selectedDataCopy.actualFinish = date;this.setState({ selectedDataCopy: selectedDataCopy })} } style={{marginbottom:'2rem'}} />
+            <DateFormatInput  className="inline-block" name='date-input' value={ actualFinish?new Date(actualFinish):new Date() } onChange={(date)=>{selectedDataCopy.actualFinish = date.format('yyyy-MM-dd');this.setState({ selectedDataCopy: selectedDataCopy })} } style={{marginbottom:'2rem'}} />
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
@@ -577,15 +621,19 @@ class HandleIndent extends React.Component {
   }
 
 
-  tips = (msg) => {
+  tips = (msg, type) => {
     if(msg){
       this.setState({tipInfo:msg});
     }
     this.setState({tipsOpen: true});
 
-    setTimeout(()=>{
-      this.setState({tipsOpen: false});
-    },2000);
+    if(type == 'stay'){
+
+    }else{
+      setTimeout(()=>{
+        this.setState({tipsOpen: false});
+      },2000);
+    }
   }
 
   render() {
@@ -595,13 +643,13 @@ class HandleIndent extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar  />
+        <EnhancedTableToolbar  tips = {this.tips} changeIndentData = {this.changeIndentData} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table+' nowrap'} aria-labelledby="tableTitle">
             <EnhancedTableHead
               numSelected={selected.length}
               order={order}
-              orderBy={orderBy}
+              orderBy={orderBy} tips = {this.tips}
               rowCount={data.length}
             />
             <TableBody>
@@ -622,18 +670,19 @@ class HandleIndent extends React.Component {
                       <TableCell align="left">{n.materialCode}</TableCell>
                       <TableCell align="left">{n.materialName}</TableCell>
                       <TableCell align="left">{n.planNum}</TableCell>
-                      <TableCell align="left">{n.planFinishDate}</TableCell>
-                      <TableCell align="left">{n.planeOnline}</TableCell>
-                      <TableCell align="left">{n.actualStart}</TableCell>
-                      <TableCell align="left">{n.actualFinish ? n.actualFinish.format('yyyy-MM-dd'):false}</TableCell>
-                      <TableCell align="left">{n.status}</TableCell>
-                      <TableCell align="left">{n.priority}</TableCell>
-                      <TableCell align="left">{n.ifNew}</TableCell>
+                      <TableCell align="left">{n.planFinishDate ? new Date(n.planFinishDate).format('yyyy-MM-dd'):false}</TableCell>
+                      <TableCell align="left">{n.planOnline ? new Date(n.planOnline).format('yyyy-MM-dd'):false}</TableCell>
+                      <TableCell align="left">{n.actualStart ? new Date(n.actualStart).format('yyyy-MM-dd'):false}</TableCell>
+                      <TableCell align="left">{n.actualFinish ? new Date(n.actualFinish).format('yyyy-MM-dd'):false}</TableCell>
+                      <TableCell align="left" className = {n.status?'text-blue':''}>{n.status?"完成":"进行中"}</TableCell>
+                      <TableCell align="left" className = {n.priority?'text-blue':''}>{n.priority?"是":"否"}</TableCell>
+                      <TableCell align="left" className = {n.ifNew?'text-blue':''}>{n.ifNew?"是":"否"}</TableCell>
                       <TableCell align="left">{n.remark}</TableCell>
                       <TableCell align="left">{n.feedback}</TableCell>
                       <TableCell align="left">{n.templateID}</TableCell>
                       <TableCell align="left">
                         <span className="pointer btn text-blue"   onClick={()=>this.updateIndent(n, index)}>修改</span>
+                        {n.status?'':<span className="pointer btn text-blue"   onClick={()=>this.finishIndent(n, index)}>设为完成</span>}
                         {/*<span className="pointer btn text-red" onClick={this.deleteUser}>删除</span>*/}
                       </TableCell>
                     </TableRow>
@@ -646,7 +695,7 @@ class HandleIndent extends React.Component {
               )}
             </TableBody>
           </Table>
-          <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
+          <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.state.sureFun} />
         </div>
         <TablePagination
           rowsPerPageOptions={[10, 20, 30]}
@@ -664,6 +713,14 @@ class HandleIndent extends React.Component {
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
         {this.updateUserPowerModal()}
+        <Snackbar style={{marginTop:'70px'}}
+          anchorOrigin={{horizontal:"center",vertical:"top"}}
+          open={this.state.tipsOpen}
+          onClose={()=>this.setState({tipsOpen: false})}
+          ContentProps={{
+            'className':'info'
+          }}
+          message={this.state.tipInfo}  />
       </Paper>
     );
   }

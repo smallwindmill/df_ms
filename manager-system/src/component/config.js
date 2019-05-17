@@ -8,6 +8,7 @@ var config = {
     listSystemUser: serverIP+'/listSystemUser',
     addSystemUser: serverIP+'/addSystemUser',
     listSystemUserByName: serverIP+'/listSystemUserByName',
+    listSystemUserByType: serverIP+'/listSystemUserByType',
     updateSystemUser: serverIP+'/updateSystemUser',
     deleteSystemUser: serverIP+'/deleteSystemUser',
 
@@ -28,7 +29,7 @@ var config = {
 
     updateFactor: serverIP+'/updateFactor',
 
-    listAllIndentStatusByDate: serverIP+'/listAllIndentStatusByDate',
+    listIndentById: serverIP+'/listIndentById',
     listAllIndentStatusByDate: serverIP+'/listAllIndentStatusByDate',
 
     queryWorkHourByDate: serverIP+'/queryWorkHourByDate',
@@ -40,6 +41,7 @@ var config = {
     listAllIndent: serverIP+'/listAllIndent',
 
 
+    queryProcedureInfo: serverIP+'/queryProcedureInfo',
     queryDutyProcedureByStatus: serverIP+'/queryDutyProcedureByStatus',
     addProcedureInfo: serverIP+'/addProcedureInfo',
     updateProcedureStatus: serverIP+'/updateProcedureStatus'

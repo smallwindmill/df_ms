@@ -530,7 +530,7 @@ class QueryUser extends React.Component {
                       <TableCell component="th" scope="row" padding="none">
                         {n.pwd}
                       </TableCell>
-                      <TableCell component="th" className="text-blue" scope="row" padding="none">
+                      <TableCell component="th" className = {n.type!=4?'text-blue':false} scope="row" padding="none">
                         {n.type==4?'生产员工':(n.type==3?'组长':n.type==2?'领班':n.type==1?'主管':false)}
                       </TableCell>
                       <TableCell align="left">

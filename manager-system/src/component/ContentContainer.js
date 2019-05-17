@@ -140,6 +140,7 @@ class ContentContainer extends React.Component{
 
                       <Route path="/dutyIndent" exact component={DutyIndent} />
                       <Route path="/dutyIndent/info" component={DutyIndentInfo} />
+                      <Route path="/dutyIndent/info:id" component={DutyIndentInfo} />
 
 
                       <Route path="/"  component={QueryUser} />

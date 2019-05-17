@@ -172,7 +172,7 @@ class MessageBar extends React.Component{
                 欢迎你，<span  className="text-blue" style={{paddingRight:1+"rem"}}>{props.user.name}</span>
                 {/*<span color="primary"onClick={this.loginClick}>登陆</span>*/}
                 <span color="const" style={{display:(this.props.user.name?'ff':'none')}} className={"btn text-red "+ props.classes} onClick={this.logoutClick}>注销</span>
-                <IconButton color="inherit" onClick={this.mailClick}>
+                <IconButton color="inherit" style = {{marginTop: '-3px'}} onClick={this.mailClick}>
                   <Badge badgeContent={this.state.mailMessage.length} color="secondary">
                     <MailIcon />
                   </Badge>
@@ -181,13 +181,6 @@ class MessageBar extends React.Component{
                 <Badge badgeContent={17} color="secondary">
                   <NotificationsIcon />
                 </Badge>
-              </IconButton>
-              <IconButton
-                aria-owns={props.isMenuOpen ? 'material-appbar' : undefined}
-                aria-haspopup="true"
-                onClick={this.handleProfileMenuOpen}
-                color="inherit"
-              >
               </IconButton>
               {this.mailDialog()}
             </div>):false}

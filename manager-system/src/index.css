@@ -9,9 +9,6 @@ body {
   /* background-color: #282c34; */
 }
 
-header{
-    height: 55px;padding: 1rem 2rem 0;
-}
 header>div:nth-child(1){
     flex: 1;
 }
@@ -21,7 +18,7 @@ header>div:nth-child(2){
 .btn{padding: 7px 5px;overflow: hidden;cursor: pointer;}
 #messagebar{
     font-size: 16px;
-    font-weight: normal;    white-space: nowrap;
+    font-weight: normal;    white-space: nowrap;margin-bottom: -11px;
 }
 .text-red{
     color: #f44336!important;
@@ -35,6 +32,12 @@ header>div:nth-child(2){
 
 .bg-primary{
     background: #2196f3!important;color: #fff;
+}
+.bg-red{
+    background: #f44336!important;color: #fff;
+}
+.bg-notice{
+    background: #f3d621!important;color: #fff;
 }
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",

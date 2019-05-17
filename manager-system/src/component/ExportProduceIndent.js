@@ -157,8 +157,9 @@ class ExportProduceIndent extends React.Component {
       {value:1, text:'新品'},
       {value:2, text:'外协'}
     ],
-    indentTimeType: 0
-
+    indentTimeType: 0,
+    startDate: new Date(),
+    endDate: new Date()
   };
 
   onChangeStartDate = date => {
@@ -250,8 +251,8 @@ class ExportProduceIndent extends React.Component {
               <span className="btn text-blue">按时间段导出生产订单</span>
             </Grid>
             <Grid item xs={12}>
-              <DateFormatInput  className="inline-block" name='date-input' value={this.state.startDate || new Date() } onChange={this.onChangeStartDate} style={{marginbottom:'2rem'}} />
-              <DateFormatInput name='date-input' className="inline-block"  value={this.state.endDate || new Date() } onChange={this.onChangeEndDate}/>
+              <DateFormatInput  className="inline-block" name='date-input' value={this.state.startDate } onChange={this.onChangeStartDate} style={{marginbottom:'2rem'}} />
+              <DateFormatInput name='date-input' className="inline-block"  value={this.state.endDate } onChange={this.onChangeEndDate}/>
             </Grid>
             <Grid item xs={12}>
 

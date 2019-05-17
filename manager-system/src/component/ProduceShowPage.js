@@ -1,6 +1,9 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+
+import Grid from '@material-ui/core/Grid';
+import Snackbar from '@material-ui/core/Snackbar';
 import config from './config';
 
 
@@ -11,32 +14,7 @@ class ProduceShowPage extends React.Component {
     this.state = {
       open: false,
       data: [
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)},
-        {one:'000',one1:111,one2:222,one3:333,one4:444,one5:555,one6:666,one7:777,status: Math.round(Math.random()*10)}
+
       ],
       style:{
         table:{
@@ -51,40 +29,42 @@ class ProduceShowPage extends React.Component {
 
   componentWillMount() {
     // 组件初次加载数据申请
-    fetch(config.server.listAllIndent).then(res=>res.json()).then(data=>{
+    fetch(config.server.listAllIndentByDate).then(res=>res.json()).then(data=>{
       console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
-      // this.changeTemplateData(data.results || []);
       this.setState({data: data.results || []});
-    }).catch(e=>{
-      // this.tips('网络出错了，请稍候再试');
-      console.log(e);
-    });
-    setTimeout(this.startLoop, 2000)
+      setTimeout(this.startLoop, 1000);
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+
 
   }
 
   componentWillUnmount() {
-    if(this.loopTimer)clearInterval(this.loopTimer)
+    if(this.loopTimer){
+      clearInterval(this.loopTimer)
+    }
   }
 
-
-
-
   startLoop = () => {
-    console.log(document.getElementById('produceShowTable'));
+    // 页面滚动
+    if(!document.getElementById('produceShowTable'))return;
+
     var dom = document.getElementById('produceShowTable').parentNode;
     // windo
     var p_height = dom.clientHeight;
     var c_height = document.getElementById('produceShowTable').clientHeight;
 
+    // 如果表格高度小于屏幕显示，不滚动
+    // console.log(p_height, c_height)
+    if(p_height >= c_height)return;
+
     var tableClone = document.getElementById('produceShowTable').cloneNode(true);
     dom.appendChild(tableClone);
 
     this.loopTimer = setInterval(()=>{
-      // if(dom.scrollTop >= c_height-p_height){
+        // console.log(dom.scrollTop, c_height)
       if(dom.scrollTop >= c_height){
         // var tableClone = document.getElementById('produceShowTable').cloneNode(true);
         // dom.appendChild(tableClone);
@@ -93,7 +73,7 @@ class ProduceShowPage extends React.Component {
       }else{
         dom.scrollTop += 1;
       }
-    }, 20 );
+    }, 30 );
   }
 
 
@@ -103,6 +83,7 @@ class ProduceShowPage extends React.Component {
     });
   };
 
+  // 全屏
   handleClickFull=()=>{
     var data = this.state.style;
     data.table = {position: 'fixed',
@@ -127,6 +108,17 @@ class ProduceShowPage extends React.Component {
     this.setState({ btnVisible: !this.state.btnVisible});
   }
 
+  tips = (msg) => {
+    if(msg){
+      this.setState({tipInfo:msg});
+    }
+    this.setState({tipsOpen: true});
+
+    setTimeout(()=>{
+      this.setState({tipsOpen: false});
+    },2000);
+  }
+
   handleClose = () => {
     this.setState({ open: false });
   };
@@ -141,13 +133,23 @@ class ProduceShowPage extends React.Component {
           <Button variant="outlined" style={{display:this.state.btnVisible?'block':'none'}} variant = 'contained' color="primary" onClick={this.handleClickFull}>
             全屏
           </Button>
-          <Button variant="outlined" style={{display:this.state.btnVisible?'none':'block'}} variant = 'contained' color="secondary"  onClick={this.handleClickFullCancel}>
+          <Button variant="outlined" style={{display:this.state.btnVisible?'none':'block',opacity: 0.0}} variant = 'contained' color="secondary" onMouseEnter = {(e)=>{e.persist();e.target.style.opacity = 1}}  onMouseLeave = {(e)=>{e.persist();e.target.style.opacity = 0.0}} onClick={this.handleClickFullCancel}>
             退出全屏
           </Button>
-          <div align="right" style={{paddingRight:'2rem'}}>
-            <span className="rect bg-success"></span><span className="inline-block">已完成</span>
-            <span className="rect bg-primary"></span><span className="inline-block">新品</span>
-          </div>
+          <Grid container>
+
+            <Grid item xs = {3} align="left">
+              <span className="blod">共{this.state.data.length}条数据</span>
+            </Grid>
+            <Grid item xs = {9}>
+              <div align="right" style={{paddingRight:'2rem'}}>
+                <span className="rect bg-success"></span><span className="inline-block">已完成</span>
+                <span className="rect bg-notice"></span><span className="inline-block">新品</span>
+                <span className="rect bg-red"></span><span className="inline-block">加急</span>
+              </div>
+            </Grid>
+
+          </Grid>
         </div>
         <table id="produceShowTableHead" className="produceShowTable" style={{width:'100%'}}>
         <thead><tr>
@@ -164,17 +166,25 @@ class ProduceShowPage extends React.Component {
           <div style={{overflowY: 'scroll',height: 'calc(100vh - 230px)'}}>
         <table id="produceShowTable" className="produceShowTable" style={{width:'100%'}}><tbody>
         {this.state.data.map((single, index)=>(
-          <tr key={'tr'+index} className={single.status>5?(single.status>7?'bg-success':'bg-primary'):''}>
-            <td>{single.one}</td>
-            <td>{single.one1}</td>
-            <td>{single.one2}</td>
-            <td>{single.one3}</td>
-            <td>{single.one4}</td>
-            <td>{single.one5}</td>
-            <td>{single.one6}</td>
-            <td title={single.one7}>{single.one7}</td>
+          <tr key={'tr'+index}  className={single.status==0?(single.priority==0?(single.ifNew==1?'bg-notice':''):'bg-red'):'bg-success'}>
+            <td style={{padding: '12px 0'}}>{single.erp}</td>
+            <td>{single.materialCode}</td>
+            <td>{single.materialName}</td>
+            <td>{single.planNum}</td>
+            <td>{single.actualStart}</td>
+            <td>{single.planFinishDate}</td>
+            <td>{single.status?'完成':'进行中'}</td>
+            <td title={single.remark?single.remark:'    '}>{single.one7}</td>
           </tr>
         ))}</tbody></table></div>
+        <Snackbar style={{marginTop:'70px'}}
+          anchorOrigin={{horizontal:"center",vertical:"top"}}
+          open={this.state.tipsOpen}
+          onClose={()=>this.setState({tipsOpen: false})}
+          ContentProps={{
+            'className':'info'
+          }}
+          message={this.state.tipInfo}  />
       </div>
     );
   }

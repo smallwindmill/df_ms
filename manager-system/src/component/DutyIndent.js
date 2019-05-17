@@ -173,17 +173,7 @@ class EnhancedTableToolbar extends React.Component{
   }
 
 
-  tips = (msg) => {
-    if(msg){
-      this.setState({tipInfo:msg});
-    }
-    this.setState({tipsOpen: true});
-
-    setTimeout(()=>{
-      this.setState({tipsOpen: false});
-    },1000);
-  }
-
+  tips = this.props.tips;
 
   render(){
     var classes = '';
@@ -240,24 +230,28 @@ class DutyIndent extends React.Component {
     order: 'asc',
     orderBy: 'calories',
     select: 0,
-    data: [
-      createData('74475686796','BM234','通用流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",1),
-      createData('74475686796','BM234','外协生产流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",0),
-      createData('74475686796','BM234','组装流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",0),
-      createData('74475686796','BM234','通用流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",1),
-      createData('74475686796','BM234','组装流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",0),
-      createData('74475686796','BM234','通用流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",0),
-      createData('74475686796','BM234','组装流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",1),
-      createData('74475686796','BM234','通用流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",0),
-      createData('74475686796','BM234','通用流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",0),
-    ],
+    data: [],
     page: 0,
     rowsPerPage: 10,
     open: true,
     confirmOpen: false,
     title: "确认",
     content: "确定删除该订单吗？"
-  };
+  }
+
+  componentWillMount() {
+    // 组件初次加载数据申请
+    var userID = config.changeToJson(localStorage.user).userID;
+    var pwd = config.changeToJson(localStorage.user).pwd;
+
+    fetch(config.server.queryDutyProcedureByStatus+'?userID='+userID).then(res=>res.json()).then(data=>{
+      console.log(data);
+      if(data.code!=200){
+          this.tips(data.msg);return;
+      }
+      this.changeDutyIndentData(data.results || []);
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+  }
 
 
   handleClick = (event, id) => {
@@ -322,6 +316,16 @@ class DutyIndent extends React.Component {
     }
   }
 
+  tips = (msg, time) => {
+    if(msg){
+      this.setState({tipInfo:msg});
+    }
+    this.setState({tipsOpen: true});
+
+    setTimeout(()=>{
+      this.setState({tipsOpen: false});
+    },time||2000);
+  }
 
   render() {
     const { classes } = this.props;
@@ -340,7 +344,7 @@ class DutyIndent extends React.Component {
             />
             <TableBody>
               {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map(n => {
+                .map((n,index) => {
                   return (
                     <TableRow
                       hover
@@ -348,23 +352,23 @@ class DutyIndent extends React.Component {
                       tabIndex={-1}
                       key={n.id}
                     >
-                      <TableCell align="left">{n.id}</TableCell>
-                      <TableCell align="left">{n.sId}</TableCell>
-                      <TableCell align="left">{n.mCode}</TableCell>
+                      <TableCell align="left">{(index+1)}</TableCell>
+                      <TableCell align="left">{n.erp}</TableCell>
+                      <TableCell align="left">{n.materialCode}</TableCell>
                       <TableCell component="th" scope="row" padding="none">
-                        {n.mName}
+                        {n.materialName}
                       </TableCell>
                       <TableCell component="th" scope="row" padding="none">
-                        {n.indentProcess}
+                        {n.procedure}
                       </TableCell>
                       <TableCell component="th" scope="row" padding="none">
-                        {n.proceeDuty}
+                        {n.duty}
                       </TableCell>
                       <TableCell component="th" scope="row" padding="none">
-                        {(n.dutySatus==1)?'已完成':(n.dutySatus==-1?'报废':'未完成')}
+                        {(n.dutySatus==1)?'完成':'进行中'}
                       </TableCell>
                       <TableCell align="left">
-                            <span className="pointer btn text-red" onClick={()=>this.props.history.push('/dutyIndent/info')}>查询</span>
+                            <span className="pointer btn text-red" onClick={()=>this.props.history.push('/dutyIndent/info'+n.id)}>查询</span>
                           </TableCell>
                     </TableRow>
                   );
@@ -393,6 +397,13 @@ class DutyIndent extends React.Component {
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
+        <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
+        anchorOrigin={{horizontal:"center",vertical:"top"}}
+        open={this.state.tipsOpen}
+        ContentProps={{
+          'className':'info'
+        }}
+        message={<span id="message-id" >{this.state.tipInfo?this.state.tipInfo:''}</span>}/>
       </Paper>
     );
   }

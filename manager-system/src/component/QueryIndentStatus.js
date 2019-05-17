@@ -36,10 +36,6 @@ import { exportExcel } from 'xlsx-oc';
 
 
 let counter = 0;
-function createData( sId, mCode, mName, indentProcess, proceeDuty, dutySatus) {
-  counter += 1;
-  return { id: counter, sId, mCode, mName, indentProcess, proceeDuty, dutySatus };
-}
 
 function desc(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -152,19 +148,6 @@ class EnhancedTableToolbar extends React.Component{
     dateRange:[{text: "最近一周"},{text: "最近一月"},{text: "最近三月"},{text: "最近一年"},{text: "一年以前"}]
   }
 
-  componentWillMount() {
-    // 组件初次加载数据申请
-
-    var queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
-    var queryEnd = new Date().format('yyyy-MM-dd');
-
-    fetch(config.server.listAllIndentStatusByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
-      console.log(data);
-      this.changeIndentStatusData(data.results || []);
-    }).catch(e=>this.tips('网络出错了，请稍候再试'));
-
-  }
-
   handleClose = () => {
     this.setState({ open: false });
   }
@@ -196,6 +179,10 @@ class EnhancedTableToolbar extends React.Component{
 
     fetch(config.server.listAllIndentStatusByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
       console.log(data);
+      if(data.code!=200){
+        this.tips(data.msg);return;
+      }
+      this.tips('查询成功');
       this.props.changeIndentStatusData(data.results || []);
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
@@ -213,16 +200,7 @@ class EnhancedTableToolbar extends React.Component{
       }
   }
 
-  tips = (msg) => {
-    if(msg){
-      this.setState({tipInfo:msg});
-    }
-    this.setState({tipsOpen: true});
-
-    setTimeout(()=>{
-      this.setState({tipsOpen: false});
-    },1000);
-  }
+  tips = this.props.tips;
 
 
   render(){
@@ -240,14 +218,6 @@ class EnhancedTableToolbar extends React.Component{
                 <span className="blod">时间</span>
                 {dateRange.map((date,index)=>(<span key = {index} className="btn" onClick={(e)=>this.queryIndentStatusByDate(e, date, index)}> {date.text}</span>))}
             </Grid></Grid>
-
-          <Snackbar style={{marginTop:'70px'}}
-          anchorOrigin={{horizontal:"center",vertical:"top"}}
-          open={this.state.tipsOpen}
-          ContentProps={{
-            'className':'info'
-          }}
-          message={<span id="message-id" >{this.state.tipInfo}</span>}  />
         </div>
       )
   }
@@ -276,24 +246,32 @@ class QueryIndentStatus extends React.Component {
     order: 'asc',
     orderBy: 'calories',
     selected: [],
-    data: [
-      createData('74475686796','BM234','通用流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",1),
-      createData('74475686796','BM234','外协生产流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",0),
-      createData('74475686796','BM234','组装流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",0),
-      createData('74475686796','BM234','通用流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",1),
-      createData('74475686796','BM234','组装流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",0),
-      createData('74475686796','BM234','通用流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",0),
-      createData('74475686796','BM234','组装流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",1),
-      createData('74475686796','BM234','通用流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",0),
-      createData('74475686796','BM234','通用流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",0),
-    ],
+    data: [],
     page: 0,
     rowsPerPage: 10,
     open: true,
     deleteOpen: false,
     title: "确认",
     content: "确定删除该订单吗？"
-  };
+  }
+
+
+
+  componentWillMount() {
+    // 组件初次加载数据申请
+
+    var queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
+    var queryEnd = new Date().format('yyyy-MM-dd');
+
+    // fetch(config.server.listAllIndentStatusByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
+    fetch(config.server.listAllIndentStatusByDate).then(res=>res.json()).then(data=>{
+      if(data.code != 200){
+        this.tips(data.msg);return;
+      }
+      this.changeIndentStatusData(data.results || []);
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+
+  }
 
 
   handleChangePage = (event, page) => {
@@ -354,6 +332,16 @@ class QueryIndentStatus extends React.Component {
 
   }
 
+  tips = (msg) => {
+    if(msg){
+      this.setState({tipInfo:msg});
+    }
+    this.setState({tipsOpen: true});
+
+    setTimeout(()=>{
+      this.setState({tipsOpen: false});
+    },2000);
+  }
 
   render() {
     const { classes } = this.props;
@@ -363,7 +351,7 @@ class QueryIndentStatus extends React.Component {
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
         <EnhancedTableToolbar
-              changeIndentStatusData = {this.changeIndentStatusData} />
+              changeIndentStatusData = {this.changeIndentStatusData} tips = {this.tips}/>
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -374,7 +362,7 @@ class QueryIndentStatus extends React.Component {
             />
             <TableBody>
               {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map(n => {
+                .map((n,index) => {
                   const isSelected = this.isSelected(n.id);
                   return (
                     <TableRow
@@ -385,20 +373,18 @@ class QueryIndentStatus extends React.Component {
                       key={n.id}
                       selected={isSelected}
                     >
-                      <TableCell align="left">{n.id}</TableCell>
-                      <TableCell align="left">{n.sId}</TableCell>
-                      <TableCell align="left">{n.mCode}</TableCell>
+                      <TableCell align="left">{(index+1)}</TableCell>
+                      <TableCell align="left">{n.erp}</TableCell>
+                      <TableCell align="left">{n.materialCode}</TableCell>
+                      <TableCell align="left">{n.materialName}</TableCell>
                       <TableCell component="th" scope="row" padding="none">
-                        {n.mName}
+                        {n.procedure}
                       </TableCell>
                       <TableCell component="th" scope="row" padding="none">
-                        {n.indentProcess}
+                        {n.duty}
                       </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
-                        {n.proceeDuty}
-                      </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
-                        {(n.dutySatus)?'已完成':'未完成'}
+                      <TableCell component="th" scope="row" padding="none" className = {n.status?'text-blue':''}>
+                        {(n.status0)?'已完成':'未完成'}
                       </TableCell>
                       <TableCell align="left">
                         <span className="pointer btn text-blue">修改</span>
@@ -431,6 +417,14 @@ class QueryIndentStatus extends React.Component {
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
+
+        <Snackbar style={{marginTop:'70px'}}
+        anchorOrigin={{horizontal:"center",vertical:"top"}}
+        open={this.state.tipsOpen}
+        ContentProps={{
+          'className':'info'
+        }}
+        message={<span id="message-id" >{this.state.tipInfo}</span>}  />
       </Paper>
     );
   }
