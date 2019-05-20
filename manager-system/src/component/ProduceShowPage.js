@@ -76,6 +76,15 @@ class ProduceShowPage extends React.Component {
     }, 30 );
   }
 
+  toogleLoop = () =>{
+    if(this.loopTimer){
+      clearInterval(this.loopTimer);
+      this.loopTimer = '';
+    }else{
+      this.startLoop();
+    }
+  }
+
 
   handleClickOpen = () => {
     this.setState({
@@ -151,8 +160,8 @@ class ProduceShowPage extends React.Component {
 
           </Grid>
         </div>
-        <table id="produceShowTableHead" className="produceShowTable" style={{width:'100%'}}>
-        <thead><tr>
+        <table id="produceShowTableHead" className="produceShowTable" style={{width:'100%',textAlign: 'center'}}>
+        <thead onDoubleClick={this.toogleLoop}><tr>
             <th>ERP号</th>
             <th>物料长代码</th>
             <th>物料名称</th>
@@ -164,7 +173,7 @@ class ProduceShowPage extends React.Component {
             </tr></thead>
           </table>
           <div style={{overflowY: 'scroll',height: 'calc(100vh - 230px)'}}>
-        <table id="produceShowTable" className="produceShowTable" style={{width:'100%'}}><tbody>
+        <table id="produceShowTable" className="produceShowTable" style={{width:'100%',textAlign: 'center'}}><tbody>
         {this.state.data.map((single, index)=>(
           <tr key={'tr'+index}  className={single.status==0?(single.priority==0?(single.ifNew==1?'bg-notice':''):'bg-red'):'bg-success'}>
             <td style={{padding: '12px 0'}}>{single.erp}</td>

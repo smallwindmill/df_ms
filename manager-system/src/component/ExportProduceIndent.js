@@ -31,6 +31,8 @@ import Confirm from './Confirm';
 import Snackbar from '@material-ui/core/Snackbar';
 
 import config from './config';//配置文件
+import { exportExcel } from 'xlsx-oc';
+
 
 let counter = 0;
 function createData( name, calories,fat, carbs, protein) {
@@ -182,8 +184,49 @@ class ExportProduceIndent extends React.Component {
         this.tips('开始时间不能大于结束时间');return;
     }
 
+    this.dlExcel();
     fetch(config.exportTimeIndentServer).then(res=>res.json()).then(data=>{console.log(data)});
   }
+
+
+  dlExcel = (data) =>{
+      /*  const dataSource = [{
+            key: '1',
+            cs: 'title',
+            sm: '列头显示文字',
+            lx: 'string',
+            mrz: '',
+        }, {
+            key: '2',
+            cs: 'mm',
+            sm: '啦啦啦啦',
+            lx: 'string',
+            mrz: '',
+        }];*/
+
+        const dataSource = [{
+              key: '1',
+              cs: 'title',
+              sm: '列头显示文字',
+              lx: 'string',
+              mrz: '',
+          }, {
+              key: '2',
+              cs: 'mm',
+              sm: '啦啦啦啦',
+              lx: 'string',
+              mrz: '',
+          }];
+
+        const exportDefaultExcel = () => {
+            var _headers = [{ k: 'cs', v: '列名' }, { k: 'sm', v: '描述' },
+            { k: 'lx', v: '类型' }, { k: 'mrz', v: '默认值' },]
+            exportExcel(_headers, dataSource);
+        }
+        exportDefaultExcel();
+  }
+
+
   exportAllIndent = () =>{
 
   }

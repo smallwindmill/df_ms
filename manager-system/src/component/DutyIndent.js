@@ -33,10 +33,6 @@ import Confirm from './Confirm';
 import config from './config';
 
 let counter = 0;
-function createData( sId, mCode, mName, indentProcess, proceeDuty, dutySatus) {
-  counter += 1;
-  return { id: counter, sId, mCode, mName, indentProcess, proceeDuty, dutySatus };
-}
 
 function desc(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -142,9 +138,9 @@ class EnhancedTableToolbar extends React.Component{
   state = {
     open: false,
     chooseList:[
-      // {value:0, text:'全部'},
+      {value:' ', text:'全部'},
       {value:1, text:'已完成'},
-      {value:2, text:'进行中'},
+      {value:0, text:'进行中'},
       // {value:-1, text:'报废'}
     ],
     selectedDataCopy:{},
@@ -160,7 +156,8 @@ class EnhancedTableToolbar extends React.Component{
   }
 
   queryDutyIndentByType = (e) =>{
-    var {userId} = this.state.selectedDataCopy;
+    var userId = config.changeToJson(localStorage.user).userID;
+
 
     this.props.onSelectChange(e.target.value);
 
@@ -334,7 +331,7 @@ class DutyIndent extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar changeDutyIndentData = {this.changeDutyIndentData}  onSelectChange={this.selectChange} />
+        <EnhancedTableToolbar changeDutyIndentData = {this.changeDutyIndentData}  onSelectChange={this.selectChange} tips = {this.tips}/>
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -365,10 +362,10 @@ class DutyIndent extends React.Component {
                         {n.duty}
                       </TableCell>
                       <TableCell component="th" scope="row" padding="none">
-                        {(n.dutySatus==1)?'完成':'进行中'}
+                        {(n.status==1)?'完成':'进行中'}
                       </TableCell>
                       <TableCell align="left">
-                            <span className="pointer btn text-red" onClick={()=>this.props.history.push('/dutyIndent/info'+n.id)}>查询</span>
+                            <span className={"pointer btn "+(n.status?"text-blue":"text-red")} onClick={()=>this.props.history.push('/dutyIndent/info'+n.id)}>{(n.status==1)?'详情':'编辑'}</span>
                           </TableCell>
                     </TableRow>
                   );

@@ -349,9 +349,9 @@ class EnhancedTableToolbar extends React.Component{
                   人员管理
                 </Typography>
           </Toolbar>
-          <Grid container align="right" style={{margin:'0rem 0 1rem',padding: '0 1.2rem'}}>
+          <Grid container align="right" >
             <Grid item xs={12}>
-            <span className="btn text-blue"onClick={()=>this.addUser(0)}>添加用户</span>
+            <span className="btn text-blue" onClick={()=>this.addUser(0)} style={{margin:'0rem 0 4rem',padding: '0 1.2rem'}}>添加用户</span>
               <TextField style={{marginTop:0,marginLeft:'1rem'}}
               placeholder="请输入查询信息"
               className={classes.textField}
@@ -527,11 +527,11 @@ class QueryUser extends React.Component {
                       <TableCell component="th" scope="row" padding="none">
                         {n.userName}
                       </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
-                        {n.pwd}
+                      <TableCell component="th" scope="row" padding="" onMouseEnter = {(e)=>{e.target.innerHTML=n.pwd || '无' }}  onMouseOut = {(e)=>{e.target.innerHTML="******";}}>
+                        *******
                       </TableCell>
-                      <TableCell component="th" className = {n.type!=4?'text-blue':false} scope="row" padding="none">
-                        {n.type==4?'生产员工':(n.type==3?'组长':n.type==2?'领班':n.type==1?'主管':false)}
+                      <TableCell component="th" className = {n.type!=4?'text-blue':''} scope="row" padding="none">
+                        {n.type==4?'生产员工':(n.type==3?'组长':n.type==2?'领班':n.type==1?'主管':'')}
                       </TableCell>
                       <TableCell align="left">
                         <span className="pointer btn text-blue" onClick={()=>this.updateUser(n, index)}>修改</span>

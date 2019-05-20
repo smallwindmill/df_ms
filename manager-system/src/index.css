@@ -130,4 +130,15 @@ div[class*='MuiFormLabel-root'] {
 }
 .nowrap, table{
     white-space: nowrap;
+}d
+
+#produceShowTableHead th, #produceShowTable td{
+    width: 10%;
+}
+#produceShowTableHead th:nth-child(1), #produceShowTable td:nth-child(1){
+    width: 6%;
+}
+#produceShowTableHead th:nth-child(2), #produceShowTable td:nth-child(2), #produceShowTableHead th:nth-child(3), #produceShowTable td:nth-child(3){width: 16%;}
+#dutyModal div[class*='MuiBackdrop']{
+    opacity:  0!important;
 }

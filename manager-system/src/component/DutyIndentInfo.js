@@ -244,16 +244,17 @@ class DutyIndentInfo extends React.Component {
     // console.log(this.props, procedureID);
     this.setState({pid: procedureID});
 
-    fetch(config.server.listIndentById+'?id='+procedureID).then(res=>res.json()).then(data=>{
+    fetch(config.server.queryDutyProcedureById+'?id='+procedureID+'&userID='+userID).then(res=>res.json()).then(data=>{
       console.log(data);
       if(data.code!=200){
           this.tips(data.msg);return;
       }
       // this.changeDutyIndentData(data.results || []);
-      this.setState({data: data.results});
+      this.setState({data: data.results[0]});
     }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
 
-    fetch(config.server.queryProcedureInfo+'?id='+procedureID).then(res=>res.json()).then(data=>{
+    // 请求流程细节信息
+    fetch(config.server.queryProcedureInfo+'?pid='+procedureID).then(res=>res.json()).then(data=>{
       console.log(data);
       if(data.code!=200){
           this.tips(data.msg);return;
@@ -311,7 +312,7 @@ class DutyIndentInfo extends React.Component {
       if(data.code!=200){
         this.tips('获取生产人员列表失败，请稍后重试');return;
       }
-      this.setState({modalOpen: true, workers: data.results});
+      this.setState({modalOpen: true, workers: data.results, selectedWorkers: []});
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
   }
 
@@ -329,7 +330,8 @@ class DutyIndentInfo extends React.Component {
     // console.log(window.fff = selectedWorkers);
     var workder_in = [];
     for(var i of selectedWorkers){
-      workder_in.push(i.id);
+      // workder_in.push(i.id);
+      workder_in.push(i.name);
     }
 
     fetch(config.server.addProcedureInfo,{method:"POST",
@@ -339,12 +341,24 @@ class DutyIndentInfo extends React.Component {
       body:JSON.stringify({pid: pid, productNum:productNum, startTime: selectedDataCopy.startTime, worker:workder_in.join(' ')})
     }).then(res=>res.json()).then(data=>{
       console.log(data);
+      if(data.code!=200){
+        this.tips(data.msg);return;
+      }
+      this.tips('新增流程详情成功');
+      this.changeInfoData(data.results, 1);this.modalClose();
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
   }
 
-  changeInfoData = (data)=>{
-    this.setState({infoData: data})
+  changeInfoData = (data, type)=>{
+    if(type==1 && data){
+      this.state.infoData.push(data);
+      // console.log(this.state.infoData);
+      this.setState({infoData: this.state.infoData});
+    }else{
+      this.setState({infoData: data});
+    }
+
   }
 
 
@@ -359,33 +373,49 @@ class DutyIndentInfo extends React.Component {
     }
   }
 
-  finishProcedure = ()=>{
-    this.setState({InfoModalOpen: true});
+  finishProcedure = (data_out, index)=>{
+    this.setState({InfoModalOpen: true, selectedDataCopy: data_out, selectIndex: index});
   }
 
-  setFinishSure = () => {
-    var { id, next_info } = this.state;
-    console.log(id, next_info);
+  setFinishSure = (data_out, index) => {
+    var { id, next_info, selectedDataCopy, selectIndex } = this.state;
+    // console.log(id, next_info);
+    var pid = this.props.match.params.id;
 
     // 设置流程完成
     fetch(config.server.updateProcedureStatus,{method:"POST",
-      body:JSON.stringify({id: id, status: 2, remark: next_info})
+      headers:{
+            'Content-Type': 'application/json',
+      },
+      body:JSON.stringify({pid: pid,id: selectedDataCopy.id, status: 1, remark: next_info})
     }).then(res=>res.json()).then(data=>{
-      console.log(data);
+      if(data.code != 200){
+        this.tips(data.msg);return;
+      }
+      this.state.infoData[selectIndex].status = 1;this.tips('该流程已完成');
+    this.setState({InfoModalOpen: false});
+      this.setState({infoData: this.state.infoData});
       // 重新读取数据
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
+
   }
 
   // 报废当前流程
-  setScrap = () => {
+  setScrap = (data_out, index) => {
     var { id, next_info } = this.state;
     var nextFun = () =>{
       fetch(config.server.updateProcedureStatus,{method:"POST",
-        body:JSON.stringify({id: id, status: -1})
+        headers:{
+            'Content-Type': 'application/json',
+        },
+        body:JSON.stringify({id: data_out.id, status: -1})
       }).then(res=>res.json()).then(data=>{
-        console.log(data);
-        this.props.changeUserData(data.results || []);
-      }).catch(e=>this.tips('网络出错了，请稍候再试'));
+        if(data.code != 200){
+          this.tips(data.msg);return;
+        }console.log(this.state.infoData[index]);
+        this.state.infoData[index].status = -1;
+        this.setState({infoData: this.state.infoData});this.tips('该流程环节已报废');console.log(this.state.infoData[index]);
+      }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
     };
     this.setState({confirmOpen: true, content: '确定报废当前流程吗？',deleteFun: nextFun});
   }
@@ -590,32 +620,26 @@ class DutyIndentInfo extends React.Component {
               rowCount={data.length}
             />
             <TableBody>
-              {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map(n => {
-                  return (
-                    <TableRow
-                      role="checkbox"
-                      tabIndex={-1}
-                      key={n.id}
-                    >
-                      <TableCell align="left">{n.erp}</TableCell>
-                      <TableCell align="left">{n.materialCode}</TableCell>
-                      <TableCell component="th" scope="row" padding="none">
-                        {n.materialName}
-                      </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
-                        {n.procedure}
-                      </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
-                        {n.duty}
-                      </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
-                        {(n.status==1)?'已完成':(n.status==-1?'报废':'进行中')}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-
+                  <TableRow
+                    role="checkbox"
+                    tabIndex={-1}
+                    key={data.id}
+                  >
+                    <TableCell align="left">{data.erp}</TableCell>
+                    <TableCell align="left">{data.materialCode}</TableCell>
+                    <TableCell component="th" scope="row" padding="none">
+                      {data.materialName}
+                    </TableCell>
+                    <TableCell component="th" scope="row" padding="none">
+                      {data.procedure}
+                    </TableCell>
+                    <TableCell component="th" scope="row" padding="none">
+                      {data.duty}
+                    </TableCell>
+                    <TableCell component="th" scope="row" padding="none" className={data.status==1?'text-blue':'text-red'}>
+                      {(data.status==1)?'已完成':(data.status==-1?'报废':'进行中')}
+                    </TableCell>
+                  </TableRow>
             </TableBody>
           </Table>
 
@@ -648,19 +672,17 @@ class DutyIndentInfo extends React.Component {
                     <TableCell align="left">{(index+1)}</TableCell>
                     <TableCell align="left">{n.worker}</TableCell>
                     <TableCell align="left">{n.worker.split(' ').length}</TableCell>
+                    <TableCell align="left">{n.productNum}</TableCell>
                     <TableCell component="th" scope="row" padding="none">
-                      {n.startTime}
+                      {new Date(n.startTime).format('yyyy-MM-dd')}
                     </TableCell>
                     <TableCell component="th" scope="row" padding="none">
-                      {n.status==0?'进行中':(n.status==1?'完成':'报废')}
+                      {n.status==1?'完成':(n.status==-1?'报废':'进行中')}
                     </TableCell>
-                    <TableCell component="th" scope="row" padding="none">
-                      {(n.status==1)?'完成':(n.status==-1?'报废':'进行中')}
-                    </TableCell>
-                    {(this.state.select==2)?false:<TableCell align="left">
-                                            {n.status==0?'':<span className="pointer btn text-red" onClick={this.setScrap}>设为报废</span>}
-                                            {n.status==0?'':<span className="pointer btn text-blue" onClick={this.finishProcedure}>设为完成</span>}
-                                          </TableCell>}
+                    <TableCell align="left">
+                                            {data.status?(<span>{n.status==1?'已完成':(n.status==-1?'已报废':'')}</span>):(<span>{n.status!=0?'':<span className="pointer btn text-red" onClick={()=>this.setScrap(n, index)}>设为报废</span>}
+                                              {n.status!=0?'':<span className="pointer btn text-blue" onClick={()=>this.finishProcedure(n, index)}>设为完成</span>}</span>)}
+                                          </TableCell>
                   </TableRow>
                 );
               })}
@@ -682,7 +704,7 @@ class DutyIndentInfo extends React.Component {
                     onChangePage={this.handleChangePage}
                     onChangeRowsPerPage={this.handleChangeRowsPerPage}
                 />*/}
-        {this.state.status == 2?false:<Grid container align="center" vertical="center" className="pointer addProcedureBtn" style={{paddingTop:"2rem"}}>
+        {this.state.data.status != 0?false:<Grid container align="center" vertical="center" className="pointer addProcedureBtn" style={{paddingTop:"2rem"}}>
                       <Grid item xs={12} onClick={this.addProcedureInfo}><AddIcon style={{marginBottom: '-5px'}} />添加详情</Grid>
                     </Grid>}
           <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} sureFun = {this.confirmSure} />

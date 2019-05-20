@@ -28,6 +28,7 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 
 import Snackbar from '@material-ui/core/Snackbar';
+import Chip from '@material-ui/core/Chip';
 
 import Confirm from './Confirm';
 import config from './config';
@@ -137,13 +138,16 @@ const toolbarStyles = theme => ({
 class EnhancedTableToolbar extends React.Component{
 
   state = {
-    open: false
+    open: false,
+    dutyModal: false,
+    workers: [],
+    tDuty: ''
   }
 
   tips = this.props.tips;
 
   handleClose = () => {
-    this.setState({ open: false });
+    this.setState({ open: false, dutyModal: false });
   }
 
   addTemplate = (type) => {
@@ -172,8 +176,8 @@ class EnhancedTableToolbar extends React.Component{
       }
 
       var tProcedureLen = tProcedure.split(' ');
-      var tDutyLen = tDuty.split(' ');
-        console.log(tProcedureLen, tDutyLen);
+      var tDutyLen = tDuty.replace(/ $/,'').replace(/^ /,'').split(' ');
+      console.log(tProcedureLen, tDutyLen);
 
       if(tProcedureLen.length!=tDutyLen.length){
         this.tips('流程与负责人数量不匹配，请检查后重试');return;
@@ -212,9 +216,47 @@ class EnhancedTableToolbar extends React.Component{
     this.addTemplate(type);
   }
 
+  showDutyModal = () =>{
+    fetch(config.server.listSystemUserByType+"?type="+4).then(res=>res.json()).then(data=>{
+      console.log(data);
+      if(data.code!=200){
+        this.tips('获取生产人员列表失败，请稍后重试');return;
+      }
+      this.setState({dutyModal: true, workers: data.results, selectedWorkers: []});
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+  }
+
+
+  selectToDuty = (duty, index)=>{
+
+    var {tDuty, workers} = this.state;
+    var index = tDuty.split(' ').indexOf(duty.name);
+    // console.log(index);
+    if(index!=-1){
+      // tDuty.splice(index,1);
+      tDuty = tDuty.replace(' '+duty.name, '').replace(duty.name, '');
+    }else{
+      // tDuty.push(duty.name);
+      tDuty += (" "+duty.name);
+    }
+    this.setState({tDuty: tDuty});
+    console.log(this.state.tDuty);
+  }
+
   // 添加模板弹窗
   addTemplateModal = ()=>{
     var classes = '';
+
+    const { workers, tDuty,selectedDataCopy, ifAdd } = this.state;
+    const styleCon = {
+       height: '10rem',
+       overflowY : 'auto',
+       padding: '.5rem 0'
+    };
+    const styleChip = {
+      margin:'3px 5px'
+    };
+
     const DialogTitle = withStyles(theme => ({
       root: {
         borderBottom: `1px solid ${theme.palette.divider}`,
@@ -245,10 +287,10 @@ class EnhancedTableToolbar extends React.Component{
     return (<div>
         <Dialog
       aria-labelledby="customized-dialog-title"
-      open={this.state.open} style={{marginTop:'-10rem'}}
+      open={this.state.open} style={{marginTop:'-15rem'}}
     >
       <DialogTitle id="customized-dialog-title"  onClose={this.handleClose}>
-        添加模板
+        {ifAdd?'添加模板':'编辑模板'}
       </DialogTitle>
       <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem"}}>
           <Grid container >
@@ -289,7 +331,8 @@ class EnhancedTableToolbar extends React.Component{
             className={classes.textField}
             type="textarea"
             value = {this.state.tDuty}
-            onChange={(e)=>this.setState({tDuty:e.target.value})}
+            onChange={(e)=>{return false;this.setState({tDuty:e.target.value})}}
+            onClick={this.showDutyModal}
             margin="normal"
             InputLabelProps={{
               shrink: true,
@@ -306,6 +349,27 @@ class EnhancedTableToolbar extends React.Component{
 
         </form>
     </Dialog>
+          {/*人员选择模态框*/}
+          <Dialog
+          aria-labelledby="customized-dialog-title" id = "dutyModal"
+          open={this.state.dutyModal} style={{marginTop:'14rem', oveflow: "hidden"}} onClose = {()=>this.setState({dutyModal: false})}
+        >
+          <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem",width: '456px'}}>
+              <Grid container >
+
+              <Grid item xs={12} style={{paddingTop:'.5rem'}}>
+                <Grid item xs={12} style={{paddingTop: 0, boxShadow: ""}}>
+                  <div className="bold">待选择组长人员</div>
+                  <div className='plane waitingChoose' style = {styleCon}>
+                  {workers.map((worker,index)=><Chip key = {index} label={worker.name}  style = {styleChip} className={classes.chip} onClick={()=>this.selectToDuty(worker, index)}/>)}
+                  </div>
+                </Grid>
+              </Grid>
+
+              </Grid>
+
+            </form>
+        </Dialog>
     </div>)
   }
 
@@ -313,14 +377,19 @@ class EnhancedTableToolbar extends React.Component{
   render(){
     var classes = '';
     return (
+      <div>
         <Toolbar >
-          <div className={classes.title}>
               <Typography variant="h6" id="tableTitle" align="left">
                 模板管理
-              </Typography><span className="btn text-blue" style={{position:'absolute',right: '9rem',top:'2rem'}} onClick={()=>this.addTemplate(0)}>添加模板</span>
-          </div>
-          <div className={classes.spacer} />{this.addTemplateModal()}
+              </Typography>
         </Toolbar>
+          <Grid container>
+                <Grid xs = {12} item align="right">
+                  <span className="btn text-blue"  onClick={()=>this.addTemplate(0)} style={{margin: "0 12rem 2rem"}}>添加模板</span>
+                </Grid>
+              </Grid>
+          <div className={classes.spacer} />{this.addTemplateModal()}
+        </div>
       )
   }
 };

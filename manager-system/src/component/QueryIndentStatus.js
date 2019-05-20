@@ -384,7 +384,7 @@ class QueryIndentStatus extends React.Component {
                         {n.duty}
                       </TableCell>
                       <TableCell component="th" scope="row" padding="none" className = {n.status?'text-blue':''}>
-                        {(n.status0)?'已完成':'未完成'}
+                        {(n.status)?'完成':'进行中'}
                       </TableCell>
                       <TableCell align="left">
                         <span className="pointer btn text-blue">修改</span>

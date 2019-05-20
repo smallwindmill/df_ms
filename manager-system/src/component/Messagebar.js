@@ -151,7 +151,7 @@ class MessageBar extends React.Component{
         </DialogTitle>
         <DialogContent style={{height: "140px",overflowY:"auto"}}>
           <ul style={{paddingRight:"2rem"}}>{this.state.mailMessage.map((mail, index)=>(
-            <li className="mail-message" key={'mailLi'+index}><span>{index+1}. </span>{mail.content+'这是一条特地加长的长长的测试消息'}<small>{new Date().format('yyyy-MM-dd')}</small><span className="text-red pointer" style={{marginLeft:'.5rem'}} onClick={()=>{this.markMessage(index)}}>已读 </span></li>))}</ul>
+            <li style={{padding:".2rem 0"}} className="mail-message" key={'mailLi'+index}><span>{index+1}. </span>{mail.content+'这是一条特地加长的长长的测试消息'}<small>{new Date().format('yyyy-MM-dd')}</small><span className="text-red pointer" style={{marginLeft:'.5rem'}} onClick={()=>{this.markMessage(index)}}>已读 </span></li>))}</ul>
            { this.state.mailMessage.length==0?<ul><li className="mail-message text-blue">暂无消息</li></ul>:false}
         </DialogContent>
         <DialogActions>

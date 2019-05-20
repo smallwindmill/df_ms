@@ -243,7 +243,7 @@ class EnhancedTableToolbar extends React.Component{
               // nextFunction();
           }
 
-          this.tips(<span>本次共上传<span class="text-blue">{data.results.total}</span>条数据，<span class="text-red">{data.results.success}</span>条失败，<span class="text-blue">{data.results.fail}</span>条成功</span>, 'stay');
+          this.tips(<span>本次共上传<span class="text-blue">{data.results.total}</span>条数据，<span class="text-red">{data.results.fail}</span>条失败，<span class="text-blue">{data.results.success}</span>条成功</span>, 'stay');
           this.setState({ open: false });
 
        }).catch(error=>{
@@ -682,7 +682,7 @@ class HandleIndent extends React.Component {
                       <TableCell align="left">{n.templateID}</TableCell>
                       <TableCell align="left">
                         <span className="pointer btn text-blue"   onClick={()=>this.updateIndent(n, index)}>修改</span>
-                        {n.status?'':<span className="pointer btn text-blue"   onClick={()=>this.finishIndent(n, index)}>设为完成</span>}
+                        {n.status?'已完成':<span className="pointer btn text-blue"   onClick={()=>this.finishIndent(n, index)}>设为完成</span>}
                         {/*<span className="pointer btn text-red" onClick={this.deleteUser}>删除</span>*/}
                       </TableCell>
                     </TableRow>

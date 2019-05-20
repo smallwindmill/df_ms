@@ -32,8 +32,6 @@ import Snackbar from '@material-ui/core/Snackbar';
 import Confirm from './Confirm';
 import config from './config';
 
-import { exportExcel } from 'xlsx-oc'
-
 
 let counter = 0;
 function createData( sId, mCode, mName, indentProcess, proceeDuty, dutySatus) {
@@ -276,28 +274,7 @@ class QueryIndent extends React.Component {
     this.setState({ page });
   };
 
-  dlExcel = () =>{
-      const dataSource = [{
-            key: '1',
-            cs: 'title',
-            sm: '列头显示文字',
-            lx: 'string',
-            mrz: '',
-        }, {
-            key: '2',
-            cs: 'mm',
-            sm: '啦啦啦啦',
-            lx: 'string',
-            mrz: '',
-        }];
 
-        const exportDefaultExcel = () => {
-            var _headers = [{ k: 'cs', v: '列名' }, { k: 'sm', v: '描述' },
-            { k: 'lx', v: '类型' }, { k: 'mrz', v: '默认值' },]
-            exportExcel(_headers, dataSource);
-        }
-        // exportDefaultExcel();
-  }
 
   changeIndentData = (data, type) =>{
     // 默认替换，1为push，2为修改
@@ -322,7 +299,6 @@ class QueryIndent extends React.Component {
   // 删除用户弹窗
   deleteUser=()=>{
     this.setState({deleteOpen: true});
-    this.dlExcel();
   }
 
   // 关闭删除用户弹窗

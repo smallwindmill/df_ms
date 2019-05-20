@@ -43,6 +43,7 @@ var config = {
 
     queryProcedureInfo: serverIP+'/queryProcedureInfo',
     queryDutyProcedureByStatus: serverIP+'/queryDutyProcedureByStatus',
+    queryDutyProcedureById:  serverIP+'/queryDutyProcedureById',
     addProcedureInfo: serverIP+'/addProcedureInfo',
     updateProcedureStatus: serverIP+'/updateProcedureStatus'
   },
