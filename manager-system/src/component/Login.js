@@ -58,11 +58,12 @@ class Login extends React.Component {
     super(props)
   }
 
+  componentWillMount = () =>{
+    // this.props.loading(true);
+  }
+
   componentWillUnmount = () =>{
-    this.tips = () =>{
-      return false;
-    }
-    this.tips('gggg')
+
   }
 
   state = {
@@ -75,16 +76,16 @@ class Login extends React.Component {
   loginClick = () => {
     var { name, password } = this.state;
     if(!name){
-      this.tips("请先填写用户工号");
+      this.props.tips("请先填写用户工号");
       return;
     }
 
     if(!password){
-      this.tips("请先填写用户密码");
+      this.props.tips("请先填写用户密码");
       return;
     }
 
-
+    this.props.loading(true);
     fetch(config.server.login,{method:"POST",
         headers:{
           'Content-Type': 'application/json',
@@ -93,33 +94,24 @@ class Login extends React.Component {
     }).then(res=>res.json()).then(data=>{
       console.log(data);
       if(data.code!=200){
-        this.tips(data.msg);
+        this.props.tips(data.msg);this.props.loading(false);
         return;
       }
-      this.tips("登陆成功");
-      localStorage.user = config.changeToStr({userID: data.results.userID, pwd: data.results.pwd});
 
+      delete data.results['power'];
+      delete data.results['messages'];
+
+      localStorage.user = config.changeToStr(data.results);//不自动更新本地数据，避免修改信息后仍能正常访问
       setTimeout(()=>{
-        this.props.changeLoginData({name: data.results.userName,  messages: data.results.messages});
+        this.props.changeLoginData(data.results);this.props.loading(false);
+        this.props.tips("登陆成功");
       }, 1000);
-      window.ReactHistory.push('/user');
-    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+      window.ReactHistory.push('/user/queryUser');
+    }).catch(e=>{this.props.loading(false);this.props.tips('网络出错了，请稍候再试')});
 
 
 
   }
-
-  tips = (msg) => {
-    if(msg){
-      this.setState({tipInfo:msg});
-    }
-    this.setState({tipsOpen: true});
-
-    setTimeout(()=>{
-      this.setState({tipsOpen: false});
-    },2000);
-  }
-
 
   render() {
     const { classes } = this.props;
@@ -156,14 +148,6 @@ class Login extends React.Component {
         </Grid>
       </form>
 
-      <Snackbar style={{marginTop:'70px'}}
-          anchorOrigin={{horizontal:"center",vertical:"top"}}
-          open={tipsOpen}
-          ContentProps={{
-            'className':'info'
-          }}
-          message={<span id="message-id" >{this.state.tipInfo?this.state.tipInfo:''}</span>}
-      />
     </div>
     );
   }

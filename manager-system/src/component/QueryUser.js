@@ -150,7 +150,6 @@ class EnhancedTableToolbar extends React.Component{
 
   // 添加用户/更新用户时的判断
   addUserSure = () =>{
-    console.log(this.state.serverURL);
 
     var {selectUserType, userID, userName, pwd, ifAdd} = this.state;
     if(!userID){
@@ -181,24 +180,17 @@ class EnhancedTableToolbar extends React.Component{
       }else{
         // 更新数据
         if(this.state.selectedData){
-          this.state.selectedData.userName = data.results.userName;
-          this.state.selectedData.userID = data.results.userID;
-          this.state.selectedData.type = data.results.type;
-          this.state.selectedData.pwd = data.results.pwd;
+          this.state.selectedData.userName = userName;
+          this.state.selectedData.userID = userID;
+          this.state.selectedData.type = selectUserType;
+          this.state.selectedData.pwd = pwd;
         }
         this.props.changeUserData('', 2);
       }
       this.setState({open: false});
 
-    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
 
-      if(this.state.selectedData){
-        this.state.selectedData.userName = userName;
-        this.state.selectedData.userID = userID;
-        this.state.selectedData.type = selectUserType;
-        this.state.selectedData.pwd = pwd;
-      }
-      this.props.changeUserData('', 2);   //修改
   }
 
 
@@ -353,7 +345,7 @@ class EnhancedTableToolbar extends React.Component{
             <Grid item xs={12}>
             <span className="btn text-blue" onClick={()=>this.addUser(0)} style={{margin:'0rem 0 4rem',padding: '0 1.2rem'}}>添加用户</span>
               <TextField style={{marginTop:0,marginLeft:'1rem'}}
-              placeholder="请输入查询信息"
+              placeholder="请输入用户名称查询"
               className={classes.textField}
               type="text"
               onChange = {(e)=>this.queryByKeyword(e)}
@@ -527,8 +519,8 @@ class QueryUser extends React.Component {
                       <TableCell component="th" scope="row" padding="none">
                         {n.userName}
                       </TableCell>
-                      <TableCell component="th" scope="row" padding="" onMouseEnter = {(e)=>{e.target.innerHTML=n.pwd || '无' }}  onMouseOut = {(e)=>{e.target.innerHTML="******";}}>
-                        *******
+                      <TableCell component="th" scope="row" padding="none" onMouseEnter = {(e)=>{if(n.type!=4)(e.target.innerHTML=n.pwd || '无') }}  onMouseOut = {(e)=>{if(n.type!=4) (e.target.innerHTML="******") }}>
+                        {n.type!=4?'*******':'无'}
                       </TableCell>
                       <TableCell component="th" className = {n.type!=4?'text-blue':''} scope="row" padding="none">
                         {n.type==4?'生产员工':(n.type==3?'组长':n.type==2?'领班':n.type==1?'主管':'')}

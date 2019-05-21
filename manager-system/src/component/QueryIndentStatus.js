@@ -145,7 +145,8 @@ class EnhancedTableToolbar extends React.Component{
           {value:1, text:'已完成'},
           {value:2, text:'进行中'},
         ],
-    dateRange:[{text: "最近一周"},{text: "最近一月"},{text: "最近三月"},{text: "最近一年"},{text: "一年以前"}]
+    dateRange:[{text: "最近一周"},{text: "最近一月"},{text: "最近三月"},{text: "最近一年"},{text: "一年以前"}],
+    typeQuery:[{text: "全部",code: 0},{text: "加急",code: 1},{text: "新品",code: 2},{text: "外协",code: 3}]
   }
 
   handleClose = () => {
@@ -205,7 +206,7 @@ class EnhancedTableToolbar extends React.Component{
 
   render(){
     var classes = '';
-    var {dateRange} = this.state;
+    var {dateRange, typeQuery} = this.state;
     return (
        <div className={classes.title}>
             <Toolbar >
@@ -217,6 +218,10 @@ class EnhancedTableToolbar extends React.Component{
           <Grid item xs={12} className="small">
                 <span className="blod">时间</span>
                 {dateRange.map((date,index)=>(<span key = {index} className="btn" onClick={(e)=>this.queryIndentStatusByDate(e, date, index)}> {date.text}</span>))}
+            </Grid>
+            <Grid item xs={12} className="small" style = {{margin: '1rem 0'}}>
+                <span className="blod">类型</span>
+                {typeQuery.map((date,index)=>(<span key = {index} className="btn" onClick={(e)=>this.queryIndentByDate(e, date, index)}> {date.text}</span>))}
             </Grid></Grid>
         </div>
       )

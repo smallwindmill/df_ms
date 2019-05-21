@@ -38,7 +38,8 @@ const styles = theme => ({
 class Menu extends React.Component{
     constructor(props){
       super(props);
-      this.menus = [
+
+      let menus = [
         {
           name: "用户管理",
           route: "user",
@@ -59,7 +60,7 @@ class Menu extends React.Component{
             }] */
         },{
             name: "订单管理",
-            route: 'handleIndent/addIndent',
+            route: 'handleIndent',
             children:[{
                 name: "上传文件来添加订单",
                 route: 'handleIndent/addIndent',
@@ -78,7 +79,7 @@ class Menu extends React.Component{
             }*/]
         },{
             name: "工时管理",
-            route: 'workTime/queryFactor',
+            route: 'workTime',
             children:[/*{
                 name: "添加员工"
             },{
@@ -98,7 +99,7 @@ class Menu extends React.Component{
             }*/]
         },{
             name: "生产订单管理",
-            route: 'produceIndent/queryProduceIndent',
+            route: 'produceIndent',
             children:[{
                 name: "生产订单查询"/*"根据订单号查询订单"*/,
                 route: 'produceIndent/queryProduceIndent'
@@ -133,40 +134,61 @@ class Menu extends React.Component{
       ];
 
       this.state = {
-        open0: true,
+        open: true,
+        open0: false,
         open1: false,
         open2: false,
         open3: false,
         open4: false,
         open5: false,
-        open6: false
+        open6: false,
+        menus: menus
       };
 
 
     }
 
-    componentDidMount() {
-
+    componentWillMount() {
+      // console.log(this.props);
+      this.changeMenuConfig();
     }
 
     componentWillUnmount(){
         // clearInterval(this.timerID);
     }
 
+    changeMenuConfig = () =>{
+      var menuConfig = this.props.menuConfig;
+      if(!menuConfig) return false;
+      // 匹配用户权限及功能模块展示
+      this.state.menus[0].power = menuConfig.login;
+      this.state.menus[1].power = menuConfig.templete;
+      this.state.menus[4].power = menuConfig.listIndent;
+      this.state.menus[2].power = menuConfig.handleIndent;
+      this.state.menus[3].power = menuConfig.handleWorkhour;
+      this.state.menus[5].power = menuConfig.showPage;
+      this.state.menus[6].power = menuConfig.captain;
+
+      this.setState({menus: this.state.menus});
+    }
+
+    // 模块栏
     managerMenuData(datas) {
       var that = this;
+      var path = window.ReactHistory?window.ReactHistory.location.pathname:'';
       return datas.map((data, index) =>(
-        <div key={index}>
-           <ListItem button onClick={this.handleClick.bind(this, data.children?'open'+index:'')}>
-                <Link to ={"/"+(data.route?data.route:'/')}>{data.name}</Link>
-               {data.children ?(that.state["open"+index] ? <ExpandLess /> : <ExpandMore />):""}
-           </ListItem>
-           {data.children?(<Collapse in={this.state["open"+index]} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding className="secondaryList">
-               {that.managerMenuData(data.children)}
-              </List>
-           </Collapse>):''}
-        </div>))
+        (data.power==0)?'':(<div key={index}>
+                           <ListItem button className={new RegExp(data.route+'$').test(path)?'bg-secondary':''} onClick={this.handleClick.bind(this, data.children?'open'+index:'')}>
+                                <Link to ={"/"+(data.route?data.route:'/')}>{data.name}</Link>
+                               {data.children ?(that.state["open"+index] || new RegExp(data.route).test(path) ? <ExpandLess /> : <ExpandMore />):""}
+                           </ListItem>
+                              {data.children?(<Collapse in={this.state["open"+index] || new RegExp(data.route).test(path)} timeout="auto" unmountOnExit>
+                              <List component="div" disablePadding className="secondaryList">
+                               {that.managerMenuData(data.children)}
+                              </List>
+                           </Collapse>):''}
+                        </div>)
+        ))
     }
 
 
@@ -174,6 +196,14 @@ class Menu extends React.Component{
     handleClick(stateC, e){
       var that = this;
       e.preventDefault();
+      // 选中样式切换
+      /*var i_class = document.getElementsByClassName('bg-secondary')[0]?document.getElementsByClassName('bg-secondary')[0].className:false;
+
+      if(i_class){
+        document.getElementsByClassName('bg-secondary')[0].className = i_class.replace('bg-secondary', '');
+      }
+      e.target.parentNode.className += ' bg-secondary';*/
+
       switch(stateC) {
           case "open0":that.setState(state => ({ open0: !state.open0 }))
             break;
@@ -190,11 +220,14 @@ class Menu extends React.Component{
           case "open6":that.setState(state => ({ open6: !state.open6 }))
             break;
           default:let kk='';
-          }
+      }
     }
 
     render() {
-        return  this.managerMenuData(this.menus);
+      console.log(this.props);
+
+      var { menus } = this.state;
+      return  this.managerMenuData(menus);
     }
 }
 

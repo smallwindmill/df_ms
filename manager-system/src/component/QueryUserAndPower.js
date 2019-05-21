@@ -73,6 +73,7 @@ const rows = [
   { id: 'carbs', numeric: true, disablePadding: false, label: '操作订单和订单状态' },
   { id: 'protein', numeric: true, disablePadding: false, label: '操作订单工时费' },
   { id: 'protein2', numeric: true, disablePadding: false, label: '查询所有订单' },
+  { id: 'protein2', numeric: true, disablePadding: false, label: '查看生产面板' },
   { id: 'protein3', numeric: true, disablePadding: false, label: '组长功能' },
   { id: 'protein4', numeric: true, disablePadding: false, label: '操作' },
 ];
@@ -83,15 +84,15 @@ class EnhancedTableHead extends React.Component {
   };
 
   render() {
-    const { onSelectAllClick, order, orderBy, rowCount } = this.props;
+    const { order, orderBy, rowCount } = this.props;
 
     return (
       <TableHead>
         <TableRow>
           {rows.map(
-            row => (
+            (row, index) => (
               <TableCell
-                key={row.userID}
+                key={index}
                 align={row.numeric ? 'right' : 'left'}
                 padding={row.disablePadding ? 'none' : 'default'}
               >
@@ -108,7 +109,6 @@ class EnhancedTableHead extends React.Component {
 
 EnhancedTableHead.propTypes = {
   onRequestSort: PropTypes.func.isRequired,
-  onSelectAllClick: PropTypes.func.isRequired,
   order: PropTypes.string.isRequired,
   orderBy: PropTypes.string.isRequired,
   rowCount: PropTypes.number.isRequired,
@@ -165,7 +165,7 @@ class EnhancedTableToolbar extends React.Component{
           <Grid container spacing={24} align="right" style={{margin:'-1rem 0 1rem',padding: '0 1.2rem'}}>
           <Grid item xs={12}>
               <TextField style={{marginTop:0}}
-              placeholder="请输入查询信息"
+              placeholder="请输入用户名称查询"
               type="text" autoComplete={false}
               autoComplete="current-password"
               margin="normal"
@@ -230,27 +230,6 @@ class QueryUserAndPower extends React.Component {
   };
 
 
-  handleClick = (event, id) => {
-    return;
-    const { selected } = this.state;
-    const selectedIndex = selected.indexOf(id);
-    let newSelected = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
-      );
-    }
-
-    this.setState({ selected: newSelected });
-  };
 
   handleChangePage = (event, page) => {
     this.setState({ page });
@@ -262,9 +241,10 @@ class QueryUserAndPower extends React.Component {
 
   changeUserData = (data, type) =>{
     // 默认替换
-    console.log(data)
+    // console.log(data)
     if(type){
-      this.setState({data: this.state.data});
+      console.log(this.state.data);
+      this.setState({data: this.state.data});console.log(this.state.data);
     }else{
       this.setState({data: data});
     }
@@ -278,25 +258,36 @@ class QueryUserAndPower extends React.Component {
 
   // 更新用户权限信息弹窗
   updateUserPower = (data, index) =>{
-    this.setState({login: data.login||0,indent: data.handleIndent||0,workhour: data.handleWorkhour||0,allindent: data.listIndent||0,captain: data.captain||0});
-    this.setState({open: true,selectedData: data});
+    this.setState({login: data.login||0,indent: data.handleIndent||0,workhour: data.handleWorkhour||0,listIndent: data.listIndent||0,showpage: data.showpage||0,captain: data.captain||0});
+    this.setState({open: true,selectedDataBak: data, selectedData: JSON.parse(JSON.stringify(data))});
   }
 
   // 更新用户权限
   setUserPowerSure=()=>{
-    var { selectedData, login, indent, workhour, allindent, captain } = this.state;
-    console.log(selectedData, login, indent, workhour, allindent, captain);
+    var { selectedData, selectedDataBak } = this.state;
+    var { login, handleIndent, handleWorkhour, listIndent, showpage, captain } = this.state.selectedData;
+    // console.log(selectedData, );
 
     fetch(config.server.setUserPower,{method:"POST",
       headers:{
         'Content-Type': 'application/json',
       },
-      body:JSON.stringify({userID: selectedData.userID, login: login,handleIndent: indent,handleWorkhour: workhour,listIndent: allindent,captain: captain})
+      body:JSON.stringify({userID: selectedData.userID, login: login,handleIndent: handleIndent,handleWorkhour: handleWorkhour,listIndent: listIndent,showpage: showpage, captain: captain})
     }).then(res=>res.json()).then(data=>{
       console.log(data);
+      if(data.code != 200){
+        this.tips('权限更新失败');
+        return;
+      }
       // 新增数据
+      this.setState({open: false});
+      for(var i in selectedDataBak){
+        selectedDataBak[i] = selectedData[i];
+      }
       this.changeUserData('', 2);
-    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+      this.tips('权限更新成功');
+      // this.props.judgeUser();
+    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
   }
 
 
@@ -341,20 +332,21 @@ class QueryUserAndPower extends React.Component {
       );
     });
 
-    var {login, indent, workhour,allindent,captain } = this.state;
+    var { selectedData } = this.state;
+    var {login, handleIndent, handleWorkhour,listIndent,showpage, captain } = selectedData;
 
     return (<Dialog
       aria-labelledby="customized-dialog-title"
       open={this.state.open} style={{marginTop:'-10rem'}}
     >
       <DialogTitle id="customized-dialog-title2"  onClose={this.handleClose}>
-        用户权限配置{selectedData.userName ?('  '+selectedData.userName):false}
+        用户权限配置<small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{selectedData.userName ?(''+selectedData.userName):false}</small>
       </DialogTitle>
       <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem"}}>
         <Grid container spacing={24}>
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">登录权限</FormLabel>
-            <RadioGroup aria-label="登录权限" style={{flexDirection:"row"}} name="login" value={(login || 0)+'' } onChange={(e)=>{e.persist();this.setState({login: e.target.value=='0'?0:1})}}          >
+            <RadioGroup aria-label="登录权限" style={{flexDirection:"row"}} name="login" value={(login || 0)+'' } onChange={(e)=>{e.persist();selectedData.login= e.target.value=='0'?0:1;this.setState({selectedData: selectedData})}}          >
                <FormControlLabel value="0" control={<Radio color="default" />} label="关闭" />
                <FormControlLabel value="1" control={<Radio color="default" />} label="打开" />
             </RadioGroup>
@@ -362,7 +354,7 @@ class QueryUserAndPower extends React.Component {
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">操作订单和订单状态</FormLabel>
-            <RadioGroup aria-label="Gender" style={{flexDirection:"row"}} name="login" value={(indent || 0)+'' } onChange={(e)=>{e.persist();this.setState({indent: e.target.value=='0'?0:1})}}          >
+            <RadioGroup aria-label="Gender" style={{flexDirection:"row"}} name="login" value={(handleIndent || 0)+'' } onChange={(e)=>{e.persist();selectedData.handleIndent= e.target.value=='0'?0:1;this.setState({selectedData: selectedData})}}          >
                <FormControlLabel value="0" control={<Radio color="default" />} label="关闭" />
                <FormControlLabel value="1" control={<Radio color="default" />} label="打开" />
             </RadioGroup>
@@ -370,7 +362,7 @@ class QueryUserAndPower extends React.Component {
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">操作订单工时费</FormLabel>
-            <RadioGroup aria-label="Gender" style={{flexDirection:"row"}} name="login" value={(workhour || 0)+'' } onChange={(e)=>{e.persist();this.setState({workhour: e.target.value=='0'?0:1})}}          >
+            <RadioGroup aria-label="Gender" style={{flexDirection:"row"}} name="login" value={(handleWorkhour || 0)+'' } onChange={(e)=>{e.persist();selectedData.handleWorkhour = e.target.value=='0'?0:1;this.setState({selectedData: selectedData})}}          >
                <FormControlLabel value="0" control={<Radio color="default" />} label="关闭" />
                <FormControlLabel value="1" control={<Radio color="default" />} label="打开" />
             </RadioGroup>
@@ -378,7 +370,16 @@ class QueryUserAndPower extends React.Component {
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">查询所有订单</FormLabel>
-            <RadioGroup aria-label="Gender" name="login" style={{flexDirection:"row"}} value={(allindent || 0)+'' } onChange={(e)=>{e.persist();this.setState({allindent: e.target.value=='0'?0:1})}}
+            <RadioGroup aria-label="Gender" name="login" style={{flexDirection:"row"}} value={(listIndent || 0)+'' } onChange={(e)=>{e.persist();selectedData.listIndent = e.target.value=='0'?0:1;this.setState({selectedData: selectedData})}}
+          >
+               <FormControlLabel value="0" control={<Radio color="default" />} label="关闭" />
+               <FormControlLabel value="1" control={<Radio color="default" />} label="打开" />
+            </RadioGroup>
+          </Grid>
+
+          <Grid item xs={6} style={{paddingTop:0}}>
+            <FormLabel component="legend">生产面板查看</FormLabel>
+            <RadioGroup aria-label="Gender" name="login" style={{flexDirection:"row"}} value={(showpage || 0)+'' } onChange={(e)=>{e.persist();selectedData.showpage= e.target.value=='0'?0:1;this.setState({selectedData: selectedData})}}
           >
                <FormControlLabel value="0" control={<Radio color="default" />} label="关闭" />
                <FormControlLabel value="1" control={<Radio color="default" />} label="打开" />
@@ -387,7 +388,7 @@ class QueryUserAndPower extends React.Component {
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">组长功能</FormLabel>
-            <RadioGroup aria-label="Gender" name="login" style={{flexDirection:"row"}} value={(captain || 0)+'' } onChange={(e)=>{e.persist();this.setState({captain: e.target.value=='0'?0:1})}}
+            <RadioGroup aria-label="Gender" name="login" style={{flexDirection:"row"}} value={(captain || 0)+'' } onChange={(e)=>{e.persist();selectedData.captain= e.target.value=='0'?0:1;this.setState({selectedData: selectedData})}}
           >
                <FormControlLabel value="0" control={<Radio color="default" />} label="关闭" />
                <FormControlLabel value="1" control={<Radio color="default" />} label="打开" />
@@ -418,7 +419,6 @@ class QueryUserAndPower extends React.Component {
             <EnhancedTableHead
               order={order}
               orderBy={orderBy}
-              onSelectAllClick={this.handleSelectAllClick}
               onRequestSort={this.handleRequestSort}
               rowCount={data.length}
             />
@@ -430,7 +430,6 @@ class QueryUserAndPower extends React.Component {
                   return (
                     <TableRow
                       hover
-                      onClick={event => this.handleClick(event, n.userID)}
                       role="checkbox"
                       aria-checked={isSelected}
                       tabIndex={-1}
@@ -444,11 +443,12 @@ class QueryUserAndPower extends React.Component {
                         {n.userID}
                       </TableCell>
                       <TableCell align="right">{n.userName}</TableCell>
-                      <TableCell align="right" className = {n.login?'text-blue':false}>{n.login?'有':'无'}</TableCell>
-                      <TableCell align="right" className = {n.handleIndent?'text-blue':false}>{n.handleIndent?'有':'无'}</TableCell>
-                      <TableCell align="right" className = {n.handleWorkhour?'text-blue':false}>{n.handleWorkhour?'有':'无'}</TableCell>
-                      <TableCell align="right" className = {n.listIndent?'text-blue':false}>{n.listIndent?'有':'无'}</TableCell>
-                      <TableCell align="right" className = {n.captain?'text-blue':false}>{n.captain?'有':'无'}</TableCell>
+                      <TableCell align="right" className = {n.login?'text-blue':''}>{n.login?'有':'无'}</TableCell>
+                      <TableCell align="right" className = {n.handleIndent?'text-blue':''}>{n.handleIndent?'有':'无'}</TableCell>
+                      <TableCell align="right" className = {n.handleWorkhour?'text-blue':''}>{n.handleWorkhour?'有':'无'}</TableCell>
+                      <TableCell align="right" className = {n.listIndent?'text-blue':''}>{n.listIndent?'有':'无'}</TableCell>
+                      <TableCell align="right" className = {n.showpage?'text-blue':''}>{n.showpage?'有':'无'}</TableCell>
+                      <TableCell align="right" className = {n.captain?'text-blue':''}>{n.captain?'有':'无'}</TableCell>
                       <TableCell align="right">
                       <span className={'pointer text-blue '+classes.button}  onClick={()=>this.updateUserPower(n, index)}>修改</span>
                       </TableCell>

@@ -162,7 +162,8 @@ class EnhancedTableToolbar extends React.Component{
 
   state = {
     open: false,
-    dateRange:[{text: "最近一周"},{text: "最近一月"},{text: "最近三月"},{text: "最近一年"},{text: "一年以前"}]
+    dateRange:[{text: "最近一周"},{text: "最近一月"},{text: "最近三月"},{text: "最近一年"},{text: "一年以前"}],
+    typeQuery:[{text: "全部",code: 0},{text: "加急",code: 1},{text: "新品",code: 2},{text: "外协",code: 3}]
   }
 
   handleClose = () => {
@@ -330,7 +331,7 @@ class EnhancedTableToolbar extends React.Component{
 
   render(){
     var classes = '';
-    var {dateRange} = this.state;
+    var {dateRange, typeQuery} = this.state;
     return (
      <div>
         <Toolbar >
@@ -345,6 +346,10 @@ class EnhancedTableToolbar extends React.Component{
           <Grid item xs={12} className="small">
                 <span className="blod">时间</span>
                 {dateRange.map((date,index)=>(<span key = {index} className="btn" onClick={(e)=>this.queryIndentByDate(e, date, index)}> {date.text}</span>))}
+            </Grid>
+            <Grid item xs={12} className="small" style = {{margin: '1rem 0'}}>
+                <span className="blod">类型</span>
+                {typeQuery.map((date,index)=>(<span key = {index} className="btn" onClick={(e)=>this.queryIndentByDate(e, date, index)}> {date.text}</span>))}
             </Grid></Grid>
         </div>
       )
@@ -381,7 +386,6 @@ class HandleIndent extends React.Component {
     confirmOpen: false,
     title: "确认",
     selectedData: {},
-    selectedDataCopy: {},
     content: "确定删除该订单吗？"
   };
 
@@ -433,30 +437,29 @@ class HandleIndent extends React.Component {
   // 打开更新订单弹窗
   updateIndent = (data, index) =>{
     this.setState({login: data.login||0,indent: data.indent||0,workhour: data.workhour||0,allindent: data.allindent||0,captain: data.captain||0});
-    this.setState({open: true,selectedData: data, selectedDataCopy: JSON.parse(JSON.stringify(data)) });
+    this.setState({open: true, selectedDataBak: data, selectedData: JSON.parse(JSON.stringify(data)) });
   }
 
   // 更新订单
   setIndentSure=()=>{
-    var { selectedData,selectedDataCopy } = this.state;
-    var { id,planNum,planFinishDate,planOnline,actualFinish,priority,ifNew,ifOutsource,duty,status,remark } = this.state.selectedDataCopy;
-
-    console.log(id,planNum,planFinishDate,planOnline,actualFinish,priority,ifNew,ifOutsource,duty,status,remark);
+    var { selectedDataBak, selectedData } = this.state;
+    var { id,planNum,planFinishDate,planOnline,actualStart, actualFinish,priority,ifNew,ifOutsource,duty,status,remark } = this.state.selectedData;
 
     fetch(config.server.updateIndentInfo,{method:"POST",
       headers:{
           'Content-Type': 'application/json',
       },
-      body:JSON.stringify({id: id, planNum: planNum,planFinishDate: planFinishDate,planOnline: planOnline,actualFinish: actualFinish,priority: priority,ifNew: ifNew,ifOutsource: ifOutsource,duty: duty,status: status,remark: remark})
+      body:JSON.stringify({id: id, planNum: planNum,planFinishDate: planFinishDate,planOnline: planOnline,actualStart: actualStart,actualFinish: actualFinish,priority: priority,ifNew: ifNew,ifOutsource: ifOutsource,duty: duty,status: status,remark: remark})
     }).then(res=>res.json()).then(data=>{
       // console.log(data);
       if(data.code!=200){
           this.tips(data.msg);return;
       }
       this.tips('订单信息更新成功');
-      console.log(selectedData);
-      selectedData = selectedDataCopy;
-      // 新增数据
+
+      for(var i in selectedDataBak){
+        selectedDataBak[i] = selectedData[i];
+      }
       this.changeIndentData('', 2);
       this.setState({open: false});
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
@@ -468,7 +471,6 @@ class HandleIndent extends React.Component {
       this.state.data.push(data);
       this.setState({data: this.state.data});
     }else if(type==2){
-      console.log(this.state.data);
       this.setState({data: this.state.data});
       // this.state.data[this.state.editNum] = data;
     }else{
@@ -541,9 +543,9 @@ class HandleIndent extends React.Component {
       );
     });
 
-    var { selectedDataCopy } = this.state;
+    var { selectedData } = this.state;
 
-    var { name, planNum, planFinishDate, planOnline, actualFinish, status, priority, ifNew, remark, feedback} = this.state.selectedDataCopy;
+    var { name, planNum, planFinishDate, planOnline, actualStart, actualFinish, status, priority, ifNew, remark, feedback} = this.state.selectedData;
 
     return (<Dialog
       aria-labelledby="customized-dialog-title"
@@ -555,13 +557,13 @@ class HandleIndent extends React.Component {
       <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem"}}>
         <Grid container spacing={24}>
 
-          <Grid item xs={6} style={{paddingTop:0}}>
+          <Grid item xs={12} style={{paddingTop:0}}>
             <FormLabel component="legend">计划生产数量</FormLabel>
             <TextField fullWidth style={{marginTop:0}}
               placeholder="请输入计划生产数量"
               className={classes.textField}
               value = {planNum}
-              onChange={(e)=>{selectedDataCopy.planNum=e.target.value;this.setState({selectedDataCopy: selectedDataCopy})}}
+              onChange={(e)=>{selectedData.planNum=e.target.value;this.setState({selectedData: selectedData})}}
               margin="normal"
               InputLabelProps={{
                 shrink: true,
@@ -570,31 +572,36 @@ class HandleIndent extends React.Component {
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
-            <FormLabel component="legend">计划完成时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ planFinishDate?new Date(planFinishDate):new Date() } onChange={(date)=>{selectedDataCopy.planFinishDate = date.format('yyyy-MM-dd');this.setState({ selectedDataCopy: selectedDataCopy })} } style={{marginbottom:'2rem'}} />
+            <FormLabel component="legend">计划上线时间</FormLabel>
+            <DateFormatInput  className="inline-block" name='date-input' value={ planOnline?new Date(planOnline):new Date() } onChange={(date)=>{selectedData.planOnline = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
-            <FormLabel component="legend">计划上线时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ planOnline?new Date(planOnline):new Date() } onChange={(date)=>{selectedDataCopy.planOnline = date.format('yyyy-MM-dd');this.setState({ selectedDataCopy: selectedDataCopy })} } style={{marginbottom:'2rem'}} />
+            <FormLabel component="legend">计划完成时间</FormLabel>
+            <DateFormatInput  className="inline-block" name='date-input' value={ planFinishDate?new Date(planFinishDate):new Date() } onChange={(date)=>{selectedData.planFinishDate = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+          </Grid>
+
+          <Grid item xs={6} style={{paddingTop:0}}>
+            <FormLabel component="legend">实际开始时间</FormLabel>
+            <DateFormatInput  className="inline-block" name='date-input' value={ actualStart?new Date(actualStart):new Date() } onChange={(date)=>{selectedData.actualStart = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">实际完成时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ actualFinish?new Date(actualFinish):new Date() } onChange={(date)=>{selectedDataCopy.actualFinish = date.format('yyyy-MM-dd');this.setState({ selectedDataCopy: selectedDataCopy })} } style={{marginbottom:'2rem'}} />
+            <DateFormatInput  className="inline-block" name='date-input' value={ actualFinish?new Date(actualFinish):new Date() } onChange={(date)=>{selectedData.actualFinish = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
-            <FormLabel component="legend">是否新品</FormLabel>
-            <RadioGroup aria-label="是否新品" style={{flexDirection:"row"}} name="priority" value={(priority || 0)+''} onChange={(e)=>{e.persist();selectedDataCopy.priority=(e.target.value=='0'?0:1);this.setState({selectedDataCopy:selectedDataCopy})}}          >
+            <FormLabel component="legend">是否加急</FormLabel>
+            <RadioGroup aria-label="是否加急" style={{flexDirection:"row"}} name="priority" value={(priority || 0)+''} onChange={(e)=>{e.persist();selectedData.priority=(e.target.value=='0'?0:1);this.setState({selectedData:selectedData})}}          >
                <FormControlLabel value="0" control={<Radio color="default" />} label="否" />
                <FormControlLabel value="1" control={<Radio color="default" />} label="是" />
             </RadioGroup>
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
-              <FormLabel component="legend">是否加急</FormLabel>
-              <RadioGroup aria-label="是否加急" style={{flexDirection:"row"}} name="ifNew" value={(ifNew|| 0)+'' } onChange={(e)=>{e.persist();selectedDataCopy.ifNew=(e.target.value=='0'?0:1);this.setState({selectedDataCopy:selectedDataCopy})}}          >
+              <FormLabel component="legend">是否新品</FormLabel>
+              <RadioGroup aria-label="是否新品" style={{flexDirection:"row"}} name="ifNew" value={(ifNew|| 0)+'' } onChange={(e)=>{e.persist();selectedData.ifNew=(e.target.value=='0'?0:1);this.setState({selectedData:selectedData})}}          >
                  <FormControlLabel value="0" control={<Radio color="default" />} label="否" />
                  <FormControlLabel value="1" control={<Radio color="default" />} label="是" />
               </RadioGroup>

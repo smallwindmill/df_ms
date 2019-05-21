@@ -37,6 +37,8 @@ import Snackbar from '@material-ui/core/Snackbar';
 
 import config from './config';
 
+import CircularProgress from '@material-ui/core/CircularProgress';
+
 var AddIndent = HandleIndent;
 
 
@@ -44,45 +46,62 @@ class ContentContainer extends React.Component{
     constructor(props){
         super(props);
         this.state = {
-          user:{}
+          user:{},
+          loading: true
         }
     }
 
     componentWillMount() {
-        var userID = config.changeToJson(localStorage.user).userID;
-        var pwd = config.changeToJson(localStorage.user).pwd;
+      this.judgeUser();
+    }
 
-        if(!userID){
-          this.props.history.push('/login');
-        }else{
-          // this.props.history.push('/user');
-          fetch(config.server.login,{method:"POST",
-              headers:{
-                'Content-Type': 'application/json',
-              },
-              body:JSON.stringify({userID: userID, pwd: pwd})
-          }).then(res=>res.json()).then(data=>{
-            if(data.code!=200){
-              this.tips(data.msg);
-              return;
-            }
-            this.tips("登陆成功");
-            setTimeout(()=>{
-              this.changeLoginData({name: data.results.userName,  messages: data.results.messages});
-            }, 1000);
-          }).catch(e=>this.tips('网络出错了，请稍候再试'));
+    // 自动登录
+    judgeUser = () => {
+      var userID = config.changeToJson(localStorage.user || '{}').userID;
+      var pwd = config.changeToJson(localStorage.user || '{}').pass;
 
-        }
-        // this.setState({user:{name: localStorage.userName,  messageLength: localStorage.messageLength }})
+      if(!userID || !pwd){
+        this.tips('身份信息过期，请重新登录', 5000);
+        this.props.history.push('/login');this.loading(false);
+      }else{
+        pwd = pwd.replace(/2a3/g, 1).replace(/\*%/,'' ).replace(/\%&/,'' );
+        fetch(config.server.login,{method:"POST",
+            headers:{
+              'Content-Type': 'application/json',
+            },
+            body:JSON.stringify({userID: userID, pwd: pwd})
+        }).then(res=>res.json()).then(data=>{
+          if(data.code!=200){
+            this.tips(data.msg);
+            return;
+          }
+          // this.tips("登陆成功");
+          setTimeout(()=>{
+            // localStorage.user = config.changeToStr(data.results);//不自动更新本地数据，避免修改信息后仍能正常访问
+            this.changeLoginData(data.results);
+            this.loading(false);
+          }, 1000);
+        }).catch(e=>{this.loading(false);this.tips('网络出错了，登陆失败，请稍候再试')});
+      }
     }
 
     changeLoginData = (user)=>{
-      console.log(user);
+      // console.log(this.refs);
       this.setState({user: user});
-      this.refs.messageBar.updateBarData(user.messages);
+      this.refs.messageBar.updateBarData(user.userName, user.messages);
+      // console.log(this.refs);
+      // this.refs.changeMenuData.changeMenuConfig('user');
     }
 
-    tips = (msg) => {
+    /*getMenuData = () =>{
+      return this.state.user.power;this.forceUpdate();
+    }*/
+
+    loading = (show) => {
+      this.setState({loading: show?true:false});
+    }
+
+    tips = (msg, time) => {
       if(msg){
         this.setState({tipInfo:msg});
       }
@@ -90,79 +109,83 @@ class ContentContainer extends React.Component{
 
       setTimeout(()=>{
         this.setState({tipsOpen: false});
-      },1000);
+      },time || 2000);
     }
 
     render() {
         var props = this.props;
+        var { user, loading } = this.state;
         window.ReactHistory = this.props.history;
 
         return (
           <div>
-        <Route path="/"  >
-          <MessageBar  user = {this.state.user} ref = "messageBar" changeLoginData = {(data)=>this.changeLoginData(data)} />
-        </Route>
-        <div className="page-container">
-            {!this.state.user.name?(
-              <Route path="/"  >
-                <Login  changeLoginData = {(data)=>this.changeLoginData(data)} />
-              </Route>):
-              (<Route path="/" >
-                <div id = "leftMenu">
-                  <Route path="/"  component={Menu} />
-                </div>
-                <div id = "rightContent">
-                  <Switch>
-                      <Route path="/user" exact component={QueryUser} />
-                      <Route path="/user/addUser" component={AddUser} />
-                      <Route path="/user/queryUser" component={QueryUser} />
-                      <Route path="/user/queryUserAndPower" component={QueryUserAndPower} />
+            <Route path="/"  >
+              <MessageBar  ref="messageBar" changeLoginData = {(data)=>this.changeLoginData(data)} />
+            </Route>
+            <div className="page-container">
+              {!this.state.user.userName?(
+                <Route path="/"  >
+                  <Login changeLoginData = {(data)=>this.changeLoginData(data)}  loading={this.loading} tips={this.tips} />
+                </Route>):
+                (<Route path="/" >
+                  <div id = "leftMenu">
+                    <Menu menuConfig = {user.power}  />
+                  </div>
+                  <div id = "rightContent">
+                    <Switch>
+                        <Route path="/user" exact component={QueryUser} />
+                        <Route path="/user/addUser" component={AddUser} />
+                        <Route path="/user/queryUser" component={QueryUser} />
+                        <Route path="/user/queryUserAndPower" component={QueryUserAndPower}  />
 
-                      <Route path="/templete/" component={HandleTemplate} />
-                      <Route path="/templete/handleTemplate" component={HandleTemplate} />
+                        <Route path="/templete/" component={HandleTemplate} />
+                        <Route path="/templete/handleTemplate" component={HandleTemplate} />
 
-                      <Route path="/handleIndent" exact component={AddIndent} />
-                      <Route path="/handleIndent/addIndent" exact component={AddIndent} />
-                      <Route path="/handleIndent/queryIndent" component={QueryIndent} />
-                      <Route path="/handleIndent/queryIndentStatus" component={QueryIndentStatus} />
+                        <Route path="/handleIndent" exact component={AddIndent} />
+                        <Route path="/handleIndent/addIndent" exact component={AddIndent} />
+                        <Route path="/handleIndent/queryIndent" component={QueryIndent} />
+                        <Route path="/handleIndent/queryIndentStatus" component={QueryIndentStatus} />
 
-                      <Route path="/handleIndent/exportProduceIndent" component={ExportProduceIndent} />
-
-
-
-                      <Route path="/workTime/queryFactor" component={QueryFactor} />
-                      <Route path="/workTime/queryWorkTime" component={QueryWorkTime} />
-
-                      <Route path="/produceIndent/queryProduceIndent" component={QueryProduceIndent} />
-                      <Route path="/produceIndent/exportProduceIndent" component={ExportProduceIndent} />
-
-                      <Route path="/produceShowPage" component={ProduceShowPage} />
-
-                      <Route path="/dutyIndent" exact component={DutyIndent} />
-                      <Route path="/dutyIndent/info" component={DutyIndentInfo} />
-                      <Route path="/dutyIndent/info:id" component={DutyIndentInfo} />
+                        <Route path="/handleIndent/exportProduceIndent" component={ExportProduceIndent} />
 
 
-                      <Route path="/"  component={QueryUser} />
 
-                  </Switch>
-                </div>
-              </Route>)}
-          </div>
-          <Snackbar style={{marginTop:'70px'}}
-          anchorOrigin={{horizontal:"center",vertical:"top"}}
-          open={this.state.tipsOpen}
-          ContentProps={{
-            'className':'info'
-          }}
-          message={<span id="message-id" >{this.state.tipInfo}</span>}  />
+                        <Route path="/workTime" component={QueryFactor} />
+                        <Route path="/workTime/queryFactor" component={QueryFactor} />
+                        <Route path="/workTime/queryWorkTime" component={QueryWorkTime} />
+
+                        <Route path="/produceIndent/queryProduceIndent" component={QueryProduceIndent} />
+                        <Route path="/produceIndent/exportProduceIndent" component={ExportProduceIndent} />
+
+                        <Route path="/produceShowPage" component={ProduceShowPage} />
+
+                        <Route path="/dutyIndent" exact component={DutyIndent} />
+                        <Route path="/dutyIndent/info" component={DutyIndentInfo} />
+                        <Route path="/dutyIndent/info:id" component={DutyIndentInfo} />
+
+
+                        <Route path="/"  component={QueryUser} />
+
+                    </Switch>
+                  </div>
+                </Route>)}
+            </div>
+            <Snackbar style={{marginTop:'70px'}}
+            anchorOrigin={{horizontal:"center",vertical:"top"}}
+            open={this.state.tipsOpen}
+            ContentProps={{
+              'className':'info'
+            }}
+            message={<span id="message-id" >{this.state.tipInfo}</span>}  />
+
+            {loading?(<div className = "backdrop" >
+              <div className="absoluteCenter text-blue" >
+                <CircularProgress size = {50} />
+              </div>
+            </div>):''}
           </div>
         )
     }
 }
 
 export default ContentContainer;
-
-
-
-{/*serviceWorker.unregister();*/}

@@ -60,8 +60,10 @@ class ProduceShowPage extends React.Component {
     // console.log(p_height, c_height)
     if(p_height >= c_height)return;
 
-    var tableClone = document.getElementById('produceShowTable').cloneNode(true);
-    dom.appendChild(tableClone);
+    if(document.getElementById('produceShowTable').parentNode.childNodes.length<=1){
+      var tableClone = document.getElementById('produceShowTable').cloneNode(true);
+      dom.appendChild(tableClone);
+    }
 
     this.loopTimer = setInterval(()=>{
         // console.log(dom.scrollTop, c_height)

@@ -98,9 +98,9 @@ class MessageBar extends React.Component{
     }
 
 
-    updateBarData = (data) => {
-      console.log(data);
-      this.setState({mailMessage: data || []});
+    updateBarData = (userName, messages) => {
+      // console.log(data);
+      this.setState({userName: userName ||[], mailMessage: messages || []});
     }
 
 
@@ -123,9 +123,8 @@ class MessageBar extends React.Component{
     }
 
     logoutSureFun = () =>{
-       localStorage.userName = "";
        this.setState({logOut: false});
-       this.props.changeLoginData({name: ''});
+       this.props.changeLoginData('');
        // window.location.href='/login';
        window.ReactHistory.push('/login');
     }
@@ -144,12 +143,12 @@ class MessageBar extends React.Component{
       return (<Dialog
         onClose={this.handleClose}
         aria-labelledby="customized-dialog-title"
-        open={this.state.open} style={{marginTop:'-10rem'}}
+        open={this.state.open} style={{marginTop:'-15rem'}}
       >
         <DialogTitle id="customized-dialog-title" onClose={this.handleClose}>
           未读消息
         </DialogTitle>
-        <DialogContent style={{height: "140px",overflowY:"auto"}}>
+        <DialogContent style={{width: "500px",height: "140px",overflowY:"auto"}}>
           <ul style={{paddingRight:"2rem"}}>{this.state.mailMessage.map((mail, index)=>(
             <li style={{padding:".2rem 0"}} className="mail-message" key={'mailLi'+index}><span>{index+1}. </span>{mail.content+'这是一条特地加长的长长的测试消息'}<small>{new Date().format('yyyy-MM-dd')}</small><span className="text-red pointer" style={{marginLeft:'.5rem'}} onClick={()=>{this.markMessage(index)}}>已读 </span></li>))}</ul>
            { this.state.mailMessage.length==0?<ul><li className="mail-message text-blue">暂无消息</li></ul>:false}
@@ -163,21 +162,22 @@ class MessageBar extends React.Component{
     }
 
     render() {
-      var props = this.props;
+      // var props = this.props;
+      var { userName,mailMessage } = this.state;
         return (
           <header className="App-header">
             <div id="logo">极趣科技生产管理系统</div>
             <div id="messagebar">
-            {this.props.user.name?(<div className={"btn "+props.classes} >
-                欢迎你，<span  className="text-blue" style={{paddingRight:1+"rem"}}>{props.user.name}</span>
+            {userName?(<div className={"btn "} >
+                欢迎你，<span  className="text-blue" style={{paddingRight:1+"rem"}}>{userName}</span>
                 {/*<span color="primary"onClick={this.loginClick}>登陆</span>*/}
-                <span color="const" style={{display:(this.props.user.name?'ff':'none')}} className={"btn text-red "+ props.classes} onClick={this.logoutClick}>注销</span>
+                <span color="const" style={{display:(userName?'ff':'none')}} className={"btn text-red "} onClick={this.logoutClick}>注销</span>
                 <IconButton color="inherit" style = {{marginTop: '-3px'}} onClick={this.mailClick}>
-                  <Badge badgeContent={this.state.mailMessage.length} color="secondary">
+                  <Badge badgeContent={mailMessage.length} color="secondary">
                     <MailIcon />
                   </Badge>
                 </IconButton>
-              <IconButton color="inherit" style={{display:this.props.user.ringLength?'ff':'none'}}>
+              <IconButton color="inherit" style={{display:mailMessage.nnlength?'ff':'none'}}>
                 <Badge badgeContent={17} color="secondary">
                   <NotificationsIcon />
                 </Badge>

@@ -37,7 +37,10 @@ header>div:nth-child(2){
     background: #f44336!important;color: #fff;
 }
 .bg-notice{
-    background: #f3d621!important;color: #fff;
+    background: #e3d621!important;color: #fff;
+}
+.bg-secondary{
+    background: rgba(120,120,120,.5)!important;
 }
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
@@ -65,7 +68,9 @@ div[class*="MuiButtonBase-root"]{
     white-space: nowrap;
     overflow: hidden;
 }
-
+.backdrop{
+    position: fixed;top: 0;left: 0;bottom: 0;right: 0;background: rgba(150,150,150,.5);
+}
 .absoluteCenter{
     position: absolute;top: 50%;left: 50%;
     -webkit-transform: translate(-50%, -90%);
@@ -99,6 +104,12 @@ div[class*="MuiButtonBase-root"]{
 .produceShowTable tr{
     padding: 4px 0;
 }
+.produceShowTable thead tr{
+    background: #adadad;
+}
+.produceShowTable thead th{
+    padding: 12px 0;
+}
 .produceShowTable td,.produceShowTable  th{
     padding: 7px 2px;border:1px solid #ccc;
     border-left: 0;
@@ -107,6 +118,7 @@ div[class*="MuiButtonBase-root"]{
 .produceShowTable th{
     border-bottom:0;border-top:0;padding-bottom: 1rem;/* background: #333;color: #fff; */
 }
+
 
 .myConfirm div[class*="MuiDialog-paperWidthSm"]{
     margin-top: -150px;
@@ -130,15 +142,15 @@ div[class*='MuiFormLabel-root'] {
 }
 .nowrap, table{
     white-space: nowrap;
-}d
+}
 
 #produceShowTableHead th, #produceShowTable td{
-    width: 10%;
+    width: 12%;
 }
 #produceShowTableHead th:nth-child(1), #produceShowTable td:nth-child(1){
-    width: 6%;
+    width: 6.5%;
 }
-#produceShowTableHead th:nth-child(2), #produceShowTable td:nth-child(2), #produceShowTableHead th:nth-child(3), #produceShowTable td:nth-child(3){width: 16%;}
+#produceShowTableHead th:nth-child(2), #produceShowTable td:nth-child(2), #produceShowTableHead th:nth-child(3), #produceShowTable td:nth-child(3){width: 17.5%;}
 #dutyModal div[class*='MuiBackdrop']{
     opacity:  0!important;
 }
