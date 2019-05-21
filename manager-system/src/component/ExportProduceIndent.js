@@ -184,8 +184,10 @@ class ExportProduceIndent extends React.Component {
         this.tips('开始时间不能大于结束时间');return;
     }
 
-    this.dlExcel();
-    fetch(config.exportTimeIndentServer).then(res=>res.json()).then(data=>{console.log(data)});
+    fetch(config.server.exportTimeIndentServer).then(res=>res.json()).then(data=>{
+      console.log(data);
+      this.dlExcel(data.results);
+    });
   }
 
 
@@ -204,23 +206,28 @@ class ExportProduceIndent extends React.Component {
             mrz: '',
         }];*/
 
-        const dataSource = [{
-              key: '1',
-              cs: 'title',
-              sm: '列头显示文字',
-              lx: 'string',
-              mrz: '',
-          }, {
-              key: '2',
-              cs: 'mm',
-              sm: '啦啦啦啦',
-              lx: 'string',
-              mrz: '',
-          }];
+        const dataSource = data;
+        for(var i in data){
+          data[i].key = i + 1;
+        }
 
         const exportDefaultExcel = () => {
-            var _headers = [{ k: 'cs', v: '列名' }, { k: 'sm', v: '描述' },
-            { k: 'lx', v: '类型' }, { k: 'mrz', v: '默认值' },]
+            var _headers = [
+            { k: 'erp', v: 'erp编号' },
+            { k: 'materialCode', v: '物料编号' },
+            { k: 'materialName', v: '物料名称' },
+            { k: 'planNum', v: '计划生产数量' },
+            { k: 'planOnline', v: '计划上线时间' },
+            { k: 'planFinishDate', v: '计划完成时间' },
+            { k: 'actualStart', v: '实际开始时间' },
+            { k: 'actualFinish', v: '实际完成时间' },
+            { k: 'procedure', v: '流程' },
+            { k: 'duty', v: '负责人员' },
+            { k: 'ifNew', v: '是否新品' },
+            { k: 'priority', v: '是否加急' },
+            { k: 'templateID', v: '模板编号' },
+            { k: 'status', v: '状态' }
+            ];
             exportExcel(_headers, dataSource);
         }
         exportDefaultExcel();

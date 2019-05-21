@@ -35,7 +35,7 @@ var config = {
     queryWorkHourByDate: serverIP+'/queryWorkHourByDate',
 
 
-    exportTimeIndentServer: serverIP+'/exportTimeIndentServer',
+    exportTimeIndentServer: serverIP+'/listAllIndentStatusByDate',//exportTimeIndentServer
     addProcedureInfo: serverIP+'/addProcedureInfo',
 
     listAllIndent: serverIP+'/listAllIndent',
