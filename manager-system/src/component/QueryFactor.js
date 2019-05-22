@@ -466,7 +466,7 @@ class QueryFactor
                       key={'user'+n.id}
                       selected={isSelected}
                     >
-                      <TableCell align="left">{n.id}</TableCell>
+                      <TableCell align="left">{page * rowsPerPage+index+1}</TableCell>
                       <TableCell align="left">{n.calories}</TableCell>
                       <TableCell component="th" scope="row" padding="none">
                         {n.name}

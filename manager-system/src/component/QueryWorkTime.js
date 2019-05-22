@@ -362,7 +362,7 @@ class QueryWorkTime extends React.Component {
             />
             <TableBody>
               {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map(n => {
+                .map((n, index) => {
                   const isSelected = this.isSelected(n.id);
                   return (
                     <TableRow
@@ -374,7 +374,7 @@ class QueryWorkTime extends React.Component {
                       key={n.id}
                       selected={isSelected}
                     >
-                      <TableCell align="left">{n.id}</TableCell>
+                      <TableCell align="left">{page * rowsPerPage + index+1}</TableCell>
                       <TableCell align="left">{n.erp}</TableCell>
                       <TableCell align="left">{n.materialCode}</TableCell>
                       <TableCell align="left">{n.planNum}</TableCell>

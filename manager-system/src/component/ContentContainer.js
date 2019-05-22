@@ -150,7 +150,7 @@ class ContentContainer extends React.Component{
 
 
 
-                        <Route path="/workTime" component={QueryFactor} />
+                        <Route path="/workTime" exact component={QueryFactor} />
                         <Route path="/workTime/queryFactor" component={QueryFactor} />
                         <Route path="/workTime/queryWorkTime" component={QueryWorkTime} />
 

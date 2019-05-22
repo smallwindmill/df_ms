@@ -60,7 +60,6 @@ class EnhancedTableHead extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-
     }
   }
 
@@ -131,6 +130,13 @@ class EnhancedTableToolbar extends React.Component{
       {value:3,text:'组长'},
       {value:2,text:'领班'},
       {value:1,text:'主管'}
+    ],
+    userTypeArr: [
+      {value:0,text:'全部'},
+      {value:1,text:'主管'},
+      {value:2,text:'领班'},
+      {value:3,text:'组长'},
+      {value:4,text:'生产员工'},
     ],
     selectUserType: 4
   }
@@ -334,6 +340,7 @@ class EnhancedTableToolbar extends React.Component{
 
   render(){
     var classes = '';
+    var { userTypeArr } = this.state;
     return (
        <div>
           <Toolbar >
@@ -341,8 +348,12 @@ class EnhancedTableToolbar extends React.Component{
                   人员管理
                 </Typography>
           </Toolbar>
-          <Grid container align="right" >
-            <Grid item xs={12}>
+          <Grid container align="right" style={{padding: '1rem 1.2rem'}}>
+            <Grid item xs={6} align="left" className="filterTool small" style = {{margin: '1rem 0'}}>
+                <span className="blod">类型</span>
+                {userTypeArr.map((data,index)=>(<span key = {index} className={"btn "+(index==0?'text-blue':'')} onClick={(e)=>this.props.queryUserByType(e, data)}> {data.text}</span>))}
+            </Grid>
+            <Grid item xs={6}>
             <span className="btn text-blue" onClick={()=>this.addUser(0)} style={{margin:'0rem 0 4rem',padding: '0 1.2rem'}}>添加用户</span>
               <TextField style={{marginTop:0,marginLeft:'1rem'}}
               placeholder="请输入用户名称查询"
@@ -352,7 +363,8 @@ class EnhancedTableToolbar extends React.Component{
               margin="normal"
               InputLabelProps={{
                 shrink: true,
-              }}></TextField></Grid>
+              }}></TextField>
+              </Grid>
           </Grid>
 
         {this.addUserModal()}
@@ -462,6 +474,27 @@ class QueryUser extends React.Component {
     }
   }
 
+  queryUserByType = (e, data) => {
+    e.persist();
+    // 切换显示高亮
+    for(var i of e.target.parentElement.children){
+      i.className = i.className.replace('text-blue','');
+    }
+    e.target.className += ' text-blue';
+
+    if(!this.state.dataBak){
+      this.state.dataBak = this.state.data;
+    }
+
+    if(data.value == 0){
+      this.state.data = this.state.dataBak;
+    }else{
+      this.state.data = this.state.dataBak.filter((item)=>{ return item.type==data.value;});
+    }
+
+    this.setState({data: this.state.data });
+  }
+
   changeUserData = (data, type) =>{
     // 默认替换，1为push，2为修改
     if(type==1){
@@ -473,6 +506,7 @@ class QueryUser extends React.Component {
     }else{
       this.setState({data: data});
     }
+    this.state.dataBak = this.state.data;
 
   }
 
@@ -495,7 +529,7 @@ class QueryUser extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar changeUserData = {this.changeUserData} ref="modalMethod" tips = {this.tips} />
+        <EnhancedTableToolbar changeUserData = {this.changeUserData} queryUserByType = {this.queryUserByType} ref="modalMethod" tips = {this.tips} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -514,7 +548,7 @@ class QueryUser extends React.Component {
                       tabIndex={-1}
                       key={'user'+index}
                     >
-                      <TableCell align="left">{index+1}</TableCell>
+                      <TableCell align="left">{page * rowsPerPage+index+1}</TableCell>
                       <TableCell align="left">{n.userID}</TableCell>
                       <TableCell component="th" scope="row" padding="none">
                         {n.userName}

@@ -224,7 +224,7 @@ class Menu extends React.Component{
     }
 
     render() {
-      console.log(this.props);
+      // console.log(this.props);
 
       var { menus } = this.state;
       return  this.managerMenuData(menus);

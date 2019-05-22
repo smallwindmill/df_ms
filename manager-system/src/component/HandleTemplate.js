@@ -66,6 +66,7 @@ const DialogActions = withStyles(theme => ({
 
 const rows = [
   { id: 'name', numeric: false, disablePadding: true, label: '序号' },
+  { id: 'name', numeric: false, disablePadding: true, label: '模板编号' },
   { id: 'name', numeric: false, disablePadding: true, label: '模板名称' },
   { id: 'carbs', numeric: true, disablePadding: false, label: '模板流程' },
   { id: 'calories', numeric: false, disablePadding: false, label: '负责人' },
@@ -589,6 +590,7 @@ class HandleTemplete extends React.Component {
                       key={n.id}
                       selected={isSelected}
                     >
+                      <TableCell align="left">{page * rowsPerPage+(index+1)}</TableCell>
                       <TableCell align="left">{n.id}</TableCell>
                       <TableCell align="left">{n.name}</TableCell>
                       <TableCell component="th" scope="row" padding="none">

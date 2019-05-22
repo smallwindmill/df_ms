@@ -23,7 +23,7 @@ import MuiDialogContent from '@material-ui/core/DialogContent';
 import MuiDialogActions from '@material-ui/core/DialogActions';
 
 import FormLabel from '@material-ui/core/FormLabel';
-import {DateFormatInput} from 'material-ui-next-pickers';
+import {DateFormatInput, TimeFormatInput} from 'material-ui-next-pickers';
 
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
@@ -229,7 +229,8 @@ class DutyIndentInfo extends React.Component {
     workers:[{name:'确定',id:111}, {name:'删除',id:234},{name:'订单',id:234},{name:'确定',id:111}, {name:'删除',id:234},{name:'订单',id:234},{name:'确定',id:111}, {name:'删除',id:234},{name:'订单',id:234},{name:'确定',id:111}, {name:'删除',id:234},{name:'订单',id:234},{name:'确定',id:111}, {name:'删除',id:234},{name:'订单',id:234}],
     selectedWorkers:[],
     selectedDataCopy: {
-      startTime: new Date().format('yyyy-MM-dd')
+      startTime: new Date().format('yyyy-MM-dd'),
+      startDateTime: new Date()
     }
   }
 
@@ -265,7 +266,7 @@ class DutyIndentInfo extends React.Component {
   }
 
   modalClose = () =>{
-    this.setState({open: false, modalOpen: false, InfoModalOpen: false});
+    this.setState({open: false, modalOpen: false, InfoModalOpen: false, destroyModalOpen: false});
   }
 
 
@@ -338,7 +339,7 @@ class DutyIndentInfo extends React.Component {
       headers:{
         'Content-Type': 'application/json',
       },
-      body:JSON.stringify({pid: pid, productNum:productNum, startTime: selectedDataCopy.startTime, worker:workder_in.join(' ')})
+      body:JSON.stringify({pid: pid, productNum:productNum, startTime: selectedDataCopy.startTime + ' '+selectedDataCopy.startDateTime.format('hh:mm:ss'), worker:workder_in.join(' ')})
     }).then(res=>res.json()).then(data=>{
       console.log(data);
       if(data.code!=200){
@@ -377,6 +378,10 @@ class DutyIndentInfo extends React.Component {
     this.setState({InfoModalOpen: true, selectedDataCopy: data_out, selectIndex: index});
   }
 
+  scrapProcedure = (data_out, index)=>{
+    this.setState({destroyModalOpen: true, selectedDataCopy: data_out, selectIndex: index});
+  }
+
   setFinishSure = (data_out, index) => {
     var { id, next_info, selectedDataCopy, selectIndex } = this.state;
     // console.log(id, next_info);
@@ -393,7 +398,8 @@ class DutyIndentInfo extends React.Component {
         this.tips(data.msg);return;
       }
       this.state.infoData[selectIndex].status = 1;this.tips('该流程已完成');
-    this.setState({InfoModalOpen: false});
+      this.state.data.status = 1;
+      this.setState({InfoModalOpen: false});
       this.setState({infoData: this.state.infoData});
       // 重新读取数据
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
@@ -402,22 +408,31 @@ class DutyIndentInfo extends React.Component {
 
   // 报废当前流程
   setScrap = (data_out, index) => {
-    var { id, next_info } = this.state;
+    var { id, destroy_info, selectedDataCopy, selectIndex } = this.state;
+    var pid = this.props.match.params.id;
+
+    if(!destroy_info){
+      this.tips('请填写报废原因');return;
+    }
+
     var nextFun = () =>{
       fetch(config.server.updateProcedureStatus,{method:"POST",
         headers:{
             'Content-Type': 'application/json',
         },
-        body:JSON.stringify({id: data_out.id, status: -1})
+        body:JSON.stringify({id: selectedDataCopy.id, status: -1, remark: destroy_info})
       }).then(res=>res.json()).then(data=>{
         if(data.code != 200){
           this.tips(data.msg);return;
-        }console.log(this.state.infoData[index]);
-        this.state.infoData[index].status = -1;
+        }
+        this.state.infoData[index].selectIndex = -1;
         this.setState({infoData: this.state.infoData});this.tips('该流程环节已报废');console.log(this.state.infoData[index]);
       }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
     };
-    this.setState({confirmOpen: true, content: '确定报废当前流程吗？',deleteFun: nextFun});
+
+    nextFun();
+
+    // this.setState({confirmOpen: true, content: '确定报废当前流程吗？',deleteFun: nextFun});
   }
 
 
@@ -432,8 +447,83 @@ class DutyIndentInfo extends React.Component {
     },2000);
   }
 
+  // 报废流程弹窗
+  setScrapModal = ()=>{
+    var classes = '';
+    const DialogTitle = withStyles(theme => ({
+      root: {
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        margin: 0,
+        padding: theme.spacing.unit * 2,
+      },
+      closeButton: {
+        position: 'absolute',
+        right: theme.spacing.unit,
+        top: theme.spacing.unit,
+        color: theme.palette.grey[500],
+      },
+    }))(props => {
+      const { children, classes, onClose } = props;
+      return (
+        <MuiDialogTitle disableTypography className={classes.root}>
+          <Typography variant="h6">{children}</Typography>
+          {onClose ? (
+            <IconButton aria-label="Close" className={classes.closeButton} onClick={onClose}>
+              <CloseIcon />
+            </IconButton>
+          ) : null}
+        </MuiDialogTitle>
+      );
+    });
+
+    const { workers, selectedWorkers } = this.state;
+    const styleCon = {
+       height: '10rem',
+       overflowY : 'auto',
+       padding: '.5rem 0'
+    };
+    const styleChip = {
+      margin:'3px 5px'
+    };
+    return (<Dialog
+      aria-labelledby="customized-dialog-title"
+      open={this.state.destroyModalOpen } style={{marginTop:'-10rem'}}
+    >
+      <DialogTitle id="customized-dialog-title" onClose={this.modalClose}>
+        流程报废设置
+      </DialogTitle>
+      <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem"}}>
+        <Grid container spacing={24}>
+          <Grid item xs={12} style={{margin: "1.5rem 0 1rem",lineHeight:'35px'}}>
+            <Info fontSize = "large" color = "secondary" style={{marginBottom:'-11px'}}></Info>
+              设置当前流程的状态为<span className="text-red">报废</span>后，当前流程细节将不可修改，请确认操作。
+          </Grid>
+          <Grid item xs={12} style={{paddingTop:0}}>
+            <TextField fullWidth style={{marginTop:0}}
+              label="报废原因（必填）"
+              className={classes.textField}
+              autoComplete="current-password"
+              margin="normal"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              onChange={(e)=>{this.setState({destroy_info: e.target.value})}}
+            ></TextField>
+          </Grid>
+
+          <Grid item xs={12} align="right">
+            <Button variant="outlined" onClick={this.setScrap} style={{marginRight: 1+"rem"}} color="primary" className={classes.button}>
+            确定</Button>
+            <Button variant="outlined" onClick={this.modalClose} style={{marginRight: 1+"rem"}} color="secondary" className={classes.button}>取消</Button>
+          </Grid>
+          </Grid>
+
+        </form>
+    </Dialog>)
+  }
+
   // 消息弹窗
-  addMessageModal = ()=>{
+  setFinishModal = ()=>{
     var classes = '';
     const DialogTitle = withStyles(theme => ({
       root: {
@@ -481,7 +571,7 @@ class DutyIndentInfo extends React.Component {
         <Grid container spacing={24}>
           <Grid item xs={12} style={{margin: "1.5rem 0 1rem",lineHeight:'35px'}}>
             <Info fontSize = "large" color = "primary" style={{marginBottom:'-11px'}}></Info>
-              设置当前流程的状态为<span className="text-blue">完成</span>后，将进入下一流程，当前流程将不可操作，请确认操作。
+              设置当前流程的状态为<span className="text-blue">完成</span>后，将进入下一流程，当前流程将不可修改，请确认操作。
           </Grid>
           <Grid item xs={12} style={{paddingTop:0}}>
             <TextField fullWidth style={{marginTop:0}}
@@ -571,6 +661,7 @@ class DutyIndentInfo extends React.Component {
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">流程开始生产时间</FormLabel>
             <DateFormatInput  className="inline-block" name='date-input' value={ new Date(selectedDataCopy.startTime) } onChange={(date)=>{selectedDataCopy.planFinishDate = date.format('yyyy-MM-dd');this.setState({ selectedDataCopy: selectedDataCopy })} } style={{marginbottom:'2rem'}} />
+            <TimeFormatInput name='time-input' value={selectedDataCopy.startDateTime?new Date(selectedDataCopy.startDateTime):new Date() } onChange={(date)=>{console.log(date);selectedDataCopy.startDateTime = date;this.setState({ selectedDataCopy: selectedDataCopy })} }/>
           </Grid>
 
           <Grid container style={{paddingTop: "1rem"}}>
@@ -674,15 +765,20 @@ class DutyIndentInfo extends React.Component {
                     <TableCell align="left">{n.worker.split(' ').length}</TableCell>
                     <TableCell align="left">{n.productNum}</TableCell>
                     <TableCell component="th" scope="row" padding="none">
-                      {new Date(n.startTime).format('yyyy-MM-dd')}
+                      {new Date(n.startTime).format('yyyy-MM-dd hh:mm:ss')}
                     </TableCell>
                     <TableCell component="th" scope="row" padding="none">
                       {n.status==1?'完成':(n.status==-1?'报废':'进行中')}
                     </TableCell>
-                    <TableCell align="left">
-                                            {data.status?(<span>{n.status==1?'已完成':(n.status==-1?'已报废':'')}</span>):(<span>{n.status!=0?'':<span className="pointer btn text-red" onClick={()=>this.setScrap(n, index)}>设为报废</span>}
-                                              {n.status!=0?'':<span className="pointer btn text-blue" onClick={()=>this.finishProcedure(n, index)}>设为完成</span>}</span>)}
-                                          </TableCell>
+                    <TableCell align="left" id={n.status}>
+                      {data.status==0?
+                        (n.status==-1?<span className={n.status==-1?'text-notice':''}>{n.status== 1?'':'已报废'}</span>:<span className='pointer btn text-red' onClick={()=>this.scrapProcedure(n, index)}>设为报废</span>  )
+                      :('')}
+
+                      {data.status==0?
+                        (n.status==0?(<span className="pointer btn text-blue" onClick={()=>this.finishProcedure(n, index)}>设为完成</span>):(<span  className={n.status==1?'text-success':''}>{n.status== 1?'已完成':''}</span>))
+                      :(<span className="text-success">已完成</span>)}
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -710,7 +806,8 @@ class DutyIndentInfo extends React.Component {
           <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} sureFun = {this.confirmSure} />
         </div>
         {this.addInfoModal()}
-        {this.addMessageModal()}
+        {this.setFinishModal()}
+        {this.setScrapModal()}
         <Snackbar style={{marginTop:'70px'}}
           anchorOrigin={{horizontal:"center",vertical:"top"}}
           open={this.state.tipsOpen}

@@ -138,6 +138,7 @@ class ProduceShowPage extends React.Component {
     var style1 = {
       textAlign: 'left',margin: '1rem .5rem 1rem'
     };
+    var { data } = this.state;
     return (
       <div  style = {this.state.style.table}>
         <div style={style1}>
@@ -150,7 +151,7 @@ class ProduceShowPage extends React.Component {
           <Grid container>
 
             <Grid item xs = {3} align="left">
-              <span className="blod">共{this.state.data.length}条数据</span>
+              <span className="blod">共{data.length}条数据</span>
             </Grid>
             <Grid item xs = {9}>
               <div align="right" style={{paddingRight:'2rem'}}>
@@ -162,8 +163,9 @@ class ProduceShowPage extends React.Component {
 
           </Grid>
         </div>
-        <table id="produceShowTableHead" className="produceShowTable" style={{width:'100%',textAlign: 'center'}}>
+        <table id="produceShowTableHead" className="produceShowTable pointer" style={{width:'100%',textAlign: 'center'}}>
         <thead onDoubleClick={this.toogleLoop}><tr>
+            <th>序号</th>
             <th>ERP号</th>
             <th>物料长代码</th>
             <th>物料名称</th>
@@ -176,8 +178,10 @@ class ProduceShowPage extends React.Component {
           </table>
           <div style={{overflowY: 'scroll',height: 'calc(100vh - 230px)'}}>
         <table id="produceShowTable" className="produceShowTable" style={{width:'100%',textAlign: 'center'}}><tbody>
-        {this.state.data.map((single, index)=>(
+
+        {data.map((single, index)=>(
           <tr key={'tr'+index}  className={single.status==0?(single.priority==0?(single.ifNew==1?'bg-notice':''):'bg-red'):'bg-success'}>
+            <td style={{padding: '12px 0'}}>{index+1}</td>
             <td style={{padding: '12px 0'}}>{single.erp}</td>
             <td>{single.materialCode}</td>
             <td>{single.materialName}</td>

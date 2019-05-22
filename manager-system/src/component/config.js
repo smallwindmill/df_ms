@@ -36,6 +36,7 @@ var config = {
 
 
     exportTimeIndentServer: serverIP+'/listAllIndentStatusByDate',//exportTimeIndentServer
+    exportIndentMatchTemplete: serverIP+'/listIndentMatchTemplete',
     addProcedureInfo: serverIP+'/addProcedureInfo',
 
     listAllIndent: serverIP+'/listAllIndent',

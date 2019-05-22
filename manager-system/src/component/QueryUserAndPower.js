@@ -67,7 +67,8 @@ function getSorting(order, orderBy) {
 }
 
 const rows = [
-  { id: 'name', numeric: false, disablePadding: true, label: '工号' },
+  { id: 'name', numeric: false, disablePadding: true, label: '序号' },
+  { id: 'name', numeric: false, disablePadding: false, label: '工号' },
   { id: 'calories', numeric: true, disablePadding: false, label: '用户姓名' },
   { id: 'fat', numeric: true, disablePadding: false, label: '登录权限' },
   { id: 'carbs', numeric: true, disablePadding: false, label: '操作订单和订单状态' },
@@ -141,6 +142,16 @@ const toolbarStyles = theme => ({
 
 class EnhancedTableToolbar extends React.Component{
 
+  state = {
+    userTypeArr: [
+      {value:0,text:'全部'},
+      {value:1,text:'主管'},
+      {value:2,text:'领班'},
+      {value:3,text:'组长'},
+      {value:4,text:'生产员工'},
+    ]
+  }
+
   tips = this.props.tips;
 
   queryByKeyword = (e) =>{
@@ -155,6 +166,7 @@ class EnhancedTableToolbar extends React.Component{
   }
 
   render(){
+    var { userTypeArr } = this.state;
     return (
       <div>
           <Toolbar>
@@ -162,8 +174,12 @@ class EnhancedTableToolbar extends React.Component{
                   人员权限查询
                 </Typography>
           </Toolbar>
-          <Grid container spacing={24} align="right" style={{margin:'-1rem 0 1rem',padding: '0 1.2rem'}}>
-          <Grid item xs={12}>
+          <Grid container align="right" style={{padding: '1rem 1.2rem'}}>
+            <Grid item xs={6} align="left" className="filterTool small" style = {{margin: '1rem 0'}}>
+                <span className="blod">类型</span>
+                {userTypeArr.map((data,index)=>(<span key = {index} className={"btn "+(index==0?'text-blue':'')} onClick={(e)=>this.props.queryUserPowerByType(e, data)}> {data.text}</span>))}
+            </Grid>
+            <Grid item xs={6}>
               <TextField style={{marginTop:0}}
               placeholder="请输入用户名称查询"
               type="text" autoComplete={false}
@@ -173,7 +189,8 @@ class EnhancedTableToolbar extends React.Component{
               InputLabelProps={{
                 shrink: true,
               }}></TextField>
-          </Grid></Grid>
+          </Grid>
+        </Grid>
       </div>
   )};
 };
@@ -248,6 +265,8 @@ class QueryUserAndPower extends React.Component {
     }else{
       this.setState({data: data});
     }
+    this.state.dataBak = this.state.data;
+
   }
 
   handleClose = () => {
@@ -288,6 +307,27 @@ class QueryUserAndPower extends React.Component {
       this.tips('权限更新成功');
       // this.props.judgeUser();
     }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
+  }
+
+  queryUserPowerByType = (e, data) => {
+    e.persist();
+    // 切换显示高亮
+    for(var i of e.target.parentElement.children){
+      i.className = i.className.replace('text-blue','');
+    }
+    e.target.className += ' text-blue';
+
+    if(!this.state.dataBak){
+      this.state.dataBak = this.state.data;
+    }
+
+    if(data.value == 0){
+      this.state.data = this.state.dataBak;
+    }else{
+      this.state.data = this.state.dataBak.filter((item)=>{ return item.type==data.value;});
+    }
+
+    this.setState({data: this.state.data });
   }
 
 
@@ -413,7 +453,7 @@ class QueryUserAndPower extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar  changeUserData = {this.changeUserData} tips={this.tips} />
+        <EnhancedTableToolbar  changeUserData = {this.changeUserData} tips={this.tips}  queryUserPowerByType = {this.queryUserPowerByType}/>
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -439,6 +479,7 @@ class QueryUserAndPower extends React.Component {
                       {/* <TableCell padding="checkbox">
                         <Checkbox checked={isSelected} />
                       </TableCell>*/}
+                      <TableCell component="th" scope="row" padding="none">{page * rowsPerPage+index+1}</TableCell>
                       <TableCell component="th" scope="row" padding="none">
                         {n.userID}
                       </TableCell>

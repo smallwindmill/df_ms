@@ -172,79 +172,148 @@ class ExportProduceIndent extends React.Component {
     this.setState({ endDate: date });
   };
 
+  // 根据日期导出订单表
   exportTimeIndent = () =>{
-    if(!this.state.startDate){
+
+    var  { startDate, endDate } = this.state;
+    if(!startDate){
         this.tips('请先选择开始时间');return;
     }
-    if(!this.state.endDate){
+    if(!endDate){
         this.tips('请选择结束时间');return;
     }
-    // console.log(new Date(this.state.startDate).format('yyyy-MM-dd'), new Date(this.state.endDate).format('yyyy-MM-dd'));
-    if(new Date(this.state.startDate).format('yyyy-MM-dd')>new Date(this.state.endDate).format('yyyy-MM-dd')){
+    // console.log(new Date(startDate).format('yyyy-MM-dd'), new Date(endDate).format('yyyy-MM-dd'));
+    if(new Date(startDate).format('yyyy-MM-dd')>new Date(endDate).format('yyyy-MM-dd')){
         this.tips('开始时间不能大于结束时间');return;
     }
 
-    fetch(config.server.exportTimeIndentServer).then(res=>res.json()).then(data=>{
-      console.log(data);
-      this.dlExcel(data.results);
-    });
+    var _headers = [
+        { k: 'erp', v: 'erp编号' },
+        { k: 'materialCode', v: '物料编号' },
+        { k: 'materialName', v: '物料名称' },
+        { k: 'planNum', v: '计划生产数量' },
+        { k: 'planOnline', v: '计划上线时间' },
+        { k: 'planFinishDate', v: '计划完成时间' },
+        { k: 'actualStart', v: '实际开始时间' },
+        { k: 'actualFinish', v: '实际完成时间' },
+        { k: 'procedure', v: '流程' },
+        { k: 'duty', v: '负责人员' },
+        { k: 'ifNew', v: '是否新品' },
+        { k: 'priority', v: '是否加急' },
+        { k: 'templateID', v: '模板编号' },
+        { k: 'status', v: '状态' }
+    ];
+    var fileName = '订单表'+startDate.replace(/-/g,'')+'-'+endDate.replace(/-/g,'')+'.xlsx';
+
+    fetch(config.server.exportTimeIndentServer +'?startDate='+startDate.format('yyyy-MM-dd')+'&endDate='+endDate.format('yyyy-MM-dd')).then(res=>res.json()).then(data=>{
+      if(data.results.length){
+        this.dlExcel(_headers, data.results, fileName);
+      }else{
+        this.tips('未找到符合查询条件的数据！');
+      }
+    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
   }
 
 
-  dlExcel = (data) =>{
-      /*  const dataSource = [{
-            key: '1',
-            cs: 'title',
-            sm: '列头显示文字',
-            lx: 'string',
-            mrz: '',
-        }, {
-            key: '2',
-            cs: 'mm',
-            sm: '啦啦啦啦',
-            lx: 'string',
-            mrz: '',
-        }];*/
-
-        const dataSource = data;
-        for(var i in data){
-          data[i].key = i + 1;
-        }
-
-        const exportDefaultExcel = () => {
-            var _headers = [
-            { k: 'erp', v: 'erp编号' },
-            { k: 'materialCode', v: '物料编号' },
-            { k: 'materialName', v: '物料名称' },
-            { k: 'planNum', v: '计划生产数量' },
-            { k: 'planOnline', v: '计划上线时间' },
-            { k: 'planFinishDate', v: '计划完成时间' },
-            { k: 'actualStart', v: '实际开始时间' },
-            { k: 'actualFinish', v: '实际完成时间' },
-            { k: 'procedure', v: '流程' },
-            { k: 'duty', v: '负责人员' },
-            { k: 'ifNew', v: '是否新品' },
-            { k: 'priority', v: '是否加急' },
-            { k: 'templateID', v: '模板编号' },
-            { k: 'status', v: '状态' }
-            ];
-            exportExcel(_headers, dataSource);
-        }
-        exportDefaultExcel();
+  dlExcel = (_headers, dataSource, fileName) =>{
+    // 导表方法
+    for(var i in dataSource){
+      dataSource[i].key = i + 1;
+    }
+    exportExcel(_headers, dataSource, fileName);
   }
 
 
   exportAllIndent = () =>{
+    var _headers = [
+        { k: 'erp', v: 'erp编号' },
+        { k: 'materialCode', v: '物料编号' },
+        { k: 'materialName', v: '物料名称' },
+        { k: 'planNum', v: '计划生产数量' },
+        { k: 'planOnline', v: '计划上线时间' },
+        { k: 'planFinishDate', v: '计划完成时间' },
+        { k: 'actualStart', v: '实际开始时间' },
+        { k: 'actualFinish', v: '实际完成时间' },
+        { k: 'procedure', v: '流程' },
+        { k: 'duty', v: '负责人员' },
+        { k: 'ifNew', v: '是否新品' },
+        { k: 'priority', v: '是否加急' },
+        { k: 'templateID', v: '模板编号' },
+        { k: 'status', v: '状态' }
+    ];
+    var fileName = '全部订单详细表.xlsx';
 
+    fetch(config.server.exportTimeIndentServer).then(res=>res.json()).then(data=>{
+      if(data.results.length){
+        this.dlExcel(_headers, data.results, fileName);
+      }else{
+        this.tips('未找到符合查询条件的数据！');
+      }
+    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
   }
+
   exportMatchIndent = () =>{
+      var _headers = [
+          { k: 'erp', v: 'erp编号' },
+          { k: 'materialCode', v: '物料编号' },
+          { k: 'materialName', v: '物料名称' },
+          { k: 'name', v: '流程名称' },
+          { k: 'procedure', v: '详细流程' },
+          { k: 'duty', v: '流程对应负责人' }
+      ];
+      var fileName = '订单及对应流程表.xlsx';
 
+      fetch(config.server.exportIndentMatchTemplete).then(res=>res.json()).then(data=>{
+        if(data.results.length){
+          this.dlExcel(_headers, data.results, fileName);
+        }else{
+          this.tips('暂无数据！');
+        }
+      }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
   }
 
+  // 根据订单类型导出
   exportIndentByTimeType = (e) =>{
+    // 根据数据类型过滤
     var type = this.state.indentTimeType;
+
     console.log(type);
-    fetch(config.exportIndentByTimeType)
+
+    var _headers = [
+        { k: 'erp', v: 'erp编号' },
+        { k: 'materialCode', v: '物料编号' },
+        { k: 'materialName', v: '物料名称' },
+        { k: 'planNum', v: '计划生产数量' },
+        { k: 'planOnline', v: '计划上线时间' },
+        { k: 'planFinishDate', v: '计划完成时间' },
+        { k: 'actualStart', v: '实际开始时间' },
+        { k: 'actualFinish', v: '实际完成时间' },
+        { k: 'procedure', v: '流程' },
+        { k: 'duty', v: '负责人员' },
+        { k: 'ifNew', v: '是否新品' },
+        { k: 'priority', v: '是否加急' },
+        { k: 'templateID', v: '模板编号' },
+        { k: 'status', v: '状态' }
+    ];
+
+    fetch(config.server.exportTimeIndentServer).then(res=>res.json()).then(data=>{
+      if(data.results.length){
+        if(type==0){
+          var fileName = '订单详细表-优先.xlsx';
+          this.dlExcel(_headers, data.results.filter(function(index) {
+            return index.priority == 1;
+          }), fileName);
+        }else if(type==1){
+          var fileName = '订单详细表-新品.xlsx';
+          this.dlExcel(_headers, data.results.filter(function(index) {
+            return index.ifNew == 1;
+          }), fileName);
+        }
+      }else{
+        this.tips('未找到符合查询条件的数据！');
+      }
+    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
+
   }
 
 
@@ -296,43 +365,43 @@ class ExportProduceIndent extends React.Component {
           </Toolbar>
 
           <Grid container spacing={24} align="center" vertical="center" style={{margin:'2rem 0 1rem',height: '350px',padding: '0 1.2rem'}}>
-            <Grid container item xs={3}>
-            <Grid item xs={12}>
+            <Grid container item xs={3}  style={{flexDirection: "column"}}>
+            <Grid item style={{flex:1}} xs={12}>
               <span className="btn text-blue">按时间段导出生产订单</span>
             </Grid>
-            <Grid item xs={12}>
+            <Grid item style={{flex:1}} xs={12}>
               <DateFormatInput  className="inline-block" name='date-input' value={this.state.startDate } onChange={this.onChangeStartDate} style={{marginbottom:'2rem'}} />
               <DateFormatInput name='date-input' className="inline-block"  value={this.state.endDate } onChange={this.onChangeEndDate}/>
             </Grid>
-            <Grid item xs={12}>
+            <Grid item style={{flex:1}} xs={12}>
 
               <Button variant="outlined" color="default" onClick={this.exportTimeIndent} className={classes.button}>点击由此下载</Button>
             </Grid>
           </Grid>
-          <Grid container item xs={3}>
-            <Grid item xs={12}>
+          <Grid container item xs={3}  style={{flexDirection: "column"}}>
+            <Grid item style={{flex:1}} xs={12}>
               <span className="btn text-blue">导出所有生产信息详细数据</span>
             </Grid>
-            <Grid item xs={12}></Grid>
-            <Grid item xs={12}>
+            <Grid item style={{flex:1}} xs={12}></Grid>
+            <Grid item style={{flex:1}} xs={12}>
               <Button variant="outlined" color="default" onClick={this.exportAllIndent} className={classes.button}>点击由此下载</Button>
             </Grid>
           </Grid>
-          <Grid container item xs={3}>
-            <Grid item xs={12}>
+          <Grid container item xs={3}  style={{flexDirection: "column"}}>
+            <Grid item style={{flex:1}} xs={12}>
               <span className="btn text-blue">导出订单名称及对应的生产流程</span>
             </Grid>
-            <Grid item xs={12}></Grid>
-            <Grid item xs={12}>
+            <Grid item style={{flex:1}} xs={12}></Grid>
+            <Grid item style={{flex:1}} xs={12}>
               <Button variant="outlined" color="default" onClick={this.exportMatchIndent} className={classes.button}>点击由此下载</Button>
              </Grid>
           </Grid>
 
-          <Grid container item xs={3}>
-            <Grid item xs={12}>
+          <Grid container item xs={3}  style={{flexDirection: "column"}}>
+            <Grid item style={{flex:1}} xs={12}>
               <span className="btn text-blue">按类型导出生产订单</span>
             </Grid>
-            <Grid item xs={12}>
+            <Grid item style={{flex:1}} xs={12}>
               <TextField style={{marginTop:0,padding:'0 .5rem'}}
                 select
                 className={classes.textField}
@@ -353,10 +422,8 @@ class ExportProduceIndent extends React.Component {
                 </option>
               ))}</TextField>
             </Grid>
-            <Grid item xs={12}>
-            <Grid item xs={12}>
+            <Grid item style={{flex:1}} xs={12}>
               <Button variant="outlined" color="default" onClick={this.exportIndentByTimeType} className={classes.button}>点击由此下载</Button>
-            </Grid>
             </Grid>
           </Grid>
         </Grid>

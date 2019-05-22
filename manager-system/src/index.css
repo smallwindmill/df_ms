@@ -26,10 +26,17 @@ header>div:nth-child(2){
 .text-blue{
     color: #2196f3!important;
 }
+.text-notice{
+    color: #d3d621!important;
+}
+.text-success{
+    color: #21f396!important;
+}
+
+
 .bg-success{
     background: #21f396!important;color: #fff;
 }
-
 .bg-primary{
     background: #2196f3!important;color: #fff;
 }
@@ -145,7 +152,7 @@ div[class*='MuiFormLabel-root'] {
 }
 
 #produceShowTableHead th, #produceShowTable td{
-    width: 12%;
+    width: 10%;
 }
 #produceShowTableHead th:nth-child(1), #produceShowTable td:nth-child(1){
     width: 6.5%;
@@ -153,4 +160,9 @@ div[class*='MuiFormLabel-root'] {
 #produceShowTableHead th:nth-child(2), #produceShowTable td:nth-child(2), #produceShowTableHead th:nth-child(3), #produceShowTable td:nth-child(3){width: 17.5%;}
 #dutyModal div[class*='MuiBackdrop']{
     opacity:  0!important;
+}
+.emptyShow{
+    position: absolute;
+        top: 15rem;
+        left: 45%;
 }

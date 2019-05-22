@@ -138,7 +138,7 @@ class EnhancedTableToolbar extends React.Component{
   state = {
     open: false,
     chooseList:[
-      {value:' ', text:'全部'},
+      {value:'all', text:'全部'},
       {value:1, text:'已完成'},
       {value:0, text:'进行中'},
       // {value:-1, text:'报废'}
@@ -153,20 +153,6 @@ class EnhancedTableToolbar extends React.Component{
 
   addTemplate = () => {
     this.setState({ open: true });
-  }
-
-  queryDutyIndentByType = (e) =>{
-    var userId = config.changeToJson(localStorage.user).userID;
-
-
-    this.props.onSelectChange(e.target.value);
-
-    console.log(e.target.value);
-    if(e.target.value){
-      fetch(config.server.queryWorkHourByDate+'?userId='+userId+'&status='+e.target.value).then(res=>res.json()).then(data=>{
-          console.log(data);
-    }).catch(e=>this.tips('网络出错了，请稍候再试'));
-    }
   }
 
 
@@ -187,7 +173,7 @@ class EnhancedTableToolbar extends React.Component{
                 select label="状态选择:"
                 className={classes.textField}
                 margin="normal"
-                onChange = {(e)=>{e.persist();this.queryDutyIndentByType(e)}}
+                onChange = {(e)=>{e.persist();this.props.queryDutyIndentByType(e)}}
                 SelectProps={{
                 native: true,
                 className: 'text-blue select',
@@ -283,10 +269,6 @@ class DutyIndent extends React.Component {
 
   isSelected = id => this.state.selected.indexOf(id) !== -1;
 
-  selectChange = (value) =>{
-      // console.log(value);
-      this.setState({select: value});
-  }
 
   changeDutyIndentData = (data, type) =>{
     // 默认替换，1为push，2为修改
@@ -299,6 +281,33 @@ class DutyIndent extends React.Component {
     }else{
       this.setState({data: data});
     }
+    this.state.dataBak = this.state.data;
+  }
+
+  queryDutyIndentByType = (e) =>{
+    var value = e.target.value;
+    console.log(value);
+    if(!this.state.dataBak){
+      this.state.dataBak = this.state.data;
+    }
+
+    if(value==0){
+      this.state.data = this.state.dataBak.filter((item)=>{
+        // return item.ifNew==1;
+        return item.status == 0;
+      })
+    }else if(value==1){
+      this.state.data = this.state.dataBak.filter((item)=>{
+        // return item.ifNew==1;
+        return item.status == 1;
+      })
+    }else if(value=='all'){
+      this.state.data = this.state.dataBak;
+    }
+
+    this.setState({data: this.state.data });
+
+
   }
 
 
@@ -331,7 +340,7 @@ class DutyIndent extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar changeDutyIndentData = {this.changeDutyIndentData}  onSelectChange={this.selectChange} tips = {this.tips}/>
+        <EnhancedTableToolbar changeDutyIndentData = {this.changeDutyIndentData} queryDutyIndentByType = {this.queryDutyIndentByType }  tips = {this.tips}/>
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -349,7 +358,7 @@ class DutyIndent extends React.Component {
                       tabIndex={-1}
                       key={n.id}
                     >
-                      <TableCell align="left">{(index+1)}</TableCell>
+                      <TableCell align="left">{page * rowsPerPage+(index+1)}</TableCell>
                       <TableCell align="left">{n.erp}</TableCell>
                       <TableCell align="left">{n.materialCode}</TableCell>
                       <TableCell component="th" scope="row" padding="none">
