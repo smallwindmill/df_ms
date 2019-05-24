@@ -145,7 +145,7 @@ class EnhancedTableToolbar extends React.Component{
   //添加权重/更新权重时的判断
   addFactorSure = () =>{
         var { selectedDataCopy, ifAdd } = this.state;
-        var { id, year, month, factor, ifAdd } = selectedDataCopy;
+        var { id, year, month, factor } = selectedDataCopy;
         if(!year){
             this.tips('请先填写年份');return;
         }
@@ -158,36 +158,41 @@ class EnhancedTableToolbar extends React.Component{
             this.tips('请填写权重数值');return;
         }
 
-        fetch(this.state.serverURL,{method:"POST",
+        // fetch(this.state.serverURL,{method:"POST",
+        fetch(config.server.updateFactor,{method:"POST",
+          headers:{
+            'Content-Type': 'application/json',
+          },
           body:JSON.stringify({id: id, year: year, month: month, factor: factor})
         }).then(res=>res.json()).then(data=>{
-            console.log(data);
+            if(data.code!=200){
+              this.tips(data.msg);return;
+            }
             // 新增数据
+            console.log(ifAdd);
             if(ifAdd){
-              this.props.changeTemplateData(data, 1);
+              this.props.changeFactorData(data, 1);
             }else{
               if(this.state.selectedData){
-                this.state.selectedData = this.state.selectedDataCopy;
+                this.state.selectedData.factor = this.state.selectedDataCopy.factor;
               }
-              this.props.changeTemplateData('', 2);   //修改
-          }
-      }).catch(e=>this.tips('网络出错了，请稍候再试'));
+              this.props.changeFactorData('', 2);   //修改
+            }
+            this.setState({ open: false});
+      }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试');});
 
-        if(this.state.selectedData){
-          this.state.selectedData = this.state.selectedDataCopy;
-        }
-        this.props.changeTemplateData('', 2);
+
   }
 
-  // 更新模板
+  // 更新权重
   updateFactorModal = (type, data) =>{
     this.setState({tName: data.name, tProcedure: data.content, tDuty: data.duty});
-    this.setState({selectedData: data});
+    this.setState({selectedData: data, selectedDataCopy: JSON.parse(JSON.stringify(data))});
     console.log(data);
     this.addFactor(type);
   }
 
-  // 添加用户弹窗
+  // 添加权数弹窗
   addFactorModal = ()=>{
     var classes = '';
     const DialogTitle = withStyles(theme => ({
@@ -216,15 +221,14 @@ class EnhancedTableToolbar extends React.Component{
       );
     });
 
-    var { selectedDataCopy } = this.state;
+    var { selectedDataCopy, ifAdd } = this.state;
 
     return (<Dialog
-      onClose={this.handleClose}
       aria-labelledby="customized-dialog-title"
       open={this.state.open} style={{marginTop:'-10rem'}}
     >
       <DialogTitle id="customized-dialog-title" onClose={this.handleClose} >
-        添加权数
+        {ifAdd?'添加':'编辑'}权数
       </DialogTitle>
       <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem"}}>
         <Grid container spacing={24}>
@@ -290,16 +294,7 @@ class EnhancedTableToolbar extends React.Component{
     </Dialog>)
   }
 
-  tips = (msg) => {
-    if(msg){
-      this.setState({tipInfo:msg});
-    }
-    this.setState({tipsOpen: true});
-
-    setTimeout(()=>{
-      this.setState({tipsOpen: false});
-    },2000);
-  }
+  tips = this.props.tips;
 
   render(){
     var classes = '';
@@ -312,17 +307,11 @@ class EnhancedTableToolbar extends React.Component{
           </Toolbar>
           <Grid container align="right" style={{margin:'0rem 0 1rem',padding: '0 1.2rem'}}>
             <Grid item xs={12}>
-              <span className="btn text-blue"onClick={()=>this.addFactor(0)}>添加权数</span>
+              {/*<span className="btn text-blue"onClick={()=>this.addFactor(0)}>添加权数</span>*/}
             </Grid>
           </Grid>
           {this.addFactorModal()}
-          <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
-          anchorOrigin={{horizontal:"center",vertical:"top"}}
-          open={this.state.tipsOpen}
-          ContentProps={{
-            'className':'info'
-          }}
-          message={<span id="message-id" >{this.state.tipInfo}</span>}  />
+
       </div>
       )
   }
@@ -352,38 +341,27 @@ class QueryFactor
     order: 'asc',
     orderBy: 'calories',
     selected: [],
-    data: [
-      createData('文晓凤', 305, 3.7, 67, 4.3),
-      createData('袁芳', 452, 25.0, 51, 4.9),
-      createData('朝清', 262, 16.0, 24, 6.0),
-      createData('胡梦婕', 360, 19.0, 9, 37.0),
-      createData('袁芳', 452, 25.0, 51, 4.9),
-      createData('廖红玉', 159, 6.0, 24, 4.0),
-      createData('何莉', 356, 16.0, 49, 3.9),
-      createData('殷涛', 408, 3.2, 87, 6.5),
-      createData('廖红玉', 159, 6.0, 24, 4.0),
-      createData('高庆', 237, 9.0, 37, 4.3),
-      createData('杨鑫', 375, 0.0, 94, 0.0),
-      createData('张玉', 518, 26.0, 65, 7.0),
-      createData('黄丹', 392, 0.2, 98, 0.0),
-      createData('汪兵', 318, 0, 81, 2.0),
-      createData('朝清', 262, 16.0, 24, 6.0),
-      createData('何莉', 356, 16.0, 49, 3.9),
-      createData('殷涛', 408, 3.2, 87, 6.5),
-      createData('高庆', 237, 9.0, 37, 4.3),
-      createData('杨鑫', 375, 0.0, 94, 0.0),
-      createData('张玉', 518, 26.0, 65, 7.0),
-      createData('黄丹', 392, 0.2, 98, 0.0),
-      createData('汪兵', 318, 0, 81, 2.0),
-      createData('陈杰', 437, 18.0, 63, 4.0),
-    ],
+    data: [],
     page: 0,
     rowsPerPage: 10,
     open: true,
     deleteOpen: false,
     title: "确认",
     content: "确定删除该名用户吗？"
-  };
+  }
+
+
+  componentWillMount() {
+    // 组件初次加载数据申请
+    fetch(config.server.listAllFactor).then(res=>res.json()).then(data=>{
+      console.log(data);
+      if(data.code!=200){
+        this.tips(data.msg);return;
+      }
+      this.changeFactorData(data.results || []);
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+
+  }
 
 
   handleSelectAllClick = event => {
@@ -436,6 +414,31 @@ class QueryFactor
     this.setState({deleteOpen: false})
   }
 
+  changeFactorData = (data, type) =>{
+    // 默认替换，1为push，2为修改
+    if(type==1){
+      this.state.data.push(data);
+      this.setState({data: this.state.data});
+    }else if(type==2){
+      this.setState({data: this.state.data});
+      // this.state.data[this.state.editNum] = data;
+    }else{
+      this.setState({data: data});
+    }
+
+  }
+
+  tips = (msg) => {
+    if(msg){
+      this.setState({tipInfo:msg});
+    }
+    this.setState({tipsOpen: true});
+
+    setTimeout(()=>{
+      this.setState({tipsOpen: false});
+    },2000);
+  }
+
 
   render() {
     const { classes } = this.props;
@@ -444,7 +447,7 @@ class QueryFactor
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar ref="modalMethod" />
+        <EnhancedTableToolbar ref="modalMethod" tips = {this.tips}  changeFactorData = {this.changeFactorData} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -467,12 +470,12 @@ class QueryFactor
                       selected={isSelected}
                     >
                       <TableCell align="left">{page * rowsPerPage+index+1}</TableCell>
-                      <TableCell align="left">{n.calories}</TableCell>
+                      <TableCell align="left">{n.year}</TableCell>
                       <TableCell component="th" scope="row" padding="none">
-                        {n.name}
+                        {n.month}
                       </TableCell>
                       <TableCell component="th" scope="row" padding="none">
-                        {n.protein}
+                        {n.factor}
                       </TableCell>
                       <TableCell align="left">
                         <span className="pointer btn text-blue" onClick={()=>this.updateFactor(n, index)}>修改</span>
@@ -503,6 +506,13 @@ class QueryFactor
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
+        <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
+          anchorOrigin={{horizontal:"center",vertical:"top"}}
+          open={this.state.tipsOpen}
+          ContentProps={{
+            'className':'info'
+          }}
+          message={<span id="message-id" >{this.state.tipInfo}</span>}  />
       </Paper>
     );
   }

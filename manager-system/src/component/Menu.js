@@ -62,7 +62,7 @@ class Menu extends React.Component{
             name: "订单管理",
             route: 'handleIndent',
             children:[{
-                name: "上传文件来添加订单",
+                name: "添加订单",
                 route: 'handleIndent/addIndent',
             }/*,{
                 name: "查询订单",

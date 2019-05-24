@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  padding: 0;
+  padding: 0;font-size: 32px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
@@ -35,16 +35,16 @@ header>div:nth-child(2){
 
 
 .bg-success{
-    background: #21f396!important;color: #fff;
+    background: #21f39650!important;color: #333;
 }
 .bg-primary{
-    background: #2196f3!important;color: #fff;
+    background: #2196f350!important;color: #333;
 }
 .bg-red{
-    background: #f44336!important;color: #fff;
+    background: #f4433650!important;color: #333;
 }
 .bg-notice{
-    background: #e3d621!important;color: #fff;
+    background: #e3d62150!important;color: #333s;
 }
 .bg-secondary{
     background: rgba(120,120,120,.5)!important;
@@ -76,7 +76,7 @@ div[class*="MuiButtonBase-root"]{
     overflow: hidden;
 }
 .backdrop{
-    position: fixed;top: 0;left: 0;bottom: 0;right: 0;background: rgba(150,150,150,.5);
+    position: fixed;top: 0;left: 0;bottom: 0;right: 0;background: rgba(150,150,150,.5);z-index: 1000000;
 }
 .absoluteCenter{
     position: absolute;top: 50%;left: 50%;
@@ -166,3 +166,17 @@ div[class*='MuiFormLabel-root'] {
         top: 15rem;
         left: 45%;
 }
+.chipActive{
+    background: #3366bb;color: #fff;
+}
+.dutyChip{ overflow: hidden; }
+.dutyChip span{height: 100%;}
+.mailDialog div[class*='MuiDialog-container']>div{
+    max-width: 95%;
+}
+
+body *{
+    font-size: inherit!important;
+}
+
+td{padding: 2rem 0!important;}

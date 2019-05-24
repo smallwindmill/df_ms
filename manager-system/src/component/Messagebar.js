@@ -23,6 +23,7 @@ import Typography from '@material-ui/core/Typography';
 import withRouter from '@material-ui/core/Typography';
 
 import Confirm  from './Confirm';
+import config  from './config';
 
 
 const DialogTitle = withStyles(theme => ({
@@ -72,35 +73,39 @@ class MessageBar extends React.Component{
         super(props);
         this.state = {
           open: false,
-          mailMessage: [
-            {content: "八九十枝花"},
-            {content: "野火烧不尽"},
-            {content: "日暮苍山远"},
-            {content: "风雪夜归人"},
-            {content: "为有暗香来"}
-          ],
+          mailMessage: [],
           logOut: false,
           title: "提示",
           content: "确定注销登录吗？"
         }
     }
 
-     componentWillMount() {
-        if(!localStorage.userName){
-          // this.props.history.push('/login');
-          // window.location.href='/login'
-        }else{
-          // console.log(this.props);
-          // window.location.href='/user2'
-          // this.props.history.push('/user');
-        }
-          // console.log(this.props);
+    componentDidMount() {
+      this.state.messageTimer = setInterval(this.queryMessageTimer, 10000);
+      this.mailClick();
     }
 
+    componentWillUnmount() {
+      if(this.state.messageTimer){
+        clearInterval(this.state.messageTimer);
+      }
+    }
 
+    // 更新消息等数据
     updateBarData = (userName, messages) => {
-      // console.log(data);
-      this.setState({userName: userName ||[], mailMessage: messages || []});
+      this.setState({userName: userName || '', mailMessage: messages || []});
+    }
+
+    queryMessageTimer = () => {
+      var userID = config.changeToJson(localStorage.user || '{}').userID;
+
+      if(!userID) return;
+      fetch(config.server.queryMessage+'?userID='+userID).then(res=>res.json()).then(data=>{
+        if(data.code!=200){
+          return;
+        }
+        this.updateBarData(data.results.userName, data.results.message);
+      }).catch(e=>{console.log(e);});
     }
 
 
@@ -134,23 +139,37 @@ class MessageBar extends React.Component{
     }
 
     // 标记消息已读
-    markMessage = (index) =>{
+    markMessage = (data, index) =>{
+      fetch(config.server.markMessageRead,{method:"POST",
+        headers:{
+          'Content-Type': 'application/json',
+        },
+        body:JSON.stringify({id: data.id})
+      }).then(res=>res.json()).then(data=>{
+        if(data.code!=200){
+          this.props.tips(data.msg);return;
+        }
         this.state.mailMessage.splice(index,1);
-        this.setState({mailMessage: this.state.mailMessage})
+        this.setState({mailMessage: this.state.mailMessage});
+      }).catch(e=>{console.log(e);this.props.tips('网络出错了，请稍候再试')});
     }
 
     mailDialog(){
       return (<Dialog
         onClose={this.handleClose}
         aria-labelledby="customized-dialog-title"
-        open={this.state.open} style={{marginTop:'-15rem'}}
+        open={this.state.open} style={{marginTop:'1rem'}} className = "mailDialog"
       >
         <DialogTitle id="customized-dialog-title" onClose={this.handleClose}>
           未读消息
         </DialogTitle>
-        <DialogContent style={{width: "500px",height: "140px",overflowY:"auto"}}>
-          <ul style={{paddingRight:"2rem"}}>{this.state.mailMessage.map((mail, index)=>(
-            <li style={{padding:".2rem 0"}} className="mail-message" key={'mailLi'+index}><span>{index+1}. </span>{mail.content+'这是一条特地加长的长长的测试消息'}<small>{new Date().format('yyyy-MM-dd')}</small><span className="text-red pointer" style={{marginLeft:'.5rem'}} onClick={()=>{this.markMessage(index)}}>已读 </span></li>))}</ul>
+        <DialogContent style={{width: "90vw",height: "90vh",overflowY:"auto"}}>
+          <ul style={{paddingRight:"2rem"}}>
+          {this.state.mailMessage.map((mail, index)=>(
+            <li style={{padding:".2rem 0",position: 'relative'}} className="mail-message" key={'mailLi'+index}>
+            <span>{index+1}. </span>{mail.content.split('//%//')[0]} {(mail.content.split('//%//')[1]?(<i className="small text-blue">{mail.content.split('//%//')[1]}</i>):'')} <small style={{paddingLeft: '1rem'}}>{mail.time?new Date(mail.time).format('yyyy-MM-dd hh:mm:ss'):''}</small>
+            <span className="text-red pointer" style={{marginLeft:'1rem',textAlign: "right"}} onClick={()=>{this.markMessage(mail, index)}}>已读 </span>
+           </li>))}</ul>
            { this.state.mailMessage.length==0?<ul><li className="mail-message text-blue">暂无消息</li></ul>:false}
         </DialogContent>
         <DialogActions>
@@ -172,9 +191,9 @@ class MessageBar extends React.Component{
                 欢迎你，<span  className="text-blue" style={{paddingRight:1+"rem"}}>{userName}</span>
                 {/*<span color="primary"onClick={this.loginClick}>登陆</span>*/}
                 <span color="const" style={{display:(userName?'ff':'none')}} className={"btn text-red "} onClick={this.logoutClick}>注销</span>
-                <IconButton color="inherit" style = {{marginTop: '-3px'}} onClick={this.mailClick}>
+                <IconButton fontSize="large" color="inherit"style = {{marginTop: '-3px'}} onClick={this.mailClick}>
                   <Badge badgeContent={mailMessage.length} color="secondary">
-                    <MailIcon />
+                    <MailIcon  />
                   </Badge>
                 </IconButton>
               <IconButton color="inherit" style={{display:mailMessage.nnlength?'ff':'none'}}>

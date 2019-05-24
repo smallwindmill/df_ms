@@ -191,7 +191,6 @@ class EnhancedTableToolbar extends React.Component{
             </Grid>
 
             <Grid item align="right" xs={6}>
-              <span className="btn text-blue" onClick={this.addTemplate}>导入订单</span>
               <TextField style={{marginTop:0,marginLeft:'1rem'}}
               placeholder="请输入订单号或货号查询"
               className={classes.textField}
@@ -435,7 +434,7 @@ class QueryIndentStatus extends React.Component {
                       role="checkbox"
                       aria-checked={isSelected}
                       tabIndex={-1}
-                      key={n.id}
+                      key={index}
                       selected={isSelected}
                     >
                       <TableCell align="left">{page * rowsPerPage+(index+1)}</TableCell>
@@ -443,7 +442,7 @@ class QueryIndentStatus extends React.Component {
                       <TableCell align="left">{n.materialCode}</TableCell>
                       <TableCell align="left">{n.materialName}</TableCell>
                       <TableCell component="th" scope="row" padding="none">
-                        {n.procedure}
+                        {n.name}
                       </TableCell>
                       <TableCell component="th" scope="row" padding="none">
                         {n.duty}
@@ -452,7 +451,7 @@ class QueryIndentStatus extends React.Component {
                         {(n.status)?'完成':'进行中'}
                       </TableCell>
                       <TableCell align="left">
-                        <span className="pointer btn text-blue">修改</span>
+                        <span className="pointer btn text-blue">{1==1?'':'修改'}</span>
                         {/*<span className="pointer btn text-red" onClick={this.deleteUser}>删除</span>*/}
                       </TableCell>
                     </TableRow>

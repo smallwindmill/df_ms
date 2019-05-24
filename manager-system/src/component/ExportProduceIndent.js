@@ -203,7 +203,8 @@ class ExportProduceIndent extends React.Component {
         { k: 'templateID', v: '模板编号' },
         { k: 'status', v: '状态' }
     ];
-    var fileName = '订单表'+startDate.replace(/-/g,'')+'-'+endDate.replace(/-/g,'')+'.xlsx';
+
+    var fileName = '订单表'+new Date(startDate).format('yyyy-MM-dd').replace(/-/g,'')+'-'+new Date(endDate).format('yyyy-MM-dd').replace(/-/g,'')+'.xlsx';
 
     fetch(config.server.exportTimeIndentServer +'?startDate='+startDate.format('yyyy-MM-dd')+'&endDate='+endDate.format('yyyy-MM-dd')).then(res=>res.json()).then(data=>{
       if(data.results.length){

@@ -5,6 +5,9 @@ var config = {
   server:{
     login: serverIP+'/login',
 
+    queryMessage: serverIP+'/queryMessage',
+    markMessageRead: serverIP+'/markMessageRead',
+
     listSystemUser: serverIP+'/listSystemUser',
     addSystemUser: serverIP+'/addSystemUser',
     listSystemUserByName: serverIP+'/listSystemUserByName',
@@ -27,6 +30,7 @@ var config = {
     updateIndentInfo: serverIP+'/updateIndentInfo',
 
 
+    listAllFactor: serverIP+'/listAllFactor',
     updateFactor: serverIP+'/updateFactor',
 
     listIndentById: serverIP+'/listIndentById',
@@ -45,8 +49,10 @@ var config = {
     queryProcedureInfo: serverIP+'/queryProcedureInfo',
     queryDutyProcedureByStatus: serverIP+'/queryDutyProcedureByStatus',
     queryDutyProcedureById:  serverIP+'/queryDutyProcedureById',
+    updateDutyProcedureStatus:  serverIP+'/updateDutyProcedureStatus',
+
     addProcedureInfo: serverIP+'/addProcedureInfo',
-    updateProcedureStatus: serverIP+'/updateProcedureStatus'
+    updateDutyProcedureDetailStatus: serverIP+'/updateDutyProcedureDetailStatus'
   },
 
 

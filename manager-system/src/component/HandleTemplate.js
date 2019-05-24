@@ -163,7 +163,7 @@ class EnhancedTableToolbar extends React.Component{
   //添加模板/更新模板时的判断
   addTempleteSure=()=>{
       // console.log(this.state);
-      var { tName, tProcedure, tDuty, ifAdd } = this.state;
+      var { tName, tProcedure, tDuty,DutyWorkers, ifAdd } = this.state;
       if(!tName){
           this.tips('请先填写模板名称');return;
       }
@@ -178,17 +178,22 @@ class EnhancedTableToolbar extends React.Component{
 
       var tProcedureLen = tProcedure.split(' ');
       var tDutyLen = tDuty.replace(/ $/,'').replace(/^ /,'').split(' ');
-      console.log(tProcedureLen, tDutyLen);
 
-      if(tProcedureLen.length!=tDutyLen.length){
+      // if(tProcedureLen.length!=tDutyLen.length){
+      if(tProcedureLen.length!=DutyWorkers.length){
         this.tips('流程与负责人数量不匹配，请检查后重试');return;
+      }
+
+      var postDuty = '';
+      for(var i of DutyWorkers){
+        postDuty += i.userID+' ';
       }
 
       fetch(this.state.serverURL,{method:"POST",
         headers:{
           'Content-Type': 'application/json',
         },
-        body:JSON.stringify({name: tName, procedure: tProcedure, duty: tDuty})
+        body:JSON.stringify({name: tName, procedure: tProcedure, duty: postDuty.replace(/ $/,'').replace(/^ /,'')})
       }).then(res=>res.json()).then(data=>{
         if(data.code!=200){
           this.tips(data.msg);return;
@@ -205,7 +210,7 @@ class EnhancedTableToolbar extends React.Component{
           this.props.changeTemplateData('', 2);   //修改
         }
         this.setState({open: false});
-    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
 
   }
 
@@ -218,6 +223,7 @@ class EnhancedTableToolbar extends React.Component{
   }
 
   showDutyModal = () =>{
+    this.state.DutyWorkers = [];
     fetch(config.server.listSystemUserByType+"?type="+4).then(res=>res.json()).then(data=>{
       console.log(data);
       if(data.code!=200){
@@ -228,9 +234,16 @@ class EnhancedTableToolbar extends React.Component{
   }
 
 
-  selectToDuty = (duty, index)=>{
+  selectToDuty = (e, duty, index)=>{
+    e.persist();
+    console.log(e.target.className);
+    if(e.target.className.indexOf('chipActive')!=-1){
+      e.target.className = e.target.className.replace(' chipActive','');
+    }else{
+      e.target.className = e.target.className+' chipActive';
+    }
 
-    var {tDuty, workers} = this.state;
+   /* var {tDuty, workers} = this.state;
     var index = tDuty.split(' ').indexOf(duty.name);
     // console.log(index);
     if(index!=-1){
@@ -240,8 +253,24 @@ class EnhancedTableToolbar extends React.Component{
       // tDuty.push(duty.name);
       tDuty += (" "+duty.name);
     }
+    this.setState({tDuty: tDuty});*/
+    // console.log(this.state.tDuty);
+
+    var {tDuty, DutyWorkers, workers} = this.state;
+
+    var index = this.state.DutyWorkers.indexOf(duty);
+    if(index==-1){
+      this.state.DutyWorkers.push(duty);
+    }else{
+      this.state.DutyWorkers.splice(index,1);
+    }
+
+    tDuty = '';
+    for(var i of this.state.DutyWorkers){
+      tDuty += (i.name+' ');
+    }
+
     this.setState({tDuty: tDuty});
-    console.log(this.state.tDuty);
   }
 
   // 添加模板弹窗
@@ -355,14 +384,14 @@ class EnhancedTableToolbar extends React.Component{
           aria-labelledby="customized-dialog-title" id = "dutyModal"
           open={this.state.dutyModal} style={{marginTop:'14rem', oveflow: "hidden"}} onClose = {()=>this.setState({dutyModal: false})}
         >
-          <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem",width: '456px'}}>
+          <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem",width: '408px'}}>
               <Grid container >
 
               <Grid item xs={12} style={{paddingTop:'.5rem'}}>
                 <Grid item xs={12} style={{paddingTop: 0, boxShadow: ""}}>
                   <div className="bold">待选择组长人员</div>
                   <div className='plane waitingChoose' style = {styleCon}>
-                  {workers.map((worker,index)=><Chip key = {index} label={worker.name}  style = {styleChip} className={classes.chip} onClick={()=>this.selectToDuty(worker, index)}/>)}
+                  {workers.map((worker,index)=><Chip key = {index} label={worker.name}  style = {styleChip} className={'dutyChip '+classes.chip} onClick={(e)=>this.selectToDuty(e, worker, index)}/>)}
                   </div>
                 </Grid>
               </Grid>

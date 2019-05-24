@@ -197,6 +197,7 @@ class EnhancedTableToolbar extends React.Component{
         formData.append('id', config.changeToJson(localStorage.user).userID);
         var uploadTypeUrl;
 
+        window.loading(true);
         fetch(config.server.uploadExcelForAddIndent,{
           method: 'POST',
           body: formData
@@ -205,14 +206,16 @@ class EnhancedTableToolbar extends React.Component{
         }).then(data => {
           console.log(data);
           if(data.code!=200){
-              this.tips('文件上传出错，请稍后再试','1000');return;
-              // nextFunction();
+            window.loading(false);
+            this.tips('文件上传出错，请稍后再试','1000');return;
+            // nextFunction();
           }
 
           this.tips(<span>本次共上传<span class="text-blue">{data.results.total}</span>条数据，<span class="text-red">{data.results.fail}</span>条失败，<span class="text-blue">{data.results.success}</span>条成功</span>, 'stay');
-          this.setState({ open: false });
+          this.setState({ open: false });window.loading(false);
 
        }).catch(error=>{
+            window.loading(false);
             console.log(error);
         })
 
@@ -369,11 +372,13 @@ class HandleIndent extends React.Component {
     confirmOpen: false,
     title: "确认",
     selectedData: {},
-    content: "确定删除该订单吗？"
+    content: "确定删除该订单吗？",
+    actualFinish: new Date().format('yyyy-MM-dd')
   };
 
   componentWillMount() {
     // 组件初次加载数据申请
+    console.log(this.props);
     fetch(config.server.listAllIndentByDate).then(res=>res.json()).then(data=>{
       console.log(data);
       if(data.code!=200){
@@ -440,12 +445,17 @@ class HandleIndent extends React.Component {
       }
       this.tips('订单信息更新成功');
 
+      if(!selectedDataBak.actualFinish){
+        // selectedDataBak.actualFinish = new Date().format('yyyy.MM.dd');
+      }
+
       for(var i in selectedDataBak){
         selectedDataBak[i] = selectedData[i];
       }
+
       this.changeIndentData('', 2);
       this.setState({open: false});
-    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
   }
 
   changeIndentData = (data, type) =>{
@@ -555,6 +565,10 @@ class HandleIndent extends React.Component {
 
   // 设置完成订单
   finishIndent = (data, index) => {
+    console.log(data);
+    if(!data.actualFinish){
+      this.tips('请先设置订单完成时间');return;
+    }
     var nexFun = ()=>{
       // 设置订单为完成状态
       fetch(config.server.updateIndentInfo,{method:"POST",
@@ -562,12 +576,13 @@ class HandleIndent extends React.Component {
             'Content-Type': 'application/json',
         },
         body:JSON.stringify({id: data.id, status: 1,remark: data.remark})
-      }).then(res=>res.json()).then(data=>{
+      }).then(res=>res.json()).then(data1=>{
         // console.log(data);
-        if(data.code!=200){
+        if(data1.code!=200){
             this.tips(data.msg);return;
         }
         this.tips('订单已完成');
+        // this.state.data[index].status = 1;
         data.status = 1;
         // 新增数据
         this.changeIndentData('', 2);
@@ -638,22 +653,22 @@ class HandleIndent extends React.Component {
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">计划上线时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ planOnline?new Date(planOnline):new Date() } onChange={(date)=>{selectedData.planOnline = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+            <DateFormatInput  className="inline-block" name='date-input' value={ planOnline?new Date(planOnline):'' } onChange={(date)=>{selectedData.planOnline = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">计划完成时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ planFinishDate?new Date(planFinishDate):new Date() } onChange={(date)=>{selectedData.planFinishDate = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+            <DateFormatInput  className="inline-block" name='date-input' value={ planFinishDate?new Date(planFinishDate):'' } onChange={(date)=>{selectedData.planFinishDate = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">实际开始时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ actualStart?new Date(actualStart):new Date() } onChange={(date)=>{selectedData.actualStart = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+            <DateFormatInput  className="inline-block" name='date-input' value={ actualStart?new Date(actualStart):'' } onChange={(date)=>{selectedData.actualStart = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">实际完成时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ actualFinish?new Date(actualFinish):new Date() } onChange={(date)=>{selectedData.actualFinish = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+            <DateFormatInput  className="inline-block" name='date-input' value={ actualFinish?new Date(actualFinish):'' } onChange={(date)=>{selectedData.actualFinish = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
@@ -734,7 +749,7 @@ class HandleIndent extends React.Component {
                       role="checkbox"
                       aria-checked={isSelected}
                       tabIndex={-1}
-                      key={n.id}
+                      key={index}
                       selected={isSelected}
                     >
                       <TableCell align="left">{ page * rowsPerPage+index+1 }</TableCell>

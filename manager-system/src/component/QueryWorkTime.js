@@ -73,7 +73,7 @@ const rows = [
   { id: 'calories', numeric: false, disablePadding: false, label: '权数' },
   { id: 'protein', numeric: true, disablePadding: false, label: '工时费' },
   { id: 'protein', numeric: true, disablePadding: false, label: '总人数' },
-  { id: 'protein', numeric: true, disablePadding: false, label: '总小时' }
+  // { id: 'protein', numeric: true, disablePadding: false, label: '总小时' }
 ];
 
 class EnhancedTableHead extends React.Component {
@@ -378,13 +378,12 @@ class QueryWorkTime extends React.Component {
                       <TableCell align="left">{n.erp}</TableCell>
                       <TableCell align="left">{n.materialCode}</TableCell>
                       <TableCell align="left">{n.planNum}</TableCell>
-
-                      <TableCell align="left"> {n.countTime}</TableCell>
-                      <TableCell align="left">{n.singleTime}</TableCell>
+                      <TableCell align="left"> {n.countHour}</TableCell>
+                      <TableCell align="left">{n.singleHour}</TableCell>
                       <TableCell align="left">{n.factor}</TableCell>
-                      <TableCell align="left">{n.workercost}</TableCell>
-                      <TableCell align="left">{n.workercount}</TableCell>
-                      <TableCell align="left">{n.counthour}</TableCell>
+                      <TableCell align="left">{n.cost}</TableCell>
+                      <TableCell align="left">{n.countWorkers}</TableCell>
+                      {/*<TableCell align="left">{n.counthour}</TableCell>*/}
                       {/*<TableCell align="left">{n.remark}</TableCell>
                                             <TableCell align="left">{n.feedback}</TableCell>*/}
                     </TableRow>

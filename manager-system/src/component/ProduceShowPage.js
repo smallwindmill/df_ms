@@ -155,9 +155,9 @@ class ProduceShowPage extends React.Component {
             </Grid>
             <Grid item xs = {9}>
               <div align="right" style={{paddingRight:'2rem'}}>
-                <span className="rect bg-success"></span><span className="inline-block">已完成</span>
-                <span className="rect bg-notice"></span><span className="inline-block">新品</span>
-                <span className="rect bg-red"></span><span className="inline-block">加急</span>
+                <span className="rect border bg-success"></span><span className="inline-block">已完成</span>
+                <span className="rect border bg-notice"></span><span className="inline-block">新品</span>
+                <span className="rect border bg-red"></span><span className="inline-block">加急</span>
               </div>
             </Grid>
 
@@ -180,7 +180,7 @@ class ProduceShowPage extends React.Component {
         <table id="produceShowTable" className="produceShowTable" style={{width:'100%',textAlign: 'center'}}><tbody>
 
         {data.map((single, index)=>(
-          <tr key={'tr'+index}  className={single.status==0?(single.priority==0?(single.ifNew==1?'bg-notice':''):'bg-red'):'bg-success'}>
+          <tr key={'tr'+index}  className={single.status==0?(single.priority?'bg-red':(single.ifNew==1?'bg-notice':'')):'bg-success'}>
             <td style={{padding: '12px 0'}}>{index+1}</td>
             <td style={{padding: '12px 0'}}>{single.erp}</td>
             <td>{single.materialCode}</td>
@@ -189,7 +189,7 @@ class ProduceShowPage extends React.Component {
             <td>{single.actualStart}</td>
             <td>{single.planFinishDate}</td>
             <td>{single.status?'完成':'进行中'}</td>
-            <td title={single.remark?single.remark:'    '}>{single.one7}</td>
+            <td title={single.remark?single.remark:'    '}>{single.remark}</td>
           </tr>
         ))}</tbody></table></div>
         <Snackbar style={{marginTop:'70px'}}

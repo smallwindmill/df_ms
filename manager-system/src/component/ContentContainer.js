@@ -53,7 +53,17 @@ class ContentContainer extends React.Component{
 
     componentWillMount() {
       this.judgeUser();
+      window.loading = this.loading;
     }
+
+    componentWillUnmount() {
+      // 清楚自动重新登录定时器
+      if(this.state.autoLoginTimer){
+        clearTimeout(this.state.autoLoginTimer);
+      }
+    }
+
+
 
     // 自动登录
     judgeUser = () => {
@@ -64,6 +74,7 @@ class ContentContainer extends React.Component{
         this.tips('身份信息过期，请重新登录', 5000);
         this.props.history.push('/login');this.loading(false);
       }else{
+        this.loading(true);
         pwd = pwd.replace(/2a3/g, 1).replace(/\*%/,'' ).replace(/\%&/,'' );
         fetch(config.server.login,{method:"POST",
             headers:{
@@ -81,21 +92,21 @@ class ContentContainer extends React.Component{
             this.changeLoginData(data.results);
             this.loading(false);
           }, 1000);
-        }).catch(e=>{this.loading(false);this.tips('网络出错了，登陆失败，请稍候再试')});
+        }).catch(e=>{
+          this.loading(false);
+          this.tips('网络出错了，登陆失败，请稍候再试');
+          // 出错重新登陆
+          this.state.autoLoginTimer = setTimeout(this.judgeUser, 5000);
+        });
       }
     }
 
     changeLoginData = (user)=>{
-      // console.log(this.refs);
       this.setState({user: user});
       this.refs.messageBar.updateBarData(user.userName, user.messages);
-      // console.log(this.refs);
-      // this.refs.changeMenuData.changeMenuConfig('user');
     }
 
-    /*getMenuData = () =>{
-      return this.state.user.power;this.forceUpdate();
-    }*/
+
 
     loading = (show) => {
       this.setState({loading: show?true:false});
@@ -117,10 +128,11 @@ class ContentContainer extends React.Component{
         var { user, loading } = this.state;
         window.ReactHistory = this.props.history;
 
+
         return (
           <div>
             <Route path="/"  >
-              <MessageBar  ref="messageBar" changeLoginData = {(data)=>this.changeLoginData(data)} />
+              <MessageBar  ref="messageBar" changeLoginData = {(data)=>this.changeLoginData(data)} tips={this.tips} />
             </Route>
             <div className="page-container">
               {!this.state.user.userName?(

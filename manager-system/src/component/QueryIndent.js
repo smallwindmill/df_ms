@@ -241,7 +241,7 @@ class QueryIndent extends React.Component {
   componentWillMount() {
     // 组件初次加载数据申请
     fetch(config.server.listAllIndentByDate).then(res=>res.json()).then(data=>{
-      console.log(data);
+      // console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
