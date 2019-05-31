@@ -29,6 +29,7 @@ import Button from '@material-ui/core/Button';
 
 import Snackbar from '@material-ui/core/Snackbar';
 
+import config from './config';
 import Confirm from './Confirm';
 
 let counter = 0;
@@ -170,7 +171,7 @@ class EnhancedTableToolbar extends React.Component{
 
     setTimeout(()=>{
       this.setState({tipsOpen: false});
-    },1000);
+    },4000);
   }
 
 
@@ -262,7 +263,7 @@ class QueryProduceIndent extends React.Component {
       createData('74475686796','BM234','通用流程', "成品备料:领料:SMT:DIP:清洗:测试:包装:入库", "何莉:汪兵:高庆:陈杰:殷涛:文晓凤:张玉:饶玲:汪世芳",0),
     ],
     page: 0,
-    rowsPerPage: 10,
+    rowsPerPage: config.pageChangeNum || 13,
     open: true,
     deleteOpen: false,
     title: "确认",

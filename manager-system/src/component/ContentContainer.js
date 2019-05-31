@@ -33,11 +33,16 @@ import ProduceShowPage from './ProduceShowPage';
 
 import DutyIndent from './DutyIndent';
 import DutyIndentInfo from './DutyIndentInfo';
+
+import recycleTemplate from './RecycleTemplate';
+import recycleIndent from './RecycleIndent';
+
 import Snackbar from '@material-ui/core/Snackbar';
+import CircularProgress from '@material-ui/core/CircularProgress';
+
+import WorkCalendar from './Calendar';
 
 import config from './config';
-
-import CircularProgress from '@material-ui/core/CircularProgress';
 
 var AddIndent = HandleIndent;
 
@@ -63,15 +68,18 @@ class ContentContainer extends React.Component{
       }
     }
 
-
-
     // 自动登录
     judgeUser = () => {
       var userID = config.changeToJson(localStorage.user || '{}').userID;
       var pwd = config.changeToJson(localStorage.user || '{}').pass;
 
       if(!userID || !pwd){
-        this.tips('身份信息过期，请重新登录', 5000);
+        if(localStorage.user==undefined){
+          this.tips('欢迎您，请登录系统', 5000);
+        }else{
+          this.tips('身份信息过期，请重新登录', 5000);
+        }
+
         this.props.history.push('/login');this.loading(false);
       }else{
         this.loading(true);
@@ -95,8 +103,8 @@ class ContentContainer extends React.Component{
         }).catch(e=>{
           this.loading(false);
           this.tips('网络出错了，登陆失败，请稍候再试');
-          // 出错重新登陆
-          this.state.autoLoginTimer = setTimeout(this.judgeUser, 5000);
+          // 出错过后重新登陆
+          this.state.autoLoginTimer = setTimeout(this.judgeUser, 10000);
         });
       }
     }
@@ -120,7 +128,7 @@ class ContentContainer extends React.Component{
 
       setTimeout(()=>{
         this.setState({tipsOpen: false});
-      },time || 2000);
+      },time || 4000);
     }
 
     render() {
@@ -165,6 +173,7 @@ class ContentContainer extends React.Component{
                         <Route path="/workTime" exact component={QueryFactor} />
                         <Route path="/workTime/queryFactor" component={QueryFactor} />
                         <Route path="/workTime/queryWorkTime" component={QueryWorkTime} />
+                        <Route path="/workTime/queryProcedureWorkTime:type" component={QueryWorkTime} />
 
                         <Route path="/produceIndent/queryProduceIndent" component={QueryProduceIndent} />
                         <Route path="/produceIndent/exportProduceIndent" component={ExportProduceIndent} />
@@ -174,9 +183,17 @@ class ContentContainer extends React.Component{
                         <Route path="/dutyIndent" exact component={DutyIndent} />
                         <Route path="/dutyIndent/info" component={DutyIndentInfo} />
                         <Route path="/dutyIndent/info:id" component={DutyIndentInfo} />
+                        <Route path="/indent/info:indent" component={DutyIndentInfo} />
+
+                       {/* <Route path="/dutyIndent/info:id" component={DutyIndentInfo} />
+                         <Route path="/dutyIndent/info:id" component={DutyIndentInfo} />*/}
 
 
-                        <Route path="/"  component={QueryUser} />
+                        <Route path="/recycle"  exact component={recycleTemplate} />
+                        <Route path="/recycle/template"  component={recycleTemplate} />
+                        <Route path="/recycle/indent"  component={recycleIndent} />
+
+                        <Route path="/calendar"  ><WorkCalendar tips={this.tips} /></Route>
 
                     </Switch>
                   </div>

@@ -96,7 +96,7 @@ class EnhancedTableHead extends React.Component {
             (row, index) => (
               <TableCell
                 key={'EnhancedTableHead'+index}
-                align={row.numeric ? 'left' : 'left'}
+                align={row.numeric ? 'center' : 'center'}
                 padding={row.disablePadding ? 'none' : 'default'}
                 sortDirection={orderBy === row.id ? order : false}
               >
@@ -163,7 +163,8 @@ class EnhancedTableToolbar extends React.Component{
   //添加模板/更新模板时的判断
   addTempleteSure=()=>{
       // console.log(this.state);
-      var { tName, tProcedure, tDuty,DutyWorkers, ifAdd } = this.state;
+      var { tName, tProcedure, tDuty,DutyWorkers, ifAdd, selectedData } = this.state;
+
       if(!tName){
           this.tips('请先填写模板名称');return;
       }
@@ -180,27 +181,30 @@ class EnhancedTableToolbar extends React.Component{
       var tDutyLen = tDuty.replace(/ $/,'').replace(/^ /,'').split(' ');
 
       // if(tProcedureLen.length!=tDutyLen.length){
+      // console.log(DutyWorkers);
       if(tProcedureLen.length!=DutyWorkers.length){
         this.tips('流程与负责人数量不匹配，请检查后重试');return;
       }
 
       var postDuty = '';
       for(var i of DutyWorkers){
-        postDuty += i.userID+' ';
+        postDuty += i.id+' ';
       }
 
       fetch(this.state.serverURL,{method:"POST",
         headers:{
           'Content-Type': 'application/json',
         },
-        body:JSON.stringify({name: tName, procedure: tProcedure, duty: postDuty.replace(/ $/,'').replace(/^ /,'')})
+        body:JSON.stringify({id:selectedData?selectedData.id:'', name: tName, procedure: tProcedure, duty: postDuty.replace(/ $/,'').replace(/^ /,'')})
       }).then(res=>res.json()).then(data=>{
         if(data.code!=200){
           this.tips(data.msg);return;
         }
         // 新增数据
         if(ifAdd){
-          this.props.changeTemplateData(data.results, 1);
+          // this.props.changeTemplateData(data.results, 1);
+          // 重新请求数据
+          this.props.initQueryData();
         }else{
           if(this.state.selectedData){
             this.state.selectedData.name = tName;
@@ -211,23 +215,22 @@ class EnhancedTableToolbar extends React.Component{
         }
         this.setState({open: false});
     }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
-
   }
 
   // 更新模板
   updateTemplateModal = (type, data) =>{
     this.setState({tName: data.name, tProcedure: data.procedure, tDuty: data.duty});
     this.setState({selectedData: data, selectedDataCopy: JSON.parse(JSON.stringify(data))});
-    console.log(data);
+    // console.log(data);
     this.addTemplate(type);
   }
 
   showDutyModal = () =>{
     this.state.DutyWorkers = [];
-    fetch(config.server.listSystemUserByType+"?type="+4).then(res=>res.json()).then(data=>{
-      console.log(data);
+    fetch(config.server.listSystemUserByType+"?type=3").then(res=>res.json()).then(data=>{
+      // console.log(data);
       if(data.code!=200){
-        this.tips('获取生产人员列表失败，请稍后重试');return;
+        this.tips('获取组长人员列表失败，请稍后重试');return;
       }
       this.setState({dutyModal: true, workers: data.results, selectedWorkers: []});
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
@@ -236,7 +239,6 @@ class EnhancedTableToolbar extends React.Component{
 
   selectToDuty = (e, duty, index)=>{
     e.persist();
-    console.log(e.target.className);
     if(e.target.className.indexOf('chipActive')!=-1){
       e.target.className = e.target.className.replace(' chipActive','');
     }else{
@@ -342,7 +344,6 @@ class EnhancedTableToolbar extends React.Component{
           <TextField fullWidth style={{marginTop:0}}
             placeholder="请输入流程"
             label="流程(多个以空格分开)"
-            defaultValue=""
             className={classes.textField}
             type="textarea"
             value = {this.state.tProcedure}
@@ -449,7 +450,7 @@ class HandleTemplete extends React.Component {
     selected: [],
     data: [],
     page: 0,
-    rowsPerPage: 10,
+    rowsPerPage: config.pageChangeNum || 13,
     open: true,
     confirmOpen: false,
     title: "确认",
@@ -458,8 +459,12 @@ class HandleTemplete extends React.Component {
 
   componentWillMount() {
     // 组件初次加载数据申请
+    this.initQueryData();
+  }
+
+  initQueryData = () => {
     fetch(config.server.listAllTemplate).then(res=>res.json()).then(data=>{
-      console.log(data);
+      // console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
@@ -542,9 +547,6 @@ class HandleTemplete extends React.Component {
         this.tips('删除模板成功');
       }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
-      this.state.data.splice(index, 1);
-      this.setState({data: this.state.data});
-      this.tips('删除模板成功');
     };
 
     this.setState({confirmOpen: true,title: "确认",content: "确定删除该模板吗？",deleteFun: nexFun});
@@ -585,7 +587,7 @@ class HandleTemplete extends React.Component {
 
     setTimeout(()=>{
       this.setState({tipsOpen: false});
-    },2000);
+    },4000);
   }
 
 
@@ -596,7 +598,7 @@ class HandleTemplete extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar changeTemplateData = {this.changeTemplateData} ref="modalMethod" tips={this.tips} />
+        <EnhancedTableToolbar changeTemplateData = {this.changeTemplateData} ref="modalMethod" initQueryData={this.initQueryData} tips={this.tips} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -619,16 +621,16 @@ class HandleTemplete extends React.Component {
                       key={n.id}
                       selected={isSelected}
                     >
-                      <TableCell align="left">{page * rowsPerPage+(index+1)}</TableCell>
-                      <TableCell align="left">{n.id}</TableCell>
-                      <TableCell align="left">{n.name}</TableCell>
-                      <TableCell component="th" scope="row" padding="none">
+                      <TableCell align="center">{page * rowsPerPage+(index+1)}</TableCell>
+                      <TableCell align="center">{n.id}</TableCell>
+                      <TableCell align="center">{n.name}</TableCell>
+                      <TableCell align="center" component="th" scope="row" padding="none">
                         {n.procedure}
                       </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
+                      <TableCell align="center" component="th" scope="row" padding="none">
                         {n.duty}
                       </TableCell>
-                      <TableCell align="left">
+                      <TableCell align="center">
                         <span className="pointer btn text-blue" onClick={()=>this.updateTemplate(n, index)}>修改</span>
                         <span className="pointer btn text-red" onClick={()=>this.deleteTemplate(n, index)}>删除</span>
                       </TableCell>

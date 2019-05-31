@@ -184,8 +184,10 @@ class EnhancedTableToolbar extends React.Component{
           this.tips(data.msg);return;
       }
 
-      if(ifAdd){
-         this.props.changeUserData(data.results, 1);
+      if(ifAdd && data.results){
+        for(var i of data.results){
+         this.props.changeUserData(i, 1);
+        }
       }else{
         // 更新数据
         if(this.state.selectedData){
@@ -319,7 +321,7 @@ class EnhancedTableToolbar extends React.Component{
           { this.state.selectUserType && this.state.selectUserType!=4 ? <Grid item xs={12} style={{paddingTop:0}}>
           <TextField fullWidth style={{marginTop:0}}
             placeholder="请输入密码"
-            label="密码"
+            label="密码" type="password"
             className={classes.textField}
             value = {this.state.pwd }
             onChange={(e)=>this.setState({pwd: e.target.value})}
@@ -402,7 +404,7 @@ class QueryUser extends React.Component {
     selected: [],
     data: [],
     page: 0,
-    rowsPerPage: 10,
+    rowsPerPage: config.pageChangeNum || 13,
     open: true,
     confirmOpen: false
   };
@@ -521,7 +523,7 @@ class QueryUser extends React.Component {
 
     setTimeout(()=>{
       this.setState({tipsOpen: false});
-    },2000);
+    },4000);
   }
 
 

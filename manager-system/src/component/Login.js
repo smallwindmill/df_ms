@@ -101,6 +101,7 @@ class Login extends React.Component {
       setTimeout(()=>{
         this.props.changeLoginData(data.results);
         this.props.loading(false);
+
         delete data.results['power'];
         delete data.results['messages'];
 

@@ -93,7 +93,7 @@ class EnhancedTableHead extends React.Component {
             (row, index) => (
               <TableCell
                 key={'EnhancedTableHead'+index}
-                align={row.numeric ? 'left' : 'left'}
+                align={row.numeric ? 'center' : 'center'}
                 padding={row.disablePadding ? 'none' : 'default'}
                 sortDirection={orderBy === row.id ? order : false}
               >
@@ -215,7 +215,7 @@ class DutyIndent extends React.Component {
     select: 0,
     data: [],
     page: 0,
-    rowsPerPage: 10,
+    rowsPerPage: config.pageChangeNum || 13,
     open: true,
     confirmOpen: false,
     title: "确认",
@@ -330,7 +330,7 @@ class DutyIndent extends React.Component {
 
     setTimeout(()=>{
       this.setState({tipsOpen: false});
-    },time||2000);
+    },time||4000);
   }
 
   render() {
@@ -358,22 +358,22 @@ class DutyIndent extends React.Component {
                       tabIndex={-1}
                       key={n.id}
                     >
-                      <TableCell align="left">{page * rowsPerPage+(index+1)}</TableCell>
-                      <TableCell align="left">{n.erp}</TableCell>
-                      <TableCell align="left">{n.materialCode}</TableCell>
-                      <TableCell component="th" scope="row" padding="none">
+                      <TableCell align="center">{page * rowsPerPage+(index+1)}</TableCell>
+                      <TableCell align="center">{n.erp}</TableCell>
+                      <TableCell align="center">{n.materialCode}</TableCell>
+                      <TableCell align="center" component="th" scope="row" padding="none">
                         {n.materialName}
                       </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
+                      <TableCell align="center" component="th" scope="row" padding="none">
                         {n.procedure}
                       </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
+                      <TableCell align="center" component="th" scope="row" padding="none">
                         {n.duty}
                       </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
+                      <TableCell align="center" component="th" scope="row" padding="none">
                         {(n.status==1)?'完成':'进行中'}
                       </TableCell>
-                      <TableCell align="left">
+                      <TableCell align="center">
                             <span className={"pointer btn "+(n.status?"text-blue":"text-red")} onClick={()=>this.props.history.push('/dutyIndent/info'+n.id)}>{(n.status==1)?'详情':'编辑'}</span>
                           </TableCell>
                     </TableRow>

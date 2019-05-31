@@ -27,24 +27,35 @@ class ProduceShowPage extends React.Component {
     };
   }
 
-  componentWillMount() {
-    // 组件初次加载数据申请
-    fetch(config.server.listAllIndentByDate).then(res=>res.json()).then(data=>{
-      console.log(data);
-      if(data.code!=200){
-        this.tips(data.msg);return;
-      }
-      this.setState({data: data.results || []});
-      setTimeout(this.startLoop, 1000);
-    }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
-
+  componentDidMount() {
+    // 更新消息数据
+    this.queryDataTimer();
+    this.handleClickFull();
+    setTimeout(this.startLoop, 1000);
+    this.state.dataTimer = setInterval(this.queryDataTimer, 10000);
   }
 
   componentWillUnmount() {
     if(this.loopTimer){
-      clearInterval(this.loopTimer)
+      clearInterval(this.loopTimer);
     }
+
+    if(this.state.dataTimer){
+      clearInterval(this.state.dataTimer);
+    }
+  }
+
+  queryDataTimer = () => {
+
+      fetch(config.server.listShowPageData).then(res=>res.json()).then(data=>{
+        console.log(data);
+        if(data.code!=200){
+          this.tips(data.msg);return;
+        }
+        this.setState({data: data.results || []});
+      }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
+
   }
 
   startLoop = () => {
@@ -66,14 +77,15 @@ class ProduceShowPage extends React.Component {
     }
 
     this.loopTimer = setInterval(()=>{
-        // console.log(dom.scrollTop, c_height)
+        // console.log(dom.scrollTop, c_height);
       if(dom.scrollTop >= c_height){
         // var tableClone = document.getElementById('produceShowTable').cloneNode(true);
         // dom.appendChild(tableClone);
         // dom.removeChild(dom.childNodes[0]);console.log(dom.childNodes)
         dom.scrollTop = 0;
       }else{
-        dom.scrollTop += 1;
+        dom.scrollTop += 2;
+        //console.log( dom.scrollTop);
       }
     }, 30 );
   }
@@ -127,7 +139,7 @@ class ProduceShowPage extends React.Component {
 
     setTimeout(()=>{
       this.setState({tipsOpen: false});
-    },2000);
+    },4000);
   }
 
   handleClose = () => {
@@ -140,12 +152,12 @@ class ProduceShowPage extends React.Component {
     };
     var { data } = this.state;
     return (
-      <div  style = {this.state.style.table}>
+      <div  style = {this.state.style.table} className = "showPage">
         <div style={style1}>
           <Button variant="outlined" style={{display:this.state.btnVisible?'block':'none'}} variant = 'contained' color="primary" onClick={this.handleClickFull}>
             全屏
           </Button>
-          <Button variant="outlined" style={{display:this.state.btnVisible?'none':'block',opacity: 0.0}} variant = 'contained' color="secondary" onMouseEnter = {(e)=>{e.persist();e.target.style.opacity = 1}}  onMouseLeave = {(e)=>{e.persist();e.target.style.opacity = 0.0}} onClick={this.handleClickFullCancel}>
+          <Button variant="outlined" style={{display:this.state.btnVisible?'none':'block',opacity: 0.0}} variant = 'contained' color="secondary" onMouseEnter = {(e)=>{return;e.persist();e.target.style.opacity = 1}}  onMouseLeave = {(e)=>{return;e.persist();e.target.style.opacity = 1.0}} onClick={this.handleClickFullCancel}>
             退出全屏
           </Button>
           <Grid container>
@@ -170,8 +182,8 @@ class ProduceShowPage extends React.Component {
             <th>物料长代码</th>
             <th>物料名称</th>
             <th>计划生产数量</th>
-            <th>实际开工日期</th>
-            <th>计划完工日期</th>
+            <th>实际开工</th>
+            <th>计划完工</th>
             <th>生产状态</th>
             <th>备注</th>
             </tr></thead>
@@ -188,7 +200,8 @@ class ProduceShowPage extends React.Component {
             <td>{single.planNum}</td>
             <td>{single.actualStart}</td>
             <td>{single.planFinishDate}</td>
-            <td>{single.status?'完成':'进行中'}</td>
+            {/*<td>{single.status?'完成':'进行中'}</td>*/}
+            <td>{single.name}</td>
             <td title={single.remark?single.remark:'    '}>{single.remark}</td>
           </tr>
         ))}</tbody></table></div>

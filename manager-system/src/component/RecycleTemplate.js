@@ -28,15 +28,15 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 
 import Snackbar from '@material-ui/core/Snackbar';
+import Chip from '@material-ui/core/Chip';
 
 import Confirm from './Confirm';
 import config from './config';
 
-
 let counter = 0;
-function createData( sId, mCode, mName, indentProcess, proceeDuty, dutySatus) {
+function createData( name, content, duty) {
   counter += 1;
-  return { id: counter, sId, mCode, mName, indentProcess, proceeDuty, dutySatus };
+  return { id: counter, name, content, duty };
 }
 
 function desc(a, b, orderBy) {
@@ -66,12 +66,10 @@ const DialogActions = withStyles(theme => ({
 
 const rows = [
   { id: 'name', numeric: false, disablePadding: true, label: '序号' },
-  { id: 'name', numeric: false, disablePadding: true, label: '订单编号' },
-  { id: 'name', numeric: false, disablePadding: true, label: '物料长代码' },
-  { id: 'carbs', numeric: true, disablePadding: false, label: '物料名称' },
-  { id: 'calories', numeric: false, disablePadding: false, label: '订单流程' },
-  { id: 'calories', numeric: false, disablePadding: false, label: '订单负责人' },
-  { id: 'calories', numeric: false, disablePadding: false, label: '流程状态' },
+  { id: 'name', numeric: false, disablePadding: true, label: '模板编号' },
+  { id: 'name', numeric: false, disablePadding: true, label: '模板名称' },
+  { id: 'carbs', numeric: true, disablePadding: false, label: '模板流程' },
+  { id: 'calories', numeric: false, disablePadding: false, label: '负责人' },
   { id: 'protein', numeric: true, disablePadding: false, label: '操作' }
 ];
 
@@ -98,7 +96,7 @@ class EnhancedTableHead extends React.Component {
             (row, index) => (
               <TableCell
                 key={'EnhancedTableHead'+index}
-                align={row.numeric ? 'left' : 'left'}
+                align={row.numeric ? 'center' : 'center'}
                 padding={row.disablePadding ? 'none' : 'default'}
                 sortDirection={orderBy === row.id ? order : false}
               >
@@ -142,65 +140,44 @@ class EnhancedTableToolbar extends React.Component{
 
   state = {
     open: false,
-    chooseList:[
-          {value:0, text:'全部'},
-          {value:1, text:'已完成'},
-          {value:2, text:'进行中'},
-        ]
-  }
-
-  handleClose = () => {
-    this.setState({ open: false });
-  }
-
-  addTemplate = () => {
-    this.setState({ open: true });
-  }
-
-  submitFile = () =>{
-      if(this.state.fileValue){
-        console.log(this.state.fileValue);
-      }else{
-        this.tips('请选择文件后再上传');
-      }
+    dutyModal: false,
+    workers: [],
+    tDuty: ''
   }
 
   tips = this.props.tips;
+
+  handleClose = () => {
+    this.setState({ open: false, dutyModal: false });
+  }
+
+  addTemplate = (type) => {
+    if(type==0){
+      this.setState({ open: true, serverURL: config.server.addTemplate,ifAdd: 1 });
+      this.setState({tName: '', tProcedure: '', tDuty: ''});
+    }else if(type==1){
+      this.setState({ open: true, serverURL: config.server.updateTemplate,ifAdd: 0 });
+    }
+  }
+
 
 
   render(){
     var classes = '';
     return (
-       <div className={classes.title}>
-            <Toolbar >
+      <div>
+        <Toolbar >
               <Typography variant="h6" id="tableTitle" align="left">
-                {this.state.chooseMonth?this.state.chooseMonth+'月':'所有'}订单
+                已删除模板
               </Typography>
         </Toolbar>
-        <Grid container align="right" style={{margin:'-1rem 0 1rem',padding: '0 1.2rem'}}>
-          <Grid item xs={12}>
-              <TextField style={{marginTop:0,padding:'0 .5rem'}}
-                type="text"
-                placeholder = "请选择月份"
-                className={classes.textField}
-                autoComplete="current-password"
-                margin="normal"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                SelectProps={{
-                native: true,
-                className: 'text-blue select',
-                align: 'center',
-                MenuProps: {
-                }}}
-              >{this.state.chooseList.map((option, index) => (
-                <option key={'option'+index} value={option.value}>
-                  {option.text}
-                </option>
-              ))}</TextField>
-            </Grid></Grid>
-          </div>
+          <Grid container>
+                <Grid xs = {12} item align="right">
+                  <span className="btn text-blue"  onClick={()=>this.addTemplate(0)} style={{margin: "0 12rem 2rem"}}></span>
+                </Grid>
+              </Grid>
+          <div className={classes.spacer} />
+        </div>
       )
   }
 };
@@ -223,31 +200,49 @@ const styles = theme => ({
 
 
 
-class QueryIndent extends React.Component {
+class RecycleTemplete extends React.Component {
   state = {
     order: 'asc',
     orderBy: 'calories',
     selected: [],
-    data: [
-    ],
+    data: [],
     page: 0,
-    rowsPerPage: 10,
+    rowsPerPage: config.pageChangeNum || 13,
     open: true,
-    deleteOpen: false,
+    confirmOpen: false,
     title: "确认",
-    content: "确定删除该订单吗？"
+    content: "确定删除该模板吗？"
   };
 
   componentWillMount() {
     // 组件初次加载数据申请
-    fetch(config.server.listAllIndentByDate).then(res=>res.json()).then(data=>{
-      // console.log(data);
+    fetch(config.server.listAllTemplate+'?ifDelete=1').then(res=>res.json()).then(data=>{
+      console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
-      this.changeIndentData(data.results || []);
+      this.changeTemplateData(data.results || []);
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
   }
+
+  handleRequestSort = (event, property) => {
+    const orderBy = property;
+    let order = 'desc';
+
+    if (this.state.orderBy === property && this.state.order === 'desc') {
+      order = 'asc';
+    }
+
+    this.setState({ order, orderBy });
+  };
+
+  handleSelectAllClick = event => {
+    if (event.target.checked) {
+      this.setState(state => ({ selected: state.data.map(n => n.id) }));
+      return;
+    }
+    this.setState({ selected: [] });
+  };
 
   handleClick = (event, id) => {
     const { selected } = this.state;
@@ -274,9 +269,71 @@ class QueryIndent extends React.Component {
     this.setState({ page });
   };
 
+  handleChangeRowsPerPage = event => {
+    this.setState({ rowsPerPage: event.target.value });
+  };
+
+  isSelected = id => this.state.selected.indexOf(id) !== -1;
 
 
-  changeIndentData = (data, type) =>{
+
+  // 删除模板弹窗
+  deleteTemplate=(data, index)=>{
+    this.setState({confirmOpen: true});
+    var nexFun = ()=>{
+      fetch(config.server.deleteTemplate,{method:"POST",
+        headers:{
+          'Content-Type': 'application/json',
+        },
+        body:JSON.stringify({id: data.id})
+      }).then(res=>res.json()).then(data=>{
+        if(data.code!=200){
+            this.tips(data.msg);return;
+        }
+
+        this.state.data.splice(index, 1);
+        this.setState({data: this.state.data});
+        this.tips('删除模板成功');
+      }).catch(e=>this.tips('网络出错了，请稍候再试'));
+
+    };
+
+    this.setState({confirmOpen: true,title: "确认",content: "确定删除该模板吗？",deleteFun: nexFun});
+  }
+
+
+  // 还原模板
+  recycleTemplate = (data, index) =>{
+
+    var nexFun = () => {
+      fetch(config.server.recycleTemplate,{method:"POST",
+        headers:{
+          'Content-Type': 'application/json',
+        },
+        body:JSON.stringify({id: data.id})
+      }).then(res=>res.json()).then(data=>{
+        if(data.code!=200){
+          this.tips(data.msg);return;
+        }
+        // 删除数据
+        this.state.data.splice(index, 1);
+        this.setState({data: this.state.data});
+      }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
+
+    }
+
+    this.setState({confirmOpen: true,title: "确认",content: "确定还原该模板吗？",confirmSure: nexFun});
+
+  }
+
+
+  // 关闭删除模板弹窗
+  confirmClose=()=>{
+    this.setState({confirmOpen: false});
+  }
+
+
+  changeTemplateData = (data, type) =>{
     // 默认替换，1为push，2为修改
     if(type==1){
       this.state.data.push(data);
@@ -290,21 +347,6 @@ class QueryIndent extends React.Component {
 
   }
 
-  handleChangeRowsPerPage = event => {
-    this.setState({ rowsPerPage: event.target.value });
-  };
-
-  isSelected = id => this.state.selected.indexOf(id) !== -1;
-
-  // 删除用户弹窗
-  deleteUser=()=>{
-    this.setState({deleteOpen: true});
-  }
-
-  // 关闭删除用户弹窗
-  deleteModalClose=()=>{
-    this.setState({deleteOpen: false})
-  }
 
   tips = (msg) => {
     if(msg){
@@ -317,6 +359,7 @@ class QueryIndent extends React.Component {
     },4000);
   }
 
+
   render() {
     const { classes } = this.props;
     const { data, order, orderBy, selected, rowsPerPage, page } = this.state;
@@ -324,7 +367,7 @@ class QueryIndent extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar  />
+        <EnhancedTableToolbar changeTemplateData = {this.changeTemplateData} ref="modalMethod" tips={this.tips} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -335,36 +378,30 @@ class QueryIndent extends React.Component {
             />
             <TableBody>
               {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map(n => {
+                .map((n, index) => {
                   const isSelected = this.isSelected(n.id);
                   return (
                     <TableRow
                       hover
-                      onClick={event => this.handleClick(event, n.id)}
+
                       role="checkbox"
                       aria-checked={isSelected}
                       tabIndex={-1}
                       key={n.id}
                       selected={isSelected}
                     >
-                      <TableCell align="left">{n.id}</TableCell>
-                      <TableCell align="left">{n.sId}</TableCell>
-                      <TableCell align="left">{n.mCode}</TableCell>
-                      <TableCell component="th" scope="row" padding="none">
-                        {n.mName}
+                      <TableCell align="center">{page * rowsPerPage+(index+1)}</TableCell>
+                      <TableCell align="center">{n.id}</TableCell>
+                      <TableCell align="center">{n.name}</TableCell>
+                      <TableCell align="center" component="th" scope="row" padding="none">
+                        {n.procedure}
                       </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
-                        {n.indentProcess}
+                      <TableCell align="center" component="th" scope="row" padding="none">
+                        {n.duty}
                       </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
-                        {n.proceeDuty}
-                      </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
-                        {(n.dutySatus)?'已完成':'未完成'}
-                      </TableCell>
-                      <TableCell align="left">
-                        <span className="pointer btn text-blue">修改</span>
-                        <span className="pointer btn text-red" onClick={this.deleteUser}>删除</span>
+                      <TableCell align="center">
+                        <span className="pointer btn text-blue" onClick={()=>this.recycleTemplate(n, index)}>还原</span>
+                        {/*<span className="pointer btn text-red" onClick={()=>this.deleteTemplate(n, index)}>删除</span>*/}
                       </TableCell>
                     </TableRow>
                   );
@@ -376,7 +413,7 @@ class QueryIndent extends React.Component {
               )}
             </TableBody>
           </Table>
-          <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
+          <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.state.confirmSure} />
         </div>
         <TablePagination
           rowsPerPageOptions={[10, 20, 30]}
@@ -393,13 +430,20 @@ class QueryIndent extends React.Component {
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
+         <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
+          anchorOrigin={{horizontal:"center",vertical:"top"}}
+          open={this.state.tipsOpen}
+          ContentProps={{
+            'className':'info'
+          }}
+          message={<span id="message-id" >{this.state.tipInfo}</span>}  />
       </Paper>
     );
   }
 }
 
-QueryIndent.propTypes = {
+RecycleTemplete.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(QueryIndent);
+export default withStyles(styles)(RecycleTemplete);

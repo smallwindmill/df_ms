@@ -73,7 +73,7 @@ class EnhancedTableHead extends React.Component {
             (row, index) => (
               <TableCell
                 key={'EnhancedTableHead2'+index}
-                align={row.numeric ? 'left' : 'left'}
+                align={row.numeric ? 'center' : 'center'}
                 padding={row.disablePadding ? 'none' : 'default'}
               >
                 {row.label}
@@ -343,7 +343,7 @@ class QueryFactor
     selected: [],
     data: [],
     page: 0,
-    rowsPerPage: 10,
+    rowsPerPage: config.pageChangeNum || 13,
     open: true,
     deleteOpen: false,
     title: "确认",
@@ -436,7 +436,7 @@ class QueryFactor
 
     setTimeout(()=>{
       this.setState({tipsOpen: false});
-    },2000);
+    },4000);
   }
 
 
@@ -469,15 +469,15 @@ class QueryFactor
                       key={'user'+n.id}
                       selected={isSelected}
                     >
-                      <TableCell align="left">{page * rowsPerPage+index+1}</TableCell>
-                      <TableCell align="left">{n.year}</TableCell>
-                      <TableCell component="th" scope="row" padding="none">
+                      <TableCell align="center">{page * rowsPerPage+index+1}</TableCell>
+                      <TableCell align="center">{n.year}</TableCell>
+                      <TableCell align="center" component="th" scope="row" padding="none">
                         {n.month}
                       </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
+                      <TableCell align="center" component="th" scope="row" padding="none">
                         {n.factor}
                       </TableCell>
-                      <TableCell align="left">
+                      <TableCell align="center">
                         <span className="pointer btn text-blue" onClick={()=>this.updateFactor(n, index)}>修改</span>
                       </TableCell>
                     </TableRow>

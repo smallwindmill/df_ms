@@ -1,6 +1,8 @@
+@import '~@fullcalendar/core/main.css';
+@import '~@fullcalendar/daygrid/main.css';
 body {
   margin: 0;
-  padding: 0;font-size: 32px;
+  padding: 0;font-size: 18px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
@@ -162,7 +164,7 @@ div[class*='MuiFormLabel-root'] {
     opacity:  0!important;
 }
 .emptyShow{
-    position: absolute;
+    position: absolute;color: #888;font-style: italic;
         top: 15rem;
         left: 45%;
 }
@@ -175,8 +177,60 @@ div[class*='MuiFormLabel-root'] {
     max-width: 95%;
 }
 
-body *{
-    font-size: inherit!important;
+.modal.lg div[class*='MuiDialog-container']>div{
+    max-width: 45%;
 }
 
-td{padding: 2rem 0!important;}
+
+.showPage *, .mailDialog *{
+    font-size: 32px!important;
+}
+
+.showPage td{padding: 2rem 0!important;}
+#rightContent>div.work-calendar{width: 80%; height:90%; margin: 2rem auto 0;overflow: hidden;}
+.work-calendar button{box-shadow: none!important;}
+.work-calendar .fc-button-primary,.work-calendar .fc-button-primary:focus,.work-calendar .fc-button-primary:active{background: none!important;border:none;color:#333;}
+.work-calendar .fc-button-primary:hover,.work-calendar .fc-button-primary:focus,.work-calendar .fc-button-primary:active{color:#4488cc;}
+.work-calendar .fc-button-primary:active, .work-calendar .fc-button-primary:focus{background: #336699;}
+.work-calendar button.fc-button-primary span {padding: 0 3px;}
+
+.work-calendar .fc-event, .work-calendar .fc-event-dot{/* background: none;border: none;color: #333; */text-align: center;display: inline-block;
+    border-radius: 50%;cursor: pointer;
+    /* pointer-events: none; */
+    overflow: hidden;
+    width: 3.5rem;
+    height: 3.5rem;
+    line-height: 3.5rem;transition: 2s;
+}
+.fc-content .fc-title{pointer-events: none;}
+/* .work-calendar .fc-content-skeleton, .work-calendar .fc-content-skeleton table{height: 100%;} */
+/* .work-calendar .fc-content-skeleton{position: absolute;top: 0;left: 0;} */
+/* .work-calendar .fc-content-skeleton table{position: relative;} */
+.work-calendar .fc-content-skeleton table tbody{text-align: center;}
+.work-calendar .fc-prev-button, .work-calendar .fc-next-button{
+    padding: 0;
+}
+.work-calendar .fc-today-button{
+    background: none;color: #333;border: none;font-weight: bold;cursor: pointer;
+}
+/* .work-calendar .fc-toolbar {
+    justify-content: left;
+} */
+.work-calendar .fc-toolbar .fc-left{
+    flex: 1;white-space: nowrap;
+}
+.work-calendar .fc-toolbar .fc-right{
+    font-size: smaller;padding-top: 13px;padding-left: 1rem;flex: 5;
+}
+
+.work-calendar .fc-event, .work-calendar .fc-event-dot{}
+.work-calendar .fc-content-skeleton tbody td:nth-child(6) .fc-event,
+.work-calendar .fc-content-skeleton tbody td:nth-child(6) .fc-event-dot,
+.work-calendar .fc-content-skeleton tbody td:nth-child(7) .fc-event,
+.work-calendar .fc-content-skeleton tbody td:nth-child(7) .fc-event-dot{
+    background: #d89322;
+    border-color: #d87522;
+}
+.hide{
+    display: none!important;
+}

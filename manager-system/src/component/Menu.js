@@ -97,23 +97,23 @@ class Menu extends React.Component{
                 name: "根据月份查询工时",
                 route: 'workTime/queryWorkTimeByMonth',
             }*/]
-        },{
+        }/*,{
             name: "生产订单管理",
             route: 'produceIndent',
             children:[{
-                name: "生产订单查询"/*"根据订单号查询订单"*/,
+                name: "生产订单查询",
                 route: 'produceIndent/queryProduceIndent'
-            }/*,{
+            },{
                 name: "根据货号查询订单",
                 route: 'indent/queryIndentByProductNum'
             },{
                 name: "根据订单号查询订单的详细生产情况",
                 route: 'indent/queryIndentInfoByNum'
-            }*/,{
+            },{
                 name: "导出订单",
                 route: 'produceIndent/exportProduceIndent'
             }]
-        },{
+        }*/,{
             name: "生产看板",
             route: "produceShowPage",
             /*children:[{
@@ -130,6 +130,19 @@ class Menu extends React.Component{
                 name: "查询负责的未完成订单",
                 route: "produceShowPage"
             }]*/
+        },{
+            name: "回收站",
+            route: "recycle",
+            children:[{
+                name: "模板",
+                route: "recycle/template"
+            },{
+                name: "订单",
+                route: "recycle/indent"
+            }]
+        },{
+            name: "工作日历",
+            route: "calendar"
         }
       ];
 

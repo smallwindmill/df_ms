@@ -96,7 +96,7 @@ class EnhancedTableHead extends React.Component {
             (row, index) => (
               <TableCell
                 key={'EnhancedTableHead'+index}
-                align={row.numeric ? 'left' : 'left'}
+                align={row.numeric ? 'center' : 'center'}
                 padding={row.disablePadding ? 'none' : 'default'}
                 sortDirection={orderBy === row.id ? order : false}
               >
@@ -182,11 +182,11 @@ class EnhancedTableToolbar extends React.Component{
             <Grid item align="left" xs={6}>
               <Grid item xs={12} className="filterTool small">
                   <span className="blod">时间</span>
-                  {dateRange.map((date,index)=>(<span key = {index} className={"btn "+(index==0?'text-blue':'')} onClick={(e)=>this.props.queryIndentStatusByDate(e, date, index)}> {date.text}</span>))}
+                  {dateRange.map((date,index)=>(<span key = {index} className={"btn "+(index===0?'text-blue':'')} onClick={(e)=>this.props.queryIndentStatusByDate(e, date, index)}> {date.text}</span>))}
               </Grid>
               <Grid item xs={12} className="filterTool small" style = {{margin: '1rem 0'}}>
                   <span className="blod">类型</span>
-                  {typeQuery.map((data,index)=>(<span key = {index} className={"btn "+(index==0?'text-blue':'')} onClick={(e)=>this.props.queryIndentStatusByType(e, data, index)}> {data.text}</span>))}
+                  {typeQuery.map((data,index)=>(<span key = {index} className={"btn "+(index===0?'text-blue':'')} onClick={(e)=>this.props.queryIndentStatusByType(e, data, index)}> {data.text}</span>))}
               </Grid>
             </Grid>
 
@@ -232,7 +232,7 @@ class QueryIndentStatus extends React.Component {
     selected: [],
     data: [],
     page: 0,
-    rowsPerPage: 10,
+    rowsPerPage: config.pageChangeNum || 13,
     open: true,
     deleteOpen: false,
     title: "确认",
@@ -249,7 +249,7 @@ class QueryIndentStatus extends React.Component {
 
     // fetch(config.server.listAllIndentStatusByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
     fetch(config.server.listAllIndentStatusByDate).then(res=>res.json()).then(data=>{
-      if(data.code != 200){
+      if(data.code !== 200){
         this.tips(data.msg);return;
       }
       this.changeIndentStatusData(data.results || []);
@@ -260,29 +260,6 @@ class QueryIndentStatus extends React.Component {
 
   handleChangePage = (event, page) => {
     this.setState({ page });
-  };
-
-  dlExcel = () =>{
-      const dataSource = [{
-            key: '1',
-            cs: 'title',
-            sm: '列头显示文字',
-            lx: 'string',
-            mrz: '',
-        }, {
-            key: '2',
-            cs: 'mm',
-            sm: '啦啦啦啦',
-            lx: 'string',
-            mrz: '',
-        }];
-
-        const exportDefaultExcel = () => {
-            var _headers = [{ k: 'cs', v: '列名' }, { k: 'sm', v: '描述' },
-            { k: 'lx', v: '类型' }, { k: 'mrz', v: '默认值' },]
-            exportExcel(_headers, dataSource);
-        }
-        // exportDefaultExcel();
   }
 
   handleChangeRowsPerPage = event => {
@@ -310,7 +287,7 @@ class QueryIndentStatus extends React.Component {
     }
     this.state.data = this.state.dataBak.filter((item)=>{
       // return item.ifNew==1;
-      return item.erp.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1;
+      return (item.erp.toUpperCase().indexOf(e.target.value.toUpperCase())!==-1 || item.materialCode.toUpperCase().indexOf(e.target.value.toUpperCase())!==-1 || item.materialName.toUpperCase().indexOf(e.target.value.toUpperCase())!==-1);
     });
 
     this.setState({data: this.state.data });
@@ -347,7 +324,7 @@ class QueryIndentStatus extends React.Component {
     }
 
     fetch(config.server.listAllIndentStatusByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
-      if(data.code!=200){
+      if(data.code!==200){
         this.tips(data.msg);return;
       }
       this.changeIndentStatusData(data.results || []);
@@ -405,7 +382,7 @@ class QueryIndentStatus extends React.Component {
 
     setTimeout(()=>{
       this.setState({tipsOpen: false});
-    },2000);
+    },4000);
   }
 
   render() {
@@ -437,22 +414,23 @@ class QueryIndentStatus extends React.Component {
                       key={index}
                       selected={isSelected}
                     >
-                      <TableCell align="left">{page * rowsPerPage+(index+1)}</TableCell>
-                      <TableCell align="left">{n.erp}</TableCell>
-                      <TableCell align="left">{n.materialCode}</TableCell>
-                      <TableCell align="left">{n.materialName}</TableCell>
-                      <TableCell component="th" scope="row" padding="none">
+                      <TableCell align="center">{page * rowsPerPage+(index+1)}</TableCell>
+                      <TableCell align="center">{n.erp}</TableCell>
+                      <TableCell align="center">{n.materialCode}</TableCell>
+                      <TableCell align="center">{n.materialName}</TableCell>
+                      <TableCell align="center" component="th" scope="row" padding="none">
                         {n.name}
                       </TableCell>
-                      <TableCell component="th" scope="row" padding="none">
+                      <TableCell align="center" component="th" scope="row" padding="none">
                         {n.duty}
                       </TableCell>
-                      <TableCell component="th" scope="row" padding="none" className = {n.status?'text-blue':''}>
+                      <TableCell align="center" component="th" scope="row" padding="none" className = {n.status?'text-blue':''}>
                         {(n.status)?'完成':'进行中'}
                       </TableCell>
-                      <TableCell align="left">
-                        <span className="pointer btn text-blue">{1==1?'':'修改'}</span>
-                        {/*<span className="pointer btn text-red" onClick={this.deleteUser}>删除</span>*/}
+                      <TableCell align="center">
+                        <span className="pointer btn text-blue" onClick = {()=>this.props.history.push('/indent/info'+n.id)}>详情</span>
+                        {/*<span className="pointer btn text-blue">{1==1?'':'修改'}</span>
+                        <span className="pointer btn text-red" onClick={this.deleteUser}>删除</span>*/}
                       </TableCell>
                     </TableRow>
                   );

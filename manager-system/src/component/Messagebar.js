@@ -72,6 +72,7 @@ class MessageBar extends React.Component{
     constructor(props){
         super(props);
         this.state = {
+          firstLoad:0,
           open: false,
           mailMessage: [],
           logOut: false,
@@ -81,8 +82,9 @@ class MessageBar extends React.Component{
     }
 
     componentDidMount() {
+      // 更新消息数据
       this.state.messageTimer = setInterval(this.queryMessageTimer, 10000);
-      this.mailClick();
+
     }
 
     componentWillUnmount() {
@@ -94,6 +96,13 @@ class MessageBar extends React.Component{
     // 更新消息等数据
     updateBarData = (userName, messages) => {
       this.setState({userName: userName || '', mailMessage: messages || []});
+
+      if(this.state.firstLoad==0){
+          if(this.state.mailMessage.length){
+            this.mailClick();
+          }
+      }
+      this.setState({firstLoad: ++this.state.firstLoad});
     }
 
     queryMessageTimer = () => {
@@ -122,6 +131,7 @@ class MessageBar extends React.Component{
       this.setState({open: false});
     }
 
+    // 注销登录
     logoutClick=()=>{
       this.setState({logOut: true});
       // this.setState({sureFun: this.logoutSureFun})
@@ -129,7 +139,15 @@ class MessageBar extends React.Component{
 
     logoutSureFun = () =>{
        this.setState({logOut: false});
+       // 清除消息
+       if(this.state.messageTimer){
+         clearInterval(this.state.messageTimer);
+       }
        this.props.changeLoginData('');
+       this.setState({firstLoad: 0});
+
+       // delete localStorage.user;
+       localStorage.user = "";
        // window.location.href='/login';
        window.ReactHistory.push('/login');
     }
@@ -158,7 +176,7 @@ class MessageBar extends React.Component{
       return (<Dialog
         onClose={this.handleClose}
         aria-labelledby="customized-dialog-title"
-        open={this.state.open} style={{marginTop:'1rem'}} className = "mailDialog"
+        open={this.state.open} style={{marginTop:'.5rem'}} className = "mailDialog"
       >
         <DialogTitle id="customized-dialog-title" onClose={this.handleClose}>
           未读消息
@@ -185,7 +203,10 @@ class MessageBar extends React.Component{
       var { userName,mailMessage } = this.state;
         return (
           <header className="App-header">
-            <div id="logo">极趣科技生产管理系统</div>
+            <div id="logo" style={{height: '66px'}}>
+                <div style={{display: 'inline-block',height:'75%',marginTop: '8px', verticalAlign:'top'}}><img style={{height:'100%'}} src="/logo.png" /></div>
+                <div style={{display: 'inline-block',lineHeight:'66px',verticalAlign:'top',paddingLeft: '.5rem'}}>极趣科技生产管理系统</div>
+            </div>
             <div id="messagebar">
             {userName?(<div className={"btn "} >
                 欢迎你，<span  className="text-blue" style={{paddingRight:1+"rem"}}>{userName}</span>

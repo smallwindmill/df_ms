@@ -74,6 +74,22 @@ const rows = [
   { id: 'protein', numeric: true, disablePadding: false, label: '工时费' },
   { id: 'protein', numeric: true, disablePadding: false, label: '总人数' },
   // { id: 'protein', numeric: true, disablePadding: false, label: '总小时' }
+  { id: 'protein', numeric: true, disablePadding: false, label: '操作' }
+];
+
+const procedure_rows = [
+  { id: 'name', numeric: false, disablePadding: true, label: '序号' },
+  { id: 'name', numeric: false, disablePadding: true, label: '订单编号' },
+  { id: 'name', numeric: false, disablePadding: true, label: '产品编号' },
+  { id: 'carbs', numeric: true, disablePadding: false, label: '流程名称' },
+  { id: 'carbs', numeric: true, disablePadding: false, label: '总生产数量' },
+  { id: 'calories', numeric: false, disablePadding: false, label: '总工时' },
+  { id: 'calories', numeric: false, disablePadding: false, label: '单数量工时' },
+  { id: 'calories', numeric: false, disablePadding: false, label: '权数' },
+  { id: 'protein', numeric: true, disablePadding: false, label: '工时费' },
+  { id: 'protein', numeric: true, disablePadding: false, label: '总人数' },
+  // { id: 'protein', numeric: true, disablePadding: false, label: '总小时' }
+  // { id: 'protein', numeric: true, disablePadding: false, label: '操作' }
 ];
 
 class EnhancedTableHead extends React.Component {
@@ -90,7 +106,8 @@ class EnhancedTableHead extends React.Component {
 
 
   render() {
-    const { onSelectAllClick, order, orderBy, numSelected, rowCount } = this.props;
+    // const { onSelectAllClick, order, orderBy, numSelected, rowCount } = this.props;
+    const { onSelectAllClick, order, orderBy, numSelected, rowCount,rows } = this.props;
 
     return (
       <TableHead>
@@ -99,7 +116,7 @@ class EnhancedTableHead extends React.Component {
             (row, index) => (
               <TableCell
                 key={'EnhancedTableHead'+index}
-                align={row.numeric ? 'left' : 'left'}
+                align={row.numeric ? 'center' : 'center'}
                 padding={row.disablePadding ? 'none' : 'default'}
                 sortDirection={orderBy === row.id ? order : false}
               >
@@ -181,7 +198,7 @@ class EnhancedTableToolbar extends React.Component{
     }
 
     fetch(config.server.queryWorkHourByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
-      console.log(data);
+      // console.log(data);
       this.props.changeWorktimeData(data.results || []);
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
@@ -192,16 +209,7 @@ class EnhancedTableToolbar extends React.Component{
     this.setState({ open: true });
   }
 
-  submitFile = () =>{
-      if(this.state.fileValue){
-        console.log(this.state.fileValue);
-      }else{
-        this.tips('请选择文件后再上传');
-      }
-  }
-
   tips = this.props.tips;
-
 
   render(){
     var classes = '';
@@ -210,14 +218,21 @@ class EnhancedTableToolbar extends React.Component{
        <div className={classes.title}>
             <Toolbar >
               <Typography variant="h6" id="tableTitle" align="left">
-                {this.state.chooseMonth?this.state.chooseMonth+'月':'所有'}工时
+                {this.props.title}
               </Typography>
         </Toolbar>
         <Grid container align="left"  style={{margin:'1rem 0 1rem',padding: '0 1.2rem'}}>
-          <Grid item xs={12} className="small">
-                <span className="blod">时间</span>
-                {dateRange.map((date,index)=>(<span key = {index} className="btn" onClick={(e)=>this.queryWorktimeStatusByDate(e, date, index)}> {date.text}</span>))}
-            </Grid></Grid>
+          <Grid item xs={6} className="small">
+              {this.props.ifProcedure?'':(<div>
+                        <span className="blod">时间</span>
+                            {dateRange.map((date,index)=>(<span key = {index} className="btn" onClick={(e)=>this.queryWorktimeStatusByDate(e, date, index)}> {date.text}</span>))}
+                        </div>)}
+          </Grid>
+          {(this.props.ifProcedure)?(
+                    <Grid item xs={6} align="right">
+                      <span className="text-blue pointer" title="返回上级" onClick={()=>this.props.toIndent(true)}>返回</span>
+                    </Grid>):''}
+        </Grid>
           </div>
       )
   }
@@ -248,7 +263,7 @@ class QueryWorkTime extends React.Component {
     selected: [],
     data: [],
     page: 0,
-    rowsPerPage: 10,
+    rowsPerPage: config.pageChangeNum || 13,
     open: true,
     deleteOpen: false,
     title: "确认",
@@ -257,6 +272,33 @@ class QueryWorkTime extends React.Component {
 
   componentWillMount() {
     // 组件初次加载数据申请
+    var procedureID = this.props.match.params.id;
+
+    var querySingleIndent = this.props.match.params;
+    console.log(procedureID, querySingleIndent);
+    if(procedureID){
+      this.setState({ifProcedure: true});
+    }else{
+       this.setState({ifProcedure: false});
+    }
+
+    this.queryIndentWorkHour();
+
+    var queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
+    var queryEnd = new Date().format('yyyy-MM-dd');
+
+
+
+   /* fetch(config.server.queryWorkHourByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
+      console.log(data);
+      this.props.changeWorktimeData(data.results || []);
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));*/
+
+  }
+
+
+  queryIndentWorkHour = () => {
+
     fetch(config.server.queryWorkHourByDate).then(res=>res.json()).then(data=>{
       console.log(data);
       if(data.code!=200){
@@ -265,13 +307,17 @@ class QueryWorkTime extends React.Component {
       this.changeWorktimeData(data.results || []);
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
-    var queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
-    var queryEnd = new Date().format('yyyy-MM-dd');
+  }
 
-   /* fetch(config.server.queryWorkHourByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
+  queryProcedureWorkHour = (data_in) => {
+    console.log(data_in);
+    fetch(config.server.queryProcedureWorkTime+'?indentID='+data_in.indentID).then(res=>res.json()).then(data=>{
       console.log(data);
-      this.props.changeWorktimeData(data.results || []);
-    }).catch(e=>this.tips('网络出错了，请稍候再试'));*/
+      if(data.code!=200){
+        this.tips(data.msg);return;
+      }
+      this.changeWorktimeData(data.results || []);
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
   }
 
@@ -317,6 +363,11 @@ class QueryWorkTime extends React.Component {
     this.setState({deleteOpen: false})
   }
 
+  toIndent = () => {
+    this.setState({ifProcedure: false});
+    this.queryIndentWorkHour();
+  }
+
   changeWorktimeData = (data, type) =>{
     // 默认替换，1为push，2为修改
     if(type==1){
@@ -340,88 +391,172 @@ class QueryWorkTime extends React.Component {
 
     setTimeout(()=>{
       this.setState({tipsOpen: false});
-    },1000);
+    },4000);
   }
 
 
   render() {
     const { classes } = this.props;
-    const { data, order, orderBy, selected, rowsPerPage, page } = this.state;
+    const { data, order, orderBy, selected, rowsPerPage, page, ifProcedure } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
-    return (
-      <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar changeWorktimeData={this.changeWorktimeData} tips = {this.tips} />
-        <div className={classes.tableWrapper}>
-          <Table className={classes.table} aria-labelledby="tableTitle">
-            <EnhancedTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              rowCount={data.length}
-            />
-            <TableBody>
-              {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((n, index) => {
-                  const isSelected = this.isSelected(n.id);
-                  return (
-                    <TableRow
-                      hover
-                      onClick={event => this.handleClick(event, n.id)}
-                      role="checkbox"
-                      aria-checked={isSelected}
-                      tabIndex={-1}
-                      key={n.id}
-                      selected={isSelected}
-                    >
-                      <TableCell align="left">{page * rowsPerPage + index+1}</TableCell>
-                      <TableCell align="left">{n.erp}</TableCell>
-                      <TableCell align="left">{n.materialCode}</TableCell>
-                      <TableCell align="left">{n.planNum}</TableCell>
-                      <TableCell align="left"> {n.countHour}</TableCell>
-                      <TableCell align="left">{n.singleHour}</TableCell>
-                      <TableCell align="left">{n.factor}</TableCell>
-                      <TableCell align="left">{n.cost}</TableCell>
-                      <TableCell align="left">{n.countWorkers}</TableCell>
-                      {/*<TableCell align="left">{n.counthour}</TableCell>*/}
-                      {/*<TableCell align="left">{n.remark}</TableCell>
-                                            <TableCell align="left">{n.feedback}</TableCell>*/}
-                    </TableRow>
-                  );
-                })}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: 49 * emptyRows }}>
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-          <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
-        </div>
-        <TablePagination
-          rowsPerPageOptions={[10, 20, 30]}
-          component="div"
-          count={data.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          backIconButtonProps={{
-            'aria-label': '上一页',
+    this.state.date_in =[new Date(), new Date()];
+
+    if(ifProcedure){
+      return (
+        <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
+          <EnhancedTableToolbar title="流程工时" toIndent = {this.toIndent} ifProcedure={true} changeWorktimeData={this.changeWorktimeData} tips = {this.tips} />
+          <div className={classes.tableWrapper}>
+            <Table className={classes.table} aria-labelledby="tableTitle">
+              <EnhancedTableHead
+                numSelected={selected.length}
+                order={order} rows={procedure_rows}
+                orderBy={orderBy}
+                rowCount={data.length}
+              />
+              <TableBody>
+                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((n, index) => {
+                    const isSelected = this.isSelected(n.id);
+                    return (
+                      <TableRow
+                        hover
+                        onClick={event => this.handleClick(event, n.id)}
+                        role="checkbox"
+                        aria-checked={isSelected}
+                        tabIndex={-1}
+                        key={n.id}
+                        selected={isSelected}
+                      >
+                        <TableCell align="center">{page * rowsPerPage + index+1}</TableCell>
+                        <TableCell align="center">{n.erp}</TableCell>
+                        <TableCell align="center">{n.materialCode}</TableCell>
+                        <TableCell align="center">{n.name}</TableCell>
+                        <TableCell align="center">{n.planNum}</TableCell>
+                        <TableCell align="center"> {n.countHour}</TableCell>
+                        <TableCell align="center">{n.singleHour = ((n.countHour/(n.countWorker||1)) || 0).toFixed(5) }</TableCell>
+                        <TableCell align="center">{n.factor}</TableCell>
+                        <TableCell align="center">{n.cost = ((n.singleHour*n.factor).toFixed(5) || 0)}</TableCell>
+                        <TableCell align="center">{n.countWorker}</TableCell>
+                        {/*<TableCell align="center">{n.counthour}</TableCell>*/}
+                        {/* <TableCell align="center" className = "btn text-blue" onClick={()=>this.setState({ifProcedure: true})}>查看流程工时</TableCell>*/}
+
+                        {/*<TableCell align="left">{n.remark}</TableCell>
+                          <TableCell align="left">{n.feedback}</TableCell>*/}
+                      </TableRow>
+                    );
+                  })}
+                {emptyRows > 0 && (
+                  <TableRow style={{ height: 49 * emptyRows }}>
+                    <TableCell colSpan={6} />
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+            <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
+          </div>
+          <TablePagination
+            rowsPerPageOptions={[10, 20, 30]}
+            component="div"
+            count={data.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            backIconButtonProps={{
+              'aria-label': '上一页',
+            }}
+            nextIconButtonProps={{
+              'aria-label': '下一页',
+            }}
+            onChangePage={this.handleChangePage}
+            onChangeRowsPerPage={this.handleChangeRowsPerPage}
+          />
+          <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
+          anchorOrigin={{horizontal:"center",vertical:"top"}}
+          open={this.state.tipsOpen}
+          ContentProps={{
+            'className':'info'
           }}
-          nextIconButtonProps={{
-            'aria-label': '下一页',
+          message={<span id="message-id" >{this.state.tipInfo?this.state.tipInfo:''}</span>} />
+        </Paper>
+      );
+    }else{
+      return (
+        <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
+          <EnhancedTableToolbar title="订单工时" changeWorktimeData={this.changeWorktimeData} tips = {this.tips} />
+          <div className={classes.tableWrapper}>
+            <Table className={classes.table} aria-labelledby="tableTitle">
+              <EnhancedTableHead rows={rows}
+                numSelected={selected.length}
+                order={order}
+                orderBy={orderBy}
+                rowCount={data.length}
+              />
+              <TableBody>
+                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((n, index) => {
+                    const isSelected = this.isSelected(n.id);
+                    return (
+                      <TableRow
+                        hover
+                        onClick={event => this.handleClick(event, n.id)}
+                        role="checkbox"
+                        aria-checked={isSelected}
+                        tabIndex={-1}
+                        key={n.id}
+                        selected={isSelected}
+                      >
+                        <TableCell align="center">{page * rowsPerPage + index+1}</TableCell>
+                        <TableCell align="center">{n.erp}</TableCell>
+                        <TableCell align="center">{n.materialCode}</TableCell>
+                        <TableCell align="center">{n.planNum}</TableCell>
+                        <TableCell align="center"> {n.countHour}</TableCell>
+                        <TableCell align="center">{n.singleHour}</TableCell>
+                        <TableCell align="center">{n.factor}</TableCell>
+                        <TableCell align="center">{n.cost}</TableCell>
+                        <TableCell align="center">{n.countWorkers}</TableCell>
+                        {/*<TableCell align="center">{n.counthour}</TableCell>*/}
+                        {/*<TableCell align="center" className = "btn text-blue" onClick={()=>this.props.history.push('/workTime/queryProcedureWorkTime'+12)}>查看流程工时</TableCell>*/}
+                        <TableCell align="center" className = "btn text-blue" onClick={()=>{this.setState({ifProcedure: true});this.queryProcedureWorkHour(n)}}>查看流程工时</TableCell>
+                        {/*<TableCell align="left">{n.remark}</TableCell>
+                          <TableCell align="left">{n.feedback}</TableCell>*/}
+                      </TableRow>
+                    );
+                  })}
+                {emptyRows > 0 && (
+                  <TableRow style={{ height: 49 * emptyRows }}>
+                    <TableCell colSpan={6} />
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+            <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
+          </div>
+          <TablePagination
+            rowsPerPageOptions={[10, 20, 30]}
+            component="div"
+            count={data.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            backIconButtonProps={{
+              'aria-label': '上一页',
+            }}
+            nextIconButtonProps={{
+              'aria-label': '下一页',
+            }}
+            onChangePage={this.handleChangePage}
+            onChangeRowsPerPage={this.handleChangeRowsPerPage}
+          />
+          <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
+          anchorOrigin={{horizontal:"center",vertical:"top"}}
+          open={this.state.tipsOpen}
+          ContentProps={{
+            'className':'info'
           }}
-          onChangePage={this.handleChangePage}
-          onChangeRowsPerPage={this.handleChangeRowsPerPage}
-        />
-        <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
-        anchorOrigin={{horizontal:"center",vertical:"top"}}
-        open={this.state.tipsOpen}
-        ContentProps={{
-          'className':'info'
-        }}
-        message={<span id="message-id" >{this.state.tipInfo?this.state.tipInfo:''}</span>} />
-      </Paper>
-    );
+          message={<span id="message-id" >{this.state.tipInfo?this.state.tipInfo:''}</span>} />
+        </Paper>
+      );
+    }
+
   }
 }
 

@@ -348,7 +348,7 @@ class ExportProduceIndent extends React.Component {
 
     setTimeout(()=>{
       this.setState({tipsOpen: false});
-    },2000);
+    },4000);
   }
 
 

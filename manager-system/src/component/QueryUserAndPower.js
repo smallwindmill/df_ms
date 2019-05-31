@@ -222,7 +222,7 @@ class QueryUserAndPower extends React.Component {
     selectedData:{},
     data: [],
     page: 0,
-    rowsPerPage: 10,
+    rowsPerPage: config.pageChangeNum || 13,
     open: false
   };
 
@@ -339,7 +339,7 @@ class QueryUserAndPower extends React.Component {
 
     setTimeout(()=>{
       this.setState({tipsOpen: false});
-    },2000);
+    },4000);
   }
 
   // 更新用户权限弹窗

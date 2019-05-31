@@ -110,3 +110,21 @@ div[class*='DateFormatInput-input']{
   font-size: smaller;
 }
 .bold, .blod{font-weight: bold;padding-right: 1rem;}
+
+.translateRight{
+  transition: .6s linear;
+  -webkit-transform: translateX(100%);
+     -moz-transform: translateX(100%);
+      -ms-transform: translateX(100%);
+       -o-transform: translateX(100%);
+          transform: translateX(100%);
+}
+
+.translateLeft{
+  transition: .6s linear;
+  -webkit-transform: translateX(-100%);
+     -moz-transform: translateX(-100%);
+      -ms-transform: translateX(-100%);
+       -o-transform: translateX(-100%);
+          transform: translateX(-100%);
+}
