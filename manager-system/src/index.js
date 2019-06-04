@@ -3,19 +3,6 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 import App from './App';
-import MessageBar from './component/Messagebar';
-import Menu from './component/Menu';
-
-import AddUser from './component/AddUser';
-import QueryUser from './component/QueryUser';
-import QueryUserAndPower from './component/QueryUserAndPower';
-
-
-import * as serviceWorker from './serviceWorker';
-// import { Router, Route, Link } from 'react-router';
-import {BrowserRouter as Router, Match, Route, Switch } from 'react-router-dom';
-
-import {createBrowserHistory} from 'history';
 
 
 window.forceRender = () =>{

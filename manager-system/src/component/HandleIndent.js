@@ -444,6 +444,15 @@ class HandleIndent extends React.Component {
     var { selectedDataBak, selectedData } = this.state;
     var { id,planNum,planFinishDate,planOnline,actualStart, actualFinish,priority,ifNew,ifOutsource,duty,status,remark } = this.state.selectedData;
 
+    if(!planNum && planNum==0){
+        this.tips('计划生产数量不能为空');return;
+    }
+
+    var ifNum = new RegExp(/^\d+$/).test(planNum);
+    if(!ifNum){
+        this.tips('计划生产数量不能为非数字');return;
+    }
+
     fetch(config.server.updateIndentInfo,{method:"POST",
       headers:{
           'Content-Type': 'application/json',
@@ -484,7 +493,7 @@ class HandleIndent extends React.Component {
 
   }
 
-  // 删除用户确认框
+  // 删除订单确认框
   deleteIndent=(data, index)=>{
     this.setState({confirmOpen: true});
     var nexFun = ()=>{
@@ -505,10 +514,10 @@ class HandleIndent extends React.Component {
 
     };
 
-    this.setState({confirmOpen: true,title: "确认",content: "确定删除该订单吗？",confirmSure: nexFun});
+    this.setState({confirmOpen: true,title: "确认",content: "确定删除该订单吗？",sureFun: nexFun});
   }
 
-  // 关闭删除用户弹窗
+  // 关闭删除订单弹窗
   confirmClose=()=>{
     this.setState({confirmOpen: false})
   }

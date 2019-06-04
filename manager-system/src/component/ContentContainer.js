@@ -28,6 +28,8 @@ import QueryProduceIndent from './QueryProduceIndent';
 
 import QueryFactor from './QueryFactor';
 import QueryWorkTime from './QueryWorkTime';
+import QueryWorkTimeForProcedure from './QueryWorkTimeForProcedure';
+
 
 import ProduceShowPage from './ProduceShowPage';
 
@@ -37,10 +39,12 @@ import DutyIndentInfo from './DutyIndentInfo';
 import recycleTemplate from './RecycleTemplate';
 import recycleIndent from './RecycleIndent';
 
+import Confirm  from './Confirm';
 import Snackbar from '@material-ui/core/Snackbar';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import WorkCalendar from './Calendar';
+import NotFound from './NotFound';
 
 import config from './config';
 
@@ -59,6 +63,7 @@ class ContentContainer extends React.Component{
     componentWillMount() {
       this.judgeUser();
       window.loading = this.loading;
+      setTimeout(this.judgeCalendar, 4000);
     }
 
     componentWillUnmount() {
@@ -109,6 +114,33 @@ class ContentContainer extends React.Component{
       }
     }
 
+    judgeCalendar = () => {
+      // 根据距离下月所剩时间， 提示主任设置工作日历
+      // var today = new Date().format('yyyy-MM-dd');
+      if(this.state.user.type!=1){
+        return;
+      }
+      var today = new Date('2019-5-26');
+      var after = new Date(new Date('2019-5-26').getTime()+1000*60*60*24*7);
+
+      if(after < today){
+        // this.tips();
+        // this.setState()
+        var nextFun = () => {
+          window.ReactHistory.push('/calendar');
+        }
+        this.confirm('提示', '距离'+after.format('yyyy-MM')+'月不到一星期了，是否立即设置工作日历？', true, nextFun );
+      }
+    }
+
+    confirm = (title, content, show, nextFun) => {
+      this.setState({confirmOpen: show, confirmTitle:title, confirmContent:content, sureFun: nextFun});
+    }
+
+    closeFun = () => {
+      this.setState({confirmOpen: false});
+    }
+
     changeLoginData = (user)=>{
       this.setState({user: user});
       this.refs.messageBar.updateBarData(user.userName, user.messages);
@@ -140,7 +172,7 @@ class ContentContainer extends React.Component{
         return (
           <div>
             <Route path="/"  >
-              <MessageBar  ref="messageBar" changeLoginData = {(data)=>this.changeLoginData(data)} tips={this.tips} />
+              <MessageBar  ref="messageBar" user={user} changeLoginData = {(data)=>this.changeLoginData(data)} tips={this.tips} />
             </Route>
             <div className="page-container">
               {!this.state.user.userName?(
@@ -149,7 +181,7 @@ class ContentContainer extends React.Component{
                 </Route>):
                 (<Route path="/" >
                   <div id = "leftMenu">
-                    <Menu menuConfig = {user.power}  />
+                    <Menu menuConfig = {user}  />
                   </div>
                   <div id = "rightContent">
                     <Switch>
@@ -174,6 +206,7 @@ class ContentContainer extends React.Component{
                         <Route path="/workTime/queryFactor" component={QueryFactor} />
                         <Route path="/workTime/queryWorkTime" component={QueryWorkTime} />
                         <Route path="/workTime/queryProcedureWorkTime:type" component={QueryWorkTime} />
+                        <Route path="/workTime/queryWorkTimeForProcedure" component={QueryWorkTimeForProcedure} />
 
                         <Route path="/produceIndent/queryProduceIndent" component={QueryProduceIndent} />
                         <Route path="/produceIndent/exportProduceIndent" component={ExportProduceIndent} />
@@ -195,6 +228,8 @@ class ContentContainer extends React.Component{
 
                         <Route path="/calendar"  ><WorkCalendar tips={this.tips} /></Route>
 
+                        <Route path="/"  ><NotFound  /></Route>
+
                     </Switch>
                   </div>
                 </Route>)}
@@ -206,6 +241,8 @@ class ContentContainer extends React.Component{
               'className':'info'
             }}
             message={<span id="message-id" >{this.state.tipInfo}</span>}  />
+
+            <Confirm open = {this.state.confirmOpen} ifAutoClose ={()=>{}} title = {this.state.confirmTitle} content={this.state.confirmContent}  closeFun = {this.closeFun} sureFun = {this.state.sureFun} ifInfo={true}/>
 
             {loading?(<div className = "backdrop" >
               <div className="absoluteCenter text-blue" >

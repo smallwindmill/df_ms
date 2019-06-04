@@ -81,6 +81,7 @@ var rows2 = [
   { id: 'name', numeric: false, disablePadding: true, label: '负责生产数量' },
   { id: 'name', numeric: false, disablePadding: true, label: '流程生产人员' },
   { id: 'name', numeric: false, disablePadding: true, label: '生产人数量' },
+  { id: 'name', numeric: false, disablePadding: true, label: '实际生产数量' },
   { id: 'carbs', numeric: true, disablePadding: false, label: '流程开始生产时间' },
   { id: 'carbs', numeric: true, disablePadding: false, label: '状态'},
   { id: 'calories', numeric: false, disablePadding: false, label: '操作' },
@@ -322,7 +323,7 @@ class DutyIndentInfo extends React.Component {
       this.setState({ifAdd: true});
     }else{
       // this.setState({ifAdd: false, selectedData: JSON.parse(JSON.stringify(data)), selectedIndex: index});
-      this.setState({ifAdd: false, selectedInfoData:data, productNum: data.productNum, selectedIndex: index});
+      this.setState({ifAdd: false, selectedInfoData:data, productNum: data.productNum, actualNum: data.actualNum,selectedIndex: index});
     }
 
     fetch(config.server.listSystemUserByType+"?type="+4).then(res=>res.json()).then(data=>{
@@ -335,9 +336,15 @@ class DutyIndentInfo extends React.Component {
 
   // 提交流程详情
   addInfoSure = () =>{
-    var { productNum, selectedWorkers, selectedDataCopy, selectedInfoData, pid, ifAdd } = this.state;
+    var { productNum, actualNum, selectedWorkers, selectedDataCopy, selectedInfoData, pid, ifAdd } = this.state;
+
     if(!productNum){
       this.tips('生产数量不能为0');return;
+    }
+
+    var ifNum = new RegExp(/^\d+$/).test(productNum);
+    if(!ifNum){
+        this.tips('生产数量不能为非数字');return;
     }
 
     if(selectedWorkers.length == 0){
@@ -362,7 +369,7 @@ class DutyIndentInfo extends React.Component {
         'Content-Type': 'application/json',
       },
       // body:JSON.stringify({pid: pid, productNum:productNum, startTime: selectedDataCopy.startTime + ' '+selectedDataCopy.startDateTime.format('hh:mm:ss'), worker:workder_in.join(' ')})
-      body:JSON.stringify({pid: pid,id: selectedInfoData?selectedInfoData.id:'', productNum:productNum, worker:workder_in.join(' ')})
+      body:JSON.stringify({pid: pid,id: selectedInfoData?selectedInfoData.id:'', productNum:productNum, actualNum: actualNum, worker:workder_in.join(' ')})
     }).then(res=>res.json()).then(data=>{
       if(data.code!=200){
         this.tips(data.msg);return;
@@ -372,6 +379,7 @@ class DutyIndentInfo extends React.Component {
         this.tips('新增流程详情成功');
       }else{
         selectedInfoData.productNum = productNum;
+        selectedInfoData.actualNum = actualNum;
         selectedInfoData.worker = workder_in.join(' ');
         this.tips('修改流程详情成功');
         this.setState({selectedInfoData, selectedInfoData});
@@ -449,7 +457,7 @@ class DutyIndentInfo extends React.Component {
 
   }
 
-  // 报废当前流程
+  // 报废当前环节
   setScrap = (data_out, index) => {
     var { id, destroy_info, selectedDataCopy, selectIndex } = this.state;
     var pid = this.props.match.params.id;
@@ -482,6 +490,9 @@ class DutyIndentInfo extends React.Component {
 
     this.setState({selectedDataCopy:n, selectIndex: index});
 
+    if(!n.actualNum){
+      this.tips('实际完成产品数量不能为空');return;
+    }
 
     var nextFun = () =>{
       var { id, destroy_info, selectedDataCopy, selectIndex } = this.state;
@@ -500,7 +511,8 @@ class DutyIndentInfo extends React.Component {
           this.tips(data.msg);return;
         }
         this.state.infoData[selectIndex].status= 1;
-        this.setState({infoData: this.state.infoData});this.tips('该步骤已完成');this.setState({destroyModalOpen: false});
+        this.setState({infoData: this.state.infoData});this.tips('该步骤已完成');
+        this.setState({destroyModalOpen: false});
       }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
     };
 
@@ -698,7 +710,7 @@ class DutyIndentInfo extends React.Component {
       );
     });
 
-    const { workers, ifAdd, selectedWorkers,selectedDataCopy, productNum } = this.state;
+    const { workers, ifAdd, selectedWorkers,selectedDataCopy, productNum, actualNum } = this.state;
     const styleCon = {
        height: '20rem',
        overflowY : 'auto',
@@ -730,6 +742,21 @@ class DutyIndentInfo extends React.Component {
             >
             ))}</TextField>
           </Grid>
+          <Grid item xs={6} style={{paddingTop:0}}>
+            <div className="bold">实际生产数量</div>
+            <TextField style={{marginTop:0}}
+              className={classes.textField}
+              autoComplete="current-password"
+              margin="normal"
+              value = {actualNum}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              onChange={(e)=>{this.setState({actualNum: e.target.value})}}
+            >
+            ))}</TextField>
+          </Grid>
+
 
           <Grid item xs={6} style={{paddingTop:0}}>
             {/*<FormLabel component="legend">流程开始生产时间</FormLabel>
@@ -842,6 +869,7 @@ class DutyIndentInfo extends React.Component {
                     <TableCell align="center">{n.productNum}</TableCell>
                     <TableCell align="center">{n.worker}</TableCell>
                     <TableCell align="center">{n.worker.split(' ').length}</TableCell>
+                    <TableCell align="center">{n.actualNum}</TableCell>
                     <TableCell align="center" component="th" scope="row" padding="none">
                       {new Date(n.startTime).format('yyyy-MM-dd hh:mm:ss')}
                     </TableCell>

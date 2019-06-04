@@ -1,16 +1,10 @@
 import React from 'react';
 import './App.css';
 
-import { withRouter } from 'react-router';
-import {BrowserRouter as Router, Match, Route, Switch } from 'react-router-dom';
 
-
-import Login from './component/Login';
+import {BrowserRouter as Router, Route } from 'react-router-dom';
 
 import ContentContainer from './component/ContentContainer';
-
-
-// function App() {
 
 
 
@@ -23,10 +17,7 @@ class App extends React.Component {
 
   }
 
-  state = {
-   /* user:{name: localStorage.userName,  messageLength: localStorage.messageLength },
-    classes:"fff gggg"*/
-  }
+
 
   render() {
     return (

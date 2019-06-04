@@ -18,7 +18,7 @@ import StarBorder from '@material-ui/icons/StarBorder';
 
 
 // import {BrowserRouter as Router, Match, Route, Switch } from 'react-router-dom';
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom';
 // import { Router, Route } from 'react-router';
 
 
@@ -91,8 +91,11 @@ class Menu extends React.Component{
                 name: "查询权数",
                 route: 'workTime/queryFactor',
             },{
-                name: "查询工时",
+                name: "订单工时",
                 route: 'workTime/queryWorkTime',
+            },{
+                name: "流程工时",
+                route: 'workTime/queryWorkTimeForProcedure',
             }/*,{
                 name: "根据月份查询工时",
                 route: 'workTime/queryWorkTimeByMonth',
@@ -171,16 +174,31 @@ class Menu extends React.Component{
     }
 
     changeMenuConfig = () =>{
-      var menuConfig = this.props.menuConfig;
-      if(!menuConfig) return false;
+      if(!this.props.menuConfig) return false;
+      var userType = this.props.menuConfig.type;
+      var menuConfig = this.props.menuConfig.power;
+      console.log(menuConfig);
       // 匹配用户权限及功能模块展示
-      this.state.menus[0].power = menuConfig.login;
+      /*this.state.menus[0].power = menuConfig.login;
       this.state.menus[1].power = menuConfig.templete;
       this.state.menus[4].power = menuConfig.listIndent;
       this.state.menus[2].power = menuConfig.handleIndent;
       this.state.menus[3].power = menuConfig.handleWorkhour;
       this.state.menus[5].power = menuConfig.showPage;
       this.state.menus[6].power = menuConfig.captain;
+
+      this.state.menus[7].power = true;//回收站
+      this.state.menus[8].power = userType==1?true:false;//工作日历*/
+      // console.log(this.state.menus);
+      this.state.menus[0].power = menuConfig.login;
+      this.state.menus[1].power = menuConfig.templete;
+      this.state.menus[2].power = menuConfig.handleIndent;
+      this.state.menus[3].power = menuConfig.handleWorkhour;
+      this.state.menus[4].power = menuConfig.showPage;
+      this.state.menus[5].power = menuConfig.captain;
+
+      this.state.menus[6].power = true;//回收站
+      this.state.menus[7].power = userType==1?true:false;//工作日历
 
       this.setState({menus: this.state.menus});
     }

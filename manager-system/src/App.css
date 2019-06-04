@@ -112,7 +112,7 @@ div[class*='DateFormatInput-input']{
 .bold, .blod{font-weight: bold;padding-right: 1rem;}
 
 .translateRight{
-  transition: .6s linear;
+  transition: 10s linear;
   -webkit-transform: translateX(100%);
      -moz-transform: translateX(100%);
       -ms-transform: translateX(100%);
@@ -121,7 +121,7 @@ div[class*='DateFormatInput-input']{
 }
 
 .translateLeft{
-  transition: .6s linear;
+  transition: 10s linear;
   -webkit-transform: translateX(-100%);
      -moz-transform: translateX(-100%);
       -ms-transform: translateX(-100%);

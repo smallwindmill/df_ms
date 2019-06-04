@@ -32,29 +32,85 @@ class ProduceShowPage extends React.Component {
     // 更新消息数据
     this.queryDataTimer();
     this.handleClickFull();
-    setTimeout(this.startLoop, 1000);
-    this.state.dataTimer = setInterval(this.queryDataTimer, 10000);
+    setTimeout(()=>{
+      this.startLoop();//开始滚动
+      this.startSpeak();// 语音播报
+    }, 1000);
+    this.dataTimer = setInterval(this.queryDataTimer, 10000); //数据刷新
+
+
   }
 
   componentWillUnmount() {
+
     if(this.loopTimer){
       clearInterval(this.loopTimer);
     }
 
-    if(this.state.dataTimer){
-      clearInterval(this.state.dataTimer);
+    if(this.dataTimer){
+      clearInterval(this.dataTimer);
     }
+
+    if(this.speakTimer){
+      clearInterval(this.speakTimer);
+    }
+
   }
 
   queryDataTimer = () => {
 
       fetch(config.server.listShowPageData).then(res=>res.json()).then(data=>{
-        console.log(data);
+        // console.log(data);
         if(data.code!=200){
           this.tips(data.msg);return;
         }
         this.setState({data: data.results || []});
       }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
+
+  }
+
+  startSpeak = () => {
+    // 语音播报
+    var {data} = this.state;
+
+    var dataCopy = JSON.parse(JSON.stringify(data));
+    dataCopy = dataCopy.filter((index)=>{
+      return index.status || index.priority || index.ifNew;
+    });
+    // console.log(dataCopy);
+
+    let j = 0, len = dataCopy.length;
+    this.speakCount = this.speakCount?(++this.speakCount):1;
+    console.log(this.speakCount+'轮语音已开始');
+
+    var startS = () => {
+      if(j < len){
+        let i = dataCopy[j];
+        if(i.status || i.priority || i.ifNew){
+          // var str = ('编号为' + i.erp +'的'+((i.priority)?'加急订单':'订单') + ((i.status)?'已完成':('处于'+i.name+'流程')));
+          var str = '';
+          if(i.ifNew && i.priority){
+            str = ('编号为' + i.erp +'的新品加急订单'+ ((i.status)?'已完成':('处于'+i.name+'流程')));
+          }else if(i.ifNew){
+            str = ('编号为' + i.erp +'的新品订单'+ ((i.status)?'已完成':('处于'+i.name+'流程')));
+          }else if(i.priority){
+            str = ('编号为' + i.erp +'的加急订单'+ ((i.status)?'已完成':('处于'+i.name+'流程')));
+          }else{
+            str = ('编号为' + i.erp +'的订单'+ ((i.status)?'已完成':('处于'+i.name+'流程')));
+          }
+           console.log(str);
+           this.speakInfo(str);
+        }
+        j++;
+      }else{
+        clearInterval(this.speakTimer);
+        this.startSpeak();//一轮播放完毕，开始下一轮
+      }
+    }
+
+    startS();
+
+    this.speakTimer = setInterval(startS, 10000);
 
   }
 
@@ -84,10 +140,10 @@ class ProduceShowPage extends React.Component {
         // dom.removeChild(dom.childNodes[0]);console.log(dom.childNodes)
         dom.scrollTop = 0;
       }else{
-        dom.scrollTop += 2;
+        dom.scrollTop += 1;
         //console.log( dom.scrollTop);
       }
-    }, 30 );
+    }, 50 );
   }
 
   toogleLoop = () =>{
@@ -111,8 +167,8 @@ class ProduceShowPage extends React.Component {
     var data = this.state.style;
     data.table = {position: 'fixed',
           top: 0,
-          left: 0,padding:'0 1rem',
-          width: '99vw',
+          left: 0,padding:'0 .5rem',
+          width: '100vw',
           height: '100vh',
           background: 'white',zIndex:10};
     this.setState({ style: data});
@@ -123,12 +179,36 @@ class ProduceShowPage extends React.Component {
     var data = this.state.style;
     data.table = {position: 'relative',
                   top: 0,
-                  left: 0,padding:'0 1rem',
-                  width: '99%',
+                  left: 0,padding:'0 .5rem',
+                  width: '100%',
                   height: '(100vh-194px)',
                   background: 'white',zIndex:0};
     this.setState({ style: data});
     this.setState({ btnVisible: !this.state.btnVisible});
+  }
+
+  // 页面语音播报
+  speakInfo = (text) => {
+      var { audio, stopSpeak } = this.state;
+
+      if(stopSpeak){
+        return;
+      }
+       var url = "http://tts.baidu.com/text2audio?lan=zh&spd=4&ie=UTF-8&text=" + encodeURI(text);        // baidu
+       //url = "http://translate.google.cn/translate_tts?ie=UTF-8&tl=zh-CN&total=1&idx=0&textlen=19&prev=input&q=" + encodeURI(str); // google
+
+      　　  //request.url = encodeURI(url);
+       // request.contentType = "audio/mp3"; // for baidu
+       //request.contentType = "audio/mpeg"; // for google
+      　　 var n = audio || new Audio(url);
+      　　 n.src = url;
+      　　 n.play();
+      this.setState({audio: n});
+  }
+
+  stopSpeakInfo =() => {
+    var { stopSpeak } = this.state;
+    this.setState({stopSpeak: !stopSpeak});
   }
 
   tips = (msg) => {

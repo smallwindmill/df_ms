@@ -382,7 +382,7 @@ class RecycleIndent extends React.Component {
     }
 
     this.state.data = this.state.dataBak.filter((item)=>{
-      return item.erp.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1;
+      return (item.erp.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1 || item.materialCode.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1 || item.materialName.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1);
     });
     this.setState({data: this.state.data });
 
@@ -610,7 +610,7 @@ class RecycleIndent extends React.Component {
                       <TableCell align="center">{n.planOnline ? new Date(n.planOnline).format('yyyy-MM-dd'):false}</TableCell>
                       <TableCell align="center">{n.actualStart ? new Date(n.actualStart).format('yyyy-MM-dd'):false}</TableCell>
                       <TableCell align="center">{n.actualFinish ? new Date(n.actualFinish).format('yyyy-MM-dd'):false}</TableCell>
-                      <TableCell align="center" className = {n.status?'text-blue':''}>{n.status?"完成":"进行中"}</TableCell>
+                      <TableCell align="center" className = {n.status?'text-blue':''}>{'已删除'||(n.status?"完成":"进行中")}</TableCell>
                       <TableCell align="center" className = {n.priority?'text-blue':''}>{n.priority?"是":"否"}</TableCell>
                       <TableCell align="center" className = {n.ifNew?'text-blue':''}>{n.ifNew?"是":"否"}</TableCell>
                       <TableCell align="center">{n.remark}</TableCell>

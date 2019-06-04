@@ -9,6 +9,11 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* background-color: #282c34; */
+  overflow: hidden;
+}
+
+#rightContent table[class*='MuiTable-root'] tr *{
+    font-size: 1rem!important;
 }
 
 header>div:nth-child(1){
@@ -17,10 +22,16 @@ header>div:nth-child(1){
 header>div:nth-child(2){
     flex: 3;text-align: right;
 }
-.btn{padding: 7px 5px;overflow: hidden;cursor: pointer;}
+.btn{padding: 5px 7px;overflow: hidden;cursor: pointer;border-radius: 4px;overflow: hidden;}
 #messagebar{
     font-size: 16px;
     font-weight: normal;    white-space: nowrap;margin-bottom: -11px;
+}
+.text-black{
+    color: #333!important;
+}
+.text-white{
+    color: #fff!important;
 }
 .text-red{
     color: #f44336!important;
@@ -38,6 +49,9 @@ header>div:nth-child(2){
 
 .bg-success{
     background: #21f39650!important;color: #333;
+}
+.bg-primary-fill{
+    background: #2196f3!important;color: #333;
 }
 .bg-primary{
     background: #2196f350!important;color: #333;
@@ -106,7 +120,9 @@ div[class*="MuiButtonBase-root"]{
 .right{
     position: absolute;right: 5rem;
 }
-
+thead tr th{
+    font-weight: bold!important;color: #000!important;font-size: .9rem!important;
+}
 .produceShowTable{
     border-collapse: collapse;
 }
@@ -174,7 +190,7 @@ div[class*='MuiFormLabel-root'] {
 .dutyChip{ overflow: hidden; }
 .dutyChip span{height: 100%;}
 .mailDialog div[class*='MuiDialog-container']>div{
-    max-width: 95%;
+    max-width: 95%;overflow: hidden;
 }
 
 .modal.lg div[class*='MuiDialog-container']>div{
@@ -187,7 +203,7 @@ div[class*='MuiFormLabel-root'] {
 }
 
 .showPage td{padding: 2rem 0!important;}
-#rightContent>div.work-calendar{width: 80%; height:90%; margin: 2rem auto 0;overflow: hidden;}
+#rightContent>div.work-calendar{width: 80%; height:90%; margin: 2rem auto 0;overflow-y: hidden;}
 .work-calendar button{box-shadow: none!important;}
 .work-calendar .fc-button-primary,.work-calendar .fc-button-primary:focus,.work-calendar .fc-button-primary:active{background: none!important;border:none;color:#333;}
 .work-calendar .fc-button-primary:hover,.work-calendar .fc-button-primary:focus,.work-calendar .fc-button-primary:active{color:#4488cc;}
@@ -231,6 +247,123 @@ div[class*='MuiFormLabel-root'] {
     background: #d89322;
     border-color: #d87522;
 }
+.work-calendar div.fc-bg  table .fc-past{
+    background: #eee;cursor: not-allowed;border: 1px solid #aaa;pointer-events: none;
+}
+.work-calendar .fc-unthemed td.fc-past{
+   cursor: not-allowed; pointer-events: none;
+}
+.work-calendar div.fc-bg  table .fc-future{
+
+}
+.fc-unthemed td.fc-today {
+    background: #c8ffff;
+}
+
+
 .hide{
     display: none!important;
+}
+
+.mailDialog div[class*='MuiDialog-container']>div{
+    /* transform: translateY(-45vh);transition: 1s; */
+    animation:translateBottom .6s ;
+}
+
+.childScrollReturn div[class*='MuiDialog-container']>div{
+    animation:translateTop .8s ;
+}
+
+@keyframes translateBottom{
+    0%{
+        transform: translateY(-90vh);opacity: 0;
+    }
+    100%{
+        transform: translateY(0vh);opacity: 1;
+    }
+}
+
+@keyframes translateTop{
+    /* 0%{
+        transform: translateY(0vh);opacity: 1;
+    }
+    100%{
+        transform: translateY(-180vh);opacity: 0;
+    } */
+    0%{
+        transform: translateX(0vw);opacity: 1;
+    }
+    100%{
+        transform: translateX(-150vw);opacity: 0;
+    }
+}
+
+
+.abs-left{
+    position: absolute!important;
+    top: 0;
+    margin-left: -100%;border: 3px solid red;
+   /*  -webkit-transform: translateX(-100%);
+      -moz-transform: translateX(-100%);
+       -ms-transform: translateX(-100%);
+        -o-transform: translateX(-100%);
+           transform: translateX(-100%); */
+}
+.abs-right{
+    position: absolute!important;
+    top: 0;
+    margin-right: 100%;border: 3px solid red;
+    /* -webkit-transform: translateX(100%);
+       -moz-transform: translateX(100%);
+        -ms-transform: translateX(100%);
+         -o-transform: translateX(100%);
+            transform: translateX(100%); */
+}
+.page404{
+
+}
+
+.loginBg{
+    width: 500px;
+    position: absolute;
+    bottom: 16%;
+    left: -10%;
+    opacity: .5;
+    animation: rotateItem 20s linear infinite;pointer-events: none;
+}
+
+.loginBgDir{
+    width: 350px;
+    position: absolute;
+    bottom: -10%;
+    left: 3%;
+    opacity: .5;
+    animation: rotateItemDir 20s linear infinite;pointer-events: none;
+}
+
+.loginBgCen{
+    width: 250px;
+    position: absolute;
+    bottom: -7%;
+    left: -7%;
+    opacity: .5;
+    animation: rotateItemDir 20s linear infinite;pointer-events: none;
+}
+
+@keyframes rotateItem{
+    0%{
+        transform: rotate(0deg);
+    }
+    100%{
+        transform: rotate(-360deg);
+    }
+}
+
+@keyframes rotateItemDir{
+    0%{
+        transform: rotate(0deg);
+    }
+    100%{
+        transform: rotate(360deg);
+    }
 }

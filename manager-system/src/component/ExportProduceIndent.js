@@ -157,7 +157,7 @@ class ExportProduceIndent extends React.Component {
     indentTimeTypes:[
       {value:0, text:'加急'},
       {value:1, text:'新品'},
-      {value:2, text:'外协'}
+      // {value:2, text:'外协'}
     ],
     indentTimeType: 0,
     startDate: new Date(),
@@ -278,7 +278,7 @@ class ExportProduceIndent extends React.Component {
     // 根据数据类型过滤
     var type = this.state.indentTimeType;
 
-    console.log(type);
+    // console.log(type);
 
     var _headers = [
         { k: 'erp', v: 'erp编号' },

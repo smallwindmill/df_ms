@@ -150,6 +150,10 @@ class Login extends React.Component {
         </Grid>
       </form>
 
+      <img class="loginBg" src = {'./bg.png'} />
+      <img class="loginBgDir" src = {'./bg.png'} />
+      <img class="loginBgCen" src = {'./bg.png'} />
+
     </div>
     );
   }

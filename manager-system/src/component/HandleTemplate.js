@@ -158,6 +158,7 @@ class EnhancedTableToolbar extends React.Component{
     }else if(type==1){
       this.setState({ open: true, serverURL: config.server.updateTemplate,ifAdd: 0 });
     }
+    this.showDutyModal();
   }
 
   //添加模板/更新模板时的判断
@@ -232,7 +233,7 @@ class EnhancedTableToolbar extends React.Component{
       if(data.code!=200){
         this.tips('获取组长人员列表失败，请稍后重试');return;
       }
-      this.setState({dutyModal: true, workers: data.results, selectedWorkers: []});
+      this.setState({workers: data.results, selectedWorkers: []});
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
   }
 
@@ -363,7 +364,7 @@ class EnhancedTableToolbar extends React.Component{
             type="textarea"
             value = {this.state.tDuty}
             onChange={(e)=>{return false;this.setState({tDuty:e.target.value})}}
-            onClick={this.showDutyModal}
+            onClick={ ()=>{this.setState({dutyModal: true});return;this.showDutyModal()} }
             margin="normal"
             InputLabelProps={{
               shrink: true,

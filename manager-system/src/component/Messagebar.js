@@ -99,7 +99,7 @@ class MessageBar extends React.Component{
 
       if(this.state.firstLoad==0){
           if(this.state.mailMessage.length){
-            this.mailClick();
+            setTimeout(this.mailClick, 1500);
           }
       }
       this.setState({firstLoad: ++this.state.firstLoad});
@@ -128,7 +128,10 @@ class MessageBar extends React.Component{
 
 
     handleClose = () => {
-      this.setState({open: false});
+      document.querySelector('.mailDialog').className += ' childScrollReturn';
+      setTimeout(()=>{
+        this.setState({open: false});
+      }, 500);
     }
 
     // 注销登录
@@ -176,12 +179,12 @@ class MessageBar extends React.Component{
       return (<Dialog
         onClose={this.handleClose}
         aria-labelledby="customized-dialog-title"
-        open={this.state.open} style={{marginTop:'.5rem'}} className = "mailDialog"
+        open={this.state.open} style={{marginTop:'.5rem'}} className = "mailDialog childScroll"
       >
         <DialogTitle id="customized-dialog-title" onClose={this.handleClose}>
           未读消息
         </DialogTitle>
-        <DialogContent style={{width: "90vw",height: "90vh",overflowY:"auto"}}>
+        <DialogContent style={{width: "090vw",height: "90vh",overflowY:"auto"}}>
           <ul style={{paddingRight:"2rem"}}>
           {this.state.mailMessage.map((mail, index)=>(
             <li style={{padding:".2rem 0",position: 'relative'}} className="mail-message" key={'mailLi'+index}>
@@ -200,7 +203,8 @@ class MessageBar extends React.Component{
 
     render() {
       // var props = this.props;
-      var { userName,mailMessage } = this.state;
+        var { userName,mailMessage } = this.state;
+        var { user } = this.props;
         return (
           <header className="App-header">
             <div id="logo" style={{height: '66px'}}>
@@ -208,10 +212,10 @@ class MessageBar extends React.Component{
                 <div style={{display: 'inline-block',lineHeight:'66px',verticalAlign:'top',paddingLeft: '.5rem'}}>极趣科技生产管理系统</div>
             </div>
             <div id="messagebar">
-            {userName?(<div className={"btn "} >
-                欢迎你，<span  className="text-blue" style={{paddingRight:1+"rem"}}>{userName}</span>
+            {userName?(<div className={""} >
+                欢迎你，<span  className="text-blue" style={{padding:"0 .2rem"}}>{userName}</span>{user.type==1?('[ 主管 ]'):(user.type==2?('[ 领班 ]'):user.type==3?('[ 组长 ]'):'[ 员工 ]')}
                 {/*<span color="primary"onClick={this.loginClick}>登陆</span>*/}
-                <span color="const" style={{display:(userName?'ff':'none')}} className={"btn text-red "} onClick={this.logoutClick}>注销</span>
+                <span color="const" style={{display:(userName?'ff':'none'), padding: '0 2rem 0 1.2rem'}} className={"btn text-red "} onClick={this.logoutClick}>注销</span>
                 <IconButton fontSize="large" color="inherit"style = {{marginTop: '-3px'}} onClick={this.mailClick}>
                   <Badge badgeContent={mailMessage.length} color="secondary">
                     <MailIcon  />
