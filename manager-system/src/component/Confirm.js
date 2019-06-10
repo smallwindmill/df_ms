@@ -23,8 +23,8 @@ class Confirm extends React.Component {
     return (
       <div>
         <Dialog
-          open={open}
-          onClose={ifAutoClose?'':closeFun}
+          open={open || false}
+          onClose={ifAutoClose?()=>{}:closeFun}
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description" className = "myConfirm"
         >

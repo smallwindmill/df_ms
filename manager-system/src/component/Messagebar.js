@@ -127,8 +127,12 @@ class MessageBar extends React.Component{
     }
 
 
-    handleClose = () => {
-      document.querySelector('.mailDialog').className += ' childScrollReturn';
+    handleClose = (type) => {
+      if(type==1){
+        document.querySelector('.mailDialog').className += ' childScrollReturnRight';
+      }else{
+        document.querySelector('.mailDialog').className += ' childScrollReturnLeft';
+      }
       setTimeout(()=>{
         this.setState({open: false});
       }, 500);
@@ -194,7 +198,7 @@ class MessageBar extends React.Component{
            { this.state.mailMessage.length==0?<ul><li className="mail-message text-blue">暂无消息</li></ul>:false}
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.handleClose} color="primary">
+          <Button onClick={()=>this.handleClose(1)} color="primary">
             我知道了
           </Button>
         </DialogActions>

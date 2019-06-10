@@ -320,7 +320,7 @@ class DutyIndentInfo extends React.Component {
   addProcedureInfo = (ifAdd, data, index) =>{
     // 添加流程详情时请求生产人员
     if(ifAdd==0){
-      this.setState({ifAdd: true});
+      this.setState({ifAdd: true, productNum: '', actualNum:''});
     }else{
       // this.setState({ifAdd: false, selectedData: JSON.parse(JSON.stringify(data)), selectedIndex: index});
       this.setState({ifAdd: false, selectedInfoData:data, productNum: data.productNum, actualNum: data.actualNum,selectedIndex: index});
@@ -414,6 +414,20 @@ class DutyIndentInfo extends React.Component {
   }
 
   finishProcedure = (data_out, index)=>{
+
+    var { infoData } = this.state;
+
+    var info_finish = 0;
+    if(infoData.length==0){
+      this.tips('请至少添加一条详情数据');return;
+    }
+    for(var i of infoData){
+      if(i.status==0) info_finish++;
+    }
+    if(info_finish!=0){
+      this.tips('详情表中还有'+info_finish+'条记录为进行状态，请完成后再设置流程状态');return;
+    }
+
     this.setState({InfoModalOpen: true, selectedDataCopy: data_out, selectIndex: index});
   }
 
@@ -427,14 +441,6 @@ class DutyIndentInfo extends React.Component {
     // console.log(id, next_info);
     var pid = this.props.match.params.id;
 
-    var info_finish = 0;
-    for(var i of infoData){
-      if(i.status==0) info_finish++;
-    }
-    if(info_finish!=0){
-      this.tips('详情表中还有'+info_finish+'条记录为进行状态，请完成后再设置流程状态');return;
-    }
-
 
     // console.log(this.state);
     // 设置流程完成
@@ -442,13 +448,13 @@ class DutyIndentInfo extends React.Component {
       headers:{
          'Content-Type': 'application/json',
       },
-      body:JSON.stringify({pid: pid,id: selectedDataCopy.id, status: 1, remark: next_info})
+      body:JSON.stringify({pid: pid,id: selectedDataCopy.id, status: 2, remark: next_info})
     }).then(res=>res.json()).then(data=>{
       if(data.code != 200){
         this.tips(data.msg);return;
       }
       this.tips('该流程已完成');
-      this.state.data.status = 1;
+      this.state.data.status = 2;
       this.setState({InfoModalOpen: false});
 
       this.setState({data: this.state.data});
@@ -827,11 +833,11 @@ class DutyIndentInfo extends React.Component {
                     <TableCell align="center" component="th" scope="row" padding="none">
                       {data.duty}
                     </TableCell>
-                    <TableCell align="center" component="th" scope="row" padding="none" className={data.status==1?'text-blue':''}>
-                      {(data.status==1)?'已完成':'进行中'}
+                    <TableCell align="center" component="th" scope="row" padding="none" className={data.status==2?"text-success":(data.status==1?"text-blue":"")}>
+                      {data.status==2?"完成":(data.status==1?"进行中":"未开始")}
                     </TableCell>
-                    <TableCell align="center" component="th" scope="row" padding="none" className={data.status==1?'':'text-blue'}>
-                      {(allPower || data.status==1)?'——':(<span className="btn" onClick={()=>this.finishProcedure(data)} > 设为完成</span>)}
+                    <TableCell align="center" component="th" scope="row" padding="none" className={data.status==2?'':'text-blue'}>
+                      {(allPower || data.status!=1)?'——':(<span className="btn" onClick={()=>this.finishProcedure(data)} > 设为完成</span>)}
                     </TableCell>
 
                   </TableRow>
@@ -874,17 +880,18 @@ class DutyIndentInfo extends React.Component {
                       {new Date(n.startTime).format('yyyy-MM-dd hh:mm:ss')}
                     </TableCell>
                     <TableCell align="center" component="th" scope="row" padding="none">
-                      {n.status==1?'已完成':(n.status==-1?'已报废':'进行中')}
+                      {n.status==2?'已完成':(n.status==-1?'已报废':(n.status==1?'已完成':'进行中'))}
                     </TableCell>
                     <TableCell align="center" id={n.status}>
-                      {data.status==0?
+                      {!allPower && data.status==1?
                         (n.status==0?<span className='pointer btn text-red' onClick={()=>this.scrapProcedure(n, index)}>设为报废</span>:(<span className={n.status==-1?'text-notice':''}>{n.status== 1?'':'——'}</span>) )
                       :('——')}
 
-                      {data.status==0?
+                      {!allPower && data.status==1?
                         (n.status==0?(<span className="pointer btn text-blue" onClick={()=>{this.addProcedureInfo(1, n, index)}}>修改</span>):(<span  className={n.status==1?'text-success':''}>{n.status== 1?'——':''}</span>))
                       :(<span className="text-success">——</span>)}
-                      {data.status==0?
+
+                      {!allPower && data.status==1?
                         (n.status==0?(<span className="pointer btn text-success" onClick={()=>this.finishProcedureDetail(n, index)}>设为完成</span>):(<span  className={n.status==1?'text-success':''}>{n.status== 1?'——':''}</span>))
                       :(<span className="text-success">——</span>)}
                     </TableCell>
@@ -911,7 +918,7 @@ class DutyIndentInfo extends React.Component {
                     onChangePage={this.handleChangePage}
                     onChangeRowsPerPage={this.handleChangeRowsPerPage}
                 />*/}
-        {this.state.data.status != 0 || allPower?false:(<Grid container align="center" vertical="center" style={{paddingTop:"4rem", paddingRight: "1rem"}}>
+        {(this.state.data.status != 1 || allPower)?false:(<Grid container align="center" vertical="center" style={{paddingTop:"4rem", paddingRight: "1rem"}}>
                               <Grid item xs={12}>
                                 <span onClick={()=>this.addProcedureInfo(0)} className="pointer addProcedureBtn"><AddIcon style={{marginBottom: '-5px'}} />添加详情</span>
                               </Grid>

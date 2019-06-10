@@ -128,3 +128,20 @@ div[class*='DateFormatInput-input']{
        -o-transform: translateX(-100%);
           transform: translateX(-100%);
 }
+
+
+/* @media (-webkit-max-device-pixel-ratio: 1) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+/* @media (-webkit-max-device-pixel-ratio: 1) */
+::-webkit-scrollbar-thumb {
+    background-color: #c2c2c2;
+    background-clip: padding-box;
+    min-height: 28px;
+}
+/* @media (-webkit-max-device-pixel-ratio: 1) */
+::-webkit-scrollbar-track-piece {
+    background-color: #FFFFFF;
+}

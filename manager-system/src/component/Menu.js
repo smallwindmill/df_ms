@@ -96,6 +96,9 @@ class Menu extends React.Component{
             },{
                 name: "流程工时",
                 route: 'workTime/queryWorkTimeForProcedure',
+            },{
+                name: "员工工时",
+                route: 'workTime/queryWorkTimeForUser',
             }/*,{
                 name: "根据月份查询工时",
                 route: 'workTime/queryWorkTimeByMonth',

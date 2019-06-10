@@ -73,7 +73,7 @@ class EnhancedTableHead extends React.Component {
             (row, index) => (
               <TableCell
                 key={'EnhancedTableHead2'+index}
-                align={row.numeric ? 'left' : 'left'}
+                align= 'center'
                 padding={row.disablePadding ? 'none' : 'default'}
               >
                 {row.label}
@@ -413,8 +413,10 @@ class QueryUser extends React.Component {
   componentWillMount() {
     // 组件初次加载数据申请
     fetch(config.server.listSystemUser).then(res=>res.json()).then(data=>{
-      console.log(data);
-      this.changeUserData(data.results || []);
+      // console.log(data);
+      // this.setState({pageUserType: config.changeToJson(localStorage.user).type});
+      var pageUserType = config.changeToJson(localStorage.user).type;
+      this.changeUserData(data.results.filter((n)=>{return pageUserType<=n.type}) || []);
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
   }
 
@@ -529,7 +531,7 @@ class QueryUser extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { data, order, orderBy, selected, rowsPerPage, page } = this.state;
+    const { data, order, orderBy, selected, rowsPerPage, page, pageUserType } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
     return (
@@ -553,18 +555,18 @@ class QueryUser extends React.Component {
                       tabIndex={-1}
                       key={'user'+index}
                     >
-                      <TableCell align="left">{page * rowsPerPage+index+1}</TableCell>
-                      <TableCell align="left">{n.userID}</TableCell>
-                      <TableCell component="th" scope="row" padding="none">
+                      <TableCell align="center">{page * rowsPerPage+index+1}</TableCell>
+                      <TableCell align="center">{n.userID}</TableCell>
+                      <TableCell align="center" component="th" scope="row" padding="none">
                         {n.userName}
                       </TableCell>
-                      <TableCell component="th" scope="row" padding="none" onMouseEnter = {(e)=>{if(n.type!=4)(e.target.innerHTML=n.pwd || '无') }}  onMouseOut = {(e)=>{if(n.type!=4) (e.target.innerHTML="******") }}>
+                      <TableCell align="center" component="th" scope="row" padding="none" onMouseEnter = {(e)=>{if(n.type!=4)(e.target.innerHTML=n.pwd || '无') }}  onMouseOut = {(e)=>{if(n.type!=4) (e.target.innerHTML="******") }}>
                         {n.type!=4?'*******':'无'}
                       </TableCell>
-                      <TableCell component="th" className = {n.type!=4?'text-blue':''} scope="row" padding="none">
+                      <TableCell align="center" component="th" className = {n.type!=4?'text-blue':''} scope="row" padding="none">
                         {n.type==4?'生产员工':(n.type==3?'组长':n.type==2?'领班':n.type==1?'主管':'')}
                       </TableCell>
-                      <TableCell align="left">
+                      <TableCell align="center">
                         <span className="pointer btn text-blue" onClick={()=>this.updateUser(n, index)}>修改</span>
                         <span className="pointer btn text-red" onClick={()=>this.deleteUser(n, index)}>删除</span>
                       </TableCell>

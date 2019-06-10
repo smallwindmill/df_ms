@@ -158,7 +158,6 @@ class EnhancedTableToolbar extends React.Component{
     }else if(type==1){
       this.setState({ open: true, serverURL: config.server.updateTemplate,ifAdd: 0 });
     }
-    this.showDutyModal();
   }
 
   //添加模板/更新模板时的判断
@@ -228,12 +227,13 @@ class EnhancedTableToolbar extends React.Component{
 
   showDutyModal = () =>{
     this.state.DutyWorkers = [];
+    this.state.tDuty = '';
     fetch(config.server.listSystemUserByType+"?type=3").then(res=>res.json()).then(data=>{
       // console.log(data);
       if(data.code!=200){
         this.tips('获取组长人员列表失败，请稍后重试');return;
       }
-      this.setState({workers: data.results, selectedWorkers: []});
+      this.setState({dutyModal: true, workers: data.results, selectedWorkers: []});
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
   }
 
@@ -358,13 +358,13 @@ class EnhancedTableToolbar extends React.Component{
 
           <Grid item xs={12} style={{paddingTop:'.5rem'}}>
           <TextField fullWidth style={{marginTop:0}}
-            placeholder="请输入流程对应负责人"
+            placeholder="请选择流程对应负责人"
             label="负责人(多个以空格分开)"
             className={classes.textField}
             type="textarea"
             value = {this.state.tDuty}
             onChange={(e)=>{return false;this.setState({tDuty:e.target.value})}}
-            onClick={ ()=>{this.setState({dutyModal: true});return;this.showDutyModal()} }
+            onClick={ ()=>{this.showDutyModal()} }
             margin="normal"
             InputLabelProps={{
               shrink: true,
@@ -417,7 +417,7 @@ class EnhancedTableToolbar extends React.Component{
         </Toolbar>
           <Grid container>
                 <Grid xs = {12} item align="right">
-                  <span className="btn text-blue"  onClick={()=>this.addTemplate(0)} style={{margin: "0 12rem 2rem"}}>添加模板</span>
+                  <span className="btn text-blue"  onClick={()=>this.addTemplate(0)} style={{display: 'inline-block', margin: "1rem 12rem 2rem"}}>添加模板</span>
                 </Grid>
               </Grid>
           <div className={classes.spacer} />{this.addTemplateModal()}

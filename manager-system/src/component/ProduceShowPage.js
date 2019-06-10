@@ -36,7 +36,7 @@ class ProduceShowPage extends React.Component {
       this.startLoop();//开始滚动
       this.startSpeak();// 语音播报
     }, 1000);
-    this.dataTimer = setInterval(this.queryDataTimer, 10000); //数据刷新
+    this.dataTimer = setInterval(this.queryDataTimer, 10000); //十秒数据刷新
 
 
   }
@@ -54,6 +54,7 @@ class ProduceShowPage extends React.Component {
     if(this.speakTimer){
       clearInterval(this.speakTimer);
     }
+    this.stopSpeakInfo();
 
   }
 
@@ -86,17 +87,16 @@ class ProduceShowPage extends React.Component {
     var startS = () => {
       if(j < len){
         let i = dataCopy[j];
-        if(i.status || i.priority || i.ifNew){
-          // var str = ('编号为' + i.erp +'的'+((i.priority)?'加急订单':'订单') + ((i.status)?'已完成':('处于'+i.name+'流程')));
-          var str = '';
+        if(i.status==2 || i.priority || i.ifNew){
+          var str;
           if(i.ifNew && i.priority){
-            str = ('编号为' + i.erp +'的新品加急订单'+ ((i.status)?'已完成':('处于'+i.name+'流程')));
+            str = ('编号为' + i.erp +'的新品加急订单的'+ i.name + '流程' + ((i.status==2)?'已完成，请下一环节准备':('已开始')));
           }else if(i.ifNew){
-            str = ('编号为' + i.erp +'的新品订单'+ ((i.status)?'已完成':('处于'+i.name+'流程')));
+            str = ('编号为' + i.erp +'的新品订单的'+ i.name + '流程' + ((i.status==2)?'已完成，请下一环节准备':('已开始')));
           }else if(i.priority){
-            str = ('编号为' + i.erp +'的加急订单'+ ((i.status)?'已完成':('处于'+i.name+'流程')));
+            str = ('编号为' + i.erp +'的加急订单的'+ i.name + '流程' + ((i.status==2)?'已完成，请下一环节准备':('已开始')));
           }else{
-            str = ('编号为' + i.erp +'的订单'+ ((i.status)?'已完成':('处于'+i.name+'流程')));
+            str = ('编号为' + i.erp +'的订单的'+ i.name + '流程' + ((i.status==2)?'已完成，请下一环节准备':('已开始')));
           }
            console.log(str);
            this.speakInfo(str);
@@ -135,9 +135,6 @@ class ProduceShowPage extends React.Component {
     this.loopTimer = setInterval(()=>{
         // console.log(dom.scrollTop, c_height);
       if(dom.scrollTop >= c_height){
-        // var tableClone = document.getElementById('produceShowTable').cloneNode(true);
-        // dom.appendChild(tableClone);
-        // dom.removeChild(dom.childNodes[0]);console.log(dom.childNodes)
         dom.scrollTop = 0;
       }else{
         dom.scrollTop += 1;
@@ -167,7 +164,7 @@ class ProduceShowPage extends React.Component {
     var data = this.state.style;
     data.table = {position: 'fixed',
           top: 0,
-          left: 0,padding:'0 .5rem',
+          left: 0,padding:'0rem',
           width: '100vw',
           height: '100vh',
           background: 'white',zIndex:10};
@@ -179,7 +176,7 @@ class ProduceShowPage extends React.Component {
     var data = this.state.style;
     data.table = {position: 'relative',
                   top: 0,
-                  left: 0,padding:'0 .5rem',
+                  left: 0,padding:'0rem',
                   width: '100%',
                   height: '(100vh-194px)',
                   background: 'white',zIndex:0};
@@ -200,14 +197,15 @@ class ProduceShowPage extends React.Component {
       　　  //request.url = encodeURI(url);
        // request.contentType = "audio/mp3"; // for baidu
        //request.contentType = "audio/mpeg"; // for google
-      　　 var n = audio || new Audio(url);
-      　　 n.src = url;
-      　　 n.play();
+  　　 var n = audio || new Audio(url);
+  　　 n.src = url;
+  　　 n.play();
       this.setState({audio: n});
   }
 
   stopSpeakInfo =() => {
     var { stopSpeak } = this.state;
+    this.state.audio.pause();
     this.setState({stopSpeak: !stopSpeak});
   }
 
@@ -243,7 +241,7 @@ class ProduceShowPage extends React.Component {
           <Grid container>
 
             <Grid item xs = {3} align="left">
-              <span className="blod">共{data.length}条数据</span>
+              <span className="blod">共{data.length}条订单数据</span>
             </Grid>
             <Grid item xs = {9}>
               <div align="right" style={{paddingRight:'2rem'}}>
@@ -272,7 +270,7 @@ class ProduceShowPage extends React.Component {
         <table id="produceShowTable" className="produceShowTable" style={{width:'100%',textAlign: 'center'}}><tbody>
 
         {data.map((single, index)=>(
-          <tr key={'tr'+index}  className={single.status==0?(single.priority?'bg-red':(single.ifNew==1?'bg-notice':'')):'bg-success'}>
+          <tr key={'tr'+index}  className={single.status==2?'bg-success':(single.priority?'bg-red':(single.ifNew==1?'bg-notice':''))}>
             <td style={{padding: '12px 0'}}>{index+1}</td>
             <td style={{padding: '12px 0'}}>{single.erp}</td>
             <td>{single.materialCode}</td>

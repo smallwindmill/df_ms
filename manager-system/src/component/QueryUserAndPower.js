@@ -94,7 +94,7 @@ class EnhancedTableHead extends React.Component {
             (row, index) => (
               <TableCell
                 key={index}
-                align={row.numeric ? 'right' : 'left'}
+                align='center'
                 padding={row.disablePadding ? 'none' : 'default'}
               >
               {row.label}
@@ -388,7 +388,7 @@ class QueryUserAndPower extends React.Component {
             <FormLabel component="legend">登录权限</FormLabel>
             <RadioGroup aria-label="登录权限" style={{flexDirection:"row"}} name="login" value={(login || 0)+'' } onChange={(e)=>{e.persist();selectedData.login= e.target.value=='0'?0:1;this.setState({selectedData: selectedData})}}          >
                <FormControlLabel value="0" control={<Radio color="default" />} label="关闭" />
-               <FormControlLabel value="1" control={<Radio color="default" />} label="打开" />
+               <FormControlLabel value="1" control={<Radio color="primary" />} label="打开" />
             </RadioGroup>
           </Grid>
 
@@ -396,7 +396,7 @@ class QueryUserAndPower extends React.Component {
             <FormLabel component="legend">操作订单和订单状态</FormLabel>
             <RadioGroup aria-label="Gender" style={{flexDirection:"row"}} name="login" value={(handleIndent || 0)+'' } onChange={(e)=>{e.persist();selectedData.handleIndent= e.target.value=='0'?0:1;this.setState({selectedData: selectedData})}}          >
                <FormControlLabel value="0" control={<Radio color="default" />} label="关闭" />
-               <FormControlLabel value="1" control={<Radio color="default" />} label="打开" />
+               <FormControlLabel value="1" control={<Radio color="primary" />} label="打开" />
             </RadioGroup>
           </Grid>
 
@@ -404,7 +404,7 @@ class QueryUserAndPower extends React.Component {
             <FormLabel component="legend">操作订单工时费</FormLabel>
             <RadioGroup aria-label="Gender" style={{flexDirection:"row"}} name="login" value={(handleWorkhour || 0)+'' } onChange={(e)=>{e.persist();selectedData.handleWorkhour = e.target.value=='0'?0:1;this.setState({selectedData: selectedData})}}          >
                <FormControlLabel value="0" control={<Radio color="default" />} label="关闭" />
-               <FormControlLabel value="1" control={<Radio color="default" />} label="打开" />
+               <FormControlLabel value="1" control={<Radio color="primary" />} label="打开" />
             </RadioGroup>
           </Grid>
 
@@ -413,7 +413,7 @@ class QueryUserAndPower extends React.Component {
             <RadioGroup aria-label="Gender" name="login" style={{flexDirection:"row"}} value={(listIndent || 0)+'' } onChange={(e)=>{e.persist();selectedData.listIndent = e.target.value=='0'?0:1;this.setState({selectedData: selectedData})}}
           >
                <FormControlLabel value="0" control={<Radio color="default" />} label="关闭" />
-               <FormControlLabel value="1" control={<Radio color="default" />} label="打开" />
+               <FormControlLabel value="1" control={<Radio color="primary" />} label="打开" />
             </RadioGroup>
           </Grid>
 
@@ -422,7 +422,7 @@ class QueryUserAndPower extends React.Component {
             <RadioGroup aria-label="Gender" name="login" style={{flexDirection:"row"}} value={(showpage || 0)+'' } onChange={(e)=>{e.persist();selectedData.showpage= e.target.value=='0'?0:1;this.setState({selectedData: selectedData})}}
           >
                <FormControlLabel value="0" control={<Radio color="default" />} label="关闭" />
-               <FormControlLabel value="1" control={<Radio color="default" />} label="打开" />
+               <FormControlLabel value="1" control={<Radio color="primary" />} label="打开" />
             </RadioGroup>
           </Grid>
 
@@ -431,7 +431,7 @@ class QueryUserAndPower extends React.Component {
             <RadioGroup aria-label="Gender" name="login" style={{flexDirection:"row"}} value={(captain || 0)+'' } onChange={(e)=>{e.persist();selectedData.captain= e.target.value=='0'?0:1;this.setState({selectedData: selectedData})}}
           >
                <FormControlLabel value="0" control={<Radio color="default" />} label="关闭" />
-               <FormControlLabel value="1" control={<Radio color="default" />} label="打开" />
+               <FormControlLabel value="1" control={<Radio color="primary" />} label="打开" />
             </RadioGroup>
           </Grid>
 
@@ -479,18 +479,18 @@ class QueryUserAndPower extends React.Component {
                       {/* <TableCell padding="checkbox">
                         <Checkbox checked={isSelected} />
                       </TableCell>*/}
-                      <TableCell component="th" scope="row" padding="none">{page * rowsPerPage+index+1}</TableCell>
-                      <TableCell component="th" scope="row" padding="none">
+                      <TableCell align="center" component="th" scope="row" padding="none">{page * rowsPerPage+index+1}</TableCell>
+                      <TableCell align="center" component="th" scope="row" padding="none">
                         {n.userID}
                       </TableCell>
-                      <TableCell align="right">{n.userName}</TableCell>
-                      <TableCell align="right" className = {n.login?'text-blue':''}>{n.login?'有':'无'}</TableCell>
-                      <TableCell align="right" className = {n.handleIndent?'text-blue':''}>{n.handleIndent?'有':'无'}</TableCell>
-                      <TableCell align="right" className = {n.handleWorkhour?'text-blue':''}>{n.handleWorkhour?'有':'无'}</TableCell>
-                      <TableCell align="right" className = {n.listIndent?'text-blue':''}>{n.listIndent?'有':'无'}</TableCell>
-                      <TableCell align="right" className = {n.showpage?'text-blue':''}>{n.showpage?'有':'无'}</TableCell>
-                      <TableCell align="right" className = {n.captain?'text-blue':''}>{n.captain?'有':'无'}</TableCell>
-                      <TableCell align="right">
+                      <TableCell align="center">{n.userName}</TableCell>
+                      <TableCell align="center" className = {n.login?'text-blue':''}>{n.login?'有':'无'}</TableCell>
+                      <TableCell align="center" className = {n.handleIndent?'text-blue':''}>{n.handleIndent?'有':'无'}</TableCell>
+                      <TableCell align="center" className = {n.handleWorkhour?'text-blue':''}>{n.handleWorkhour?'有':'无'}</TableCell>
+                      <TableCell align="center" className = {n.listIndent?'text-blue':''}>{n.listIndent?'有':'无'}</TableCell>
+                      <TableCell align="center" className = {n.showpage?'text-blue':''}>{n.showpage?'有':'无'}</TableCell>
+                      <TableCell align="center" className = {n.captain?'text-blue':''}>{n.captain?'有':'无'}</TableCell>
+                      <TableCell align="center">
                       <span className={'pointer text-blue '+classes.button}  onClick={()=>this.updateUserPower(n, index)}>修改</span>
                       </TableCell>
                     </TableRow>

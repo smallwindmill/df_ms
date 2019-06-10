@@ -74,7 +74,7 @@ const rows = [
   { id: 'protein', numeric: true, disablePadding: false, label: '工时费' },
   { id: 'protein', numeric: true, disablePadding: false, label: '总人数' },
   // { id: 'protein', numeric: true, disablePadding: false, label: '总小时' }
-  { id: 'protein', numeric: true, disablePadding: false, label: '操作' }
+  // { id: 'protein', numeric: true, disablePadding: false, label: '操作' }
 ];
 
 const procedure_rows = [
@@ -527,7 +527,7 @@ class QueryWorkTime extends React.Component {
                         role="checkbox"
                         aria-checked={isSelected}
                         tabIndex={-1}
-                        key={n.id}
+                        key={page * rowsPerPage + index}
                         selected={isSelected}
                       >
                         <TableCell align="center">{page * rowsPerPage + index+1}</TableCell>
@@ -541,7 +541,7 @@ class QueryWorkTime extends React.Component {
                         <TableCell align="center">{n.countWorkers}</TableCell>
                         {/*<TableCell align="center">{n.counthour}</TableCell>*/}
                         {/*<TableCell align="center" className = "btn text-blue" onClick={()=>{this.setState({ifProcedure: true});this.queryProcedureWorkHour(n)}}>查看流程工时</TableCell>*/}
-                        <TableCell align="center" className = "btn text-blue" >——</TableCell>
+                        {/*<TableCell align="center" className = "btn text-blue" >——</TableCell>*/}
                         {/*<TableCell align="left">{n.remark}</TableCell>
                           <TableCell align="left">{n.feedback}</TableCell>*/}
                       </TableRow>

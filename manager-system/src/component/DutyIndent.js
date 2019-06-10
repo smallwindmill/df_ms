@@ -139,8 +139,9 @@ class EnhancedTableToolbar extends React.Component{
     open: false,
     chooseList:[
       {value:'all', text:'全部'},
-      {value:1, text:'已完成'},
-      {value:0, text:'进行中'},
+      {value:2, text:'已完成'},
+      {value:1, text:'进行中'},
+      {value:0, text:'未开始'},
       // {value:-1, text:'报废'}
     ],
     selectedDataCopy:{},
@@ -184,6 +185,16 @@ class EnhancedTableToolbar extends React.Component{
                   {option.text}
                 </option>
               ))}</TextField>
+
+              <TextField style={{marginTop:0,marginLeft:'1rem'}} label = "筛选"
+              placeholder="请输入订单号或货号查询"
+              className={classes.textField}
+              type="text"
+              onChange = {(e)=>this.props.queryByKeyword(e)}
+              margin="normal"
+              InputLabelProps={{
+                shrink: true,
+              }}></TextField>
             </Grid></Grid>
           </div>
       )
@@ -270,6 +281,32 @@ class DutyIndent extends React.Component {
   isSelected = id => this.state.selected.indexOf(id) !== -1;
 
 
+  startProcedure = (item, msg, ifInfo) => {
+    var nexFun = ()=>{
+      // 设置订单为开始状态
+      fetch(config.server.updateDutyProcedureStatus,{method:"POST",
+        headers:{
+            'Content-Type': 'application/json',
+        },
+        body:JSON.stringify({id: item.id, status: 1,remark: item.remark})
+      }).then(res=>res.json()).then(data=>{
+        // console.log(data);
+        if(data.code!=200){
+          this.tips(data.msg);return;
+        }
+        this.tips('订单已开始');
+        // this.state.data[index].status = 1;
+        item.status = 1;
+        // 新增数据
+        this.changeDutyIndentData('', 2);
+      }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
+
+    };
+
+    this.setState({confirmOpen: true,title: "确认",content: msg,sureFun: nexFun, ifInfo: ifInfo});
+  }
+
+
   changeDutyIndentData = (data, type) =>{
     // 默认替换，1为push，2为修改
     if(type==1){
@@ -291,7 +328,7 @@ class DutyIndent extends React.Component {
       this.state.dataBak = this.state.data;
     }
 
-    if(value==0){
+    /*if(value==0){
       this.state.data = this.state.dataBak.filter((item)=>{
         // return item.ifNew==1;
         return item.status == 0;
@@ -303,13 +340,34 @@ class DutyIndent extends React.Component {
       })
     }else if(value=='all'){
       this.state.data = this.state.dataBak;
+    }*/
+    if(value=='all'){
+      this.state.data = this.state.dataBak;
+    }else{
+      this.state.data = this.state.dataBak.filter((item)=>{
+          // return item.ifNew==1;
+          return item.status == value;
+      })
     }
 
     this.setState({data: this.state.data });
 
-
   }
 
+
+  queryByKeyword = (e) =>{
+    e.persist();
+
+    if(!this.state.dataBak){
+      this.state.dataBak = this.state.data;
+    }
+
+    this.state.data = this.state.dataBak.filter((item)=>{
+      return (item.erp.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1 || item.materialCode.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1 || item.materialName.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1);
+    });
+    this.setState({data: this.state.data });
+
+  }
 
   // 关闭确认框
   confirmClose=()=>{
@@ -340,7 +398,7 @@ class DutyIndent extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar changeDutyIndentData = {this.changeDutyIndentData} queryDutyIndentByType = {this.queryDutyIndentByType }  tips = {this.tips}/>
+        <EnhancedTableToolbar changeDutyIndentData = {this.changeDutyIndentData} queryByKeyword = {this.queryByKeyword} queryDutyIndentByType = {this.queryDutyIndentByType }  tips = {this.tips}/>
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -370,11 +428,13 @@ class DutyIndent extends React.Component {
                       <TableCell align="center" component="th" scope="row" padding="none">
                         {n.duty}
                       </TableCell>
-                      <TableCell align="center" component="th" scope="row" padding="none">
-                        {(n.status==1)?'完成':'进行中'}
+                      <TableCell align="center" component="th" scope="row" padding="none" className = {n.status==2?"text-success":(n.status==1?"text-blue":"")}>
+                        {n.status==2?"完成":(n.status==1?"进行中":"未开始")}
                       </TableCell>
                       <TableCell align="center">
-                            <span className={"pointer btn "+(n.status?"text-blue":"text-red")} onClick={()=>this.props.history.push('/dutyIndent/info'+n.id)}>{(n.status==1)?'详情':'编辑'}</span>
+                            {n.status==0?<span className={"pointer btn "+(n.status?"text-blue":"text-blue")} onClick={()=>this.startProcedure(n, "上一流程未完成，确定开始该流程吗？", true)}>开始流程</span>:n.status==2?
+                            <span className={"pointer btn "+(n.status?"text-success":"text-success")} onClick={()=>this.startProcedure(n, "确定重新开始该流程吗？")}>重新开始流程</span>:''}
+                            <span className={"pointer btn text-blue"} onClick={()=>{if(n.status==0){this.tips('当前流程还未开始');return;};this.props.history.push('/dutyIndent/info'+n.id)}}>{(n.status==2)?'详情':(n.status==1?'查看':'')}</span>
                           </TableCell>
                     </TableRow>
                   );
@@ -386,7 +446,6 @@ class DutyIndent extends React.Component {
               )}
             </TableBody>
           </Table>
-          <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.confirmSure} />
         </div>
         <TablePagination
           rowsPerPageOptions={[10, 20, 30]}
@@ -403,6 +462,7 @@ class DutyIndent extends React.Component {
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
+        <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.state.sureFun} ifInfo = {this.state.ifInfo} />
         <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
         anchorOrigin={{horizontal:"center",vertical:"top"}}
         open={this.state.tipsOpen}

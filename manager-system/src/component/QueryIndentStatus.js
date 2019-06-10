@@ -96,7 +96,7 @@ class EnhancedTableHead extends React.Component {
             (row, index) => (
               <TableCell
                 key={'EnhancedTableHead'+index}
-                align={row.numeric ? 'center' : 'center'}
+                align = 'center'
                 padding={row.disablePadding ? 'none' : 'default'}
                 sortDirection={orderBy === row.id ? order : false}
               >
@@ -178,7 +178,7 @@ class EnhancedTableToolbar extends React.Component{
                 {this.state.chooseMonth?this.state.chooseMonth+'月':'所有'}订单状态
               </Typography>
         </Toolbar>
-        <Grid container  style={{margin:'1rem 0 1rem',padding: '0 1.2rem'}}>
+        <Grid container  style={{margin:'1rem 0 0',padding: '0 1.2rem'}}>
             <Grid item align="left" xs={6}>
               <Grid item xs={12} className="filterTool small">
                   <span className="blod">时间</span>
@@ -425,10 +425,10 @@ class QueryIndentStatus extends React.Component {
                         {n.duty}
                       </TableCell>
                       <TableCell align="center" component="th" scope="row" padding="none" className = {n.status?'text-blue':''}>
-                        {(n.status)?'完成':'进行中'}
+                        {n.status==2?"完成":(n.status==1?"进行中":"未开始")}
                       </TableCell>
                       <TableCell align="center">
-                        <span className="pointer btn text-blue" onClick = {()=>this.props.history.push('/indent/info'+n.id)}>详情</span>
+                        {n.status !=0?<span className="pointer btn text-blue" onClick = {()=>this.props.history.push('/indent/info'+n.id)}>{n.status==2?'详情':'查看'}</span>:'——'}
                         {/*<span className="pointer btn text-blue">{1==1?'':'修改'}</span>
                         <span className="pointer btn text-red" onClick={this.deleteUser}>删除</span>*/}
                       </TableCell>

@@ -98,7 +98,7 @@ class WorkCalendar extends React.Component {
 
       var date = e.target.parentNode.className.split('dateClass')[1].split(' ')[0];
 
-      if(date <= new Date().format('yyyy-MM-dd')){
+      if(date < new Date().format('yyyy-MM-dd')){
        this.tips('无法修改过去时期的工时');return;
       }
 
@@ -202,7 +202,7 @@ class WorkCalendar extends React.Component {
      var { workDate, workArr } = this.state;
 
      // console.log(arg.dateStr);
-     if(arg.dateStr <= new Date().format('yyyy-MM-dd')){
+     if(arg.dateStr < new Date().format('yyyy-MM-dd')){
       this.tips('无法修改过去时期的工时');return;
      }
 

@@ -28,16 +28,12 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 
 import Snackbar from '@material-ui/core/Snackbar';
-import Chip from '@material-ui/core/Chip';
 
 import Confirm from './Confirm';
 import config from './config';
 
 let counter = 0;
-function createData( name, content, duty) {
-  counter += 1;
-  return { id: counter, name, content, duty };
-}
+
 
 function desc(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -64,13 +60,20 @@ const DialogActions = withStyles(theme => ({
   },
 }))(MuiDialogActions);
 
-const rows = [
+
+const procedure_rows = [
   { id: 'name', numeric: false, disablePadding: true, label: '序号' },
-  { id: 'name', numeric: false, disablePadding: true, label: '模板编号' },
-  { id: 'name', numeric: false, disablePadding: true, label: '模板名称' },
-  { id: 'carbs', numeric: true, disablePadding: false, label: '模板流程' },
-  { id: 'calories', numeric: false, disablePadding: false, label: '负责人' },
-  { id: 'protein', numeric: true, disablePadding: false, label: '操作' }
+  { id: 'name', numeric: false, disablePadding: true, label: '用户名称' },
+  // { id: 'name', numeric: false, disablePadding: true, label: '产品数量' },
+  { id: 'carbs', numeric: true, disablePadding: false, label: '总工时' },
+  { id: 'carbs', numeric: true, disablePadding: false, label: '参与项目' },
+  // { id: 'calories', numeric: false, disablePadding: false, label: '总工时' },
+  // { id: 'calories', numeric: false, disablePadding: false, label: '单数量工时' },
+  // { id: 'calories', numeric: false, disablePadding: false, label: '权数' },
+  // { id: 'protein', numeric: true, disablePadding: false, label: '工时费' },
+  // { id: 'protein', numeric: true, disablePadding: false, label: '总人数' },
+  // { id: 'protein', numeric: true, disablePadding: false, label: '总小时' }
+  // { id: 'protein', numeric: true, disablePadding: false, label: '操作' }
 ];
 
 class EnhancedTableHead extends React.Component {
@@ -87,7 +90,8 @@ class EnhancedTableHead extends React.Component {
 
 
   render() {
-    const { onSelectAllClick, order, orderBy, numSelected, rowCount } = this.props;
+    // const { onSelectAllClick, order, orderBy, numSelected, rowCount } = this.props;
+    const { onSelectAllClick, order, orderBy, numSelected, rowCount,rows } = this.props;
 
     return (
       <TableHead>
@@ -140,44 +144,85 @@ class EnhancedTableToolbar extends React.Component{
 
   state = {
     open: false,
-    dutyModal: false,
-    workers: [],
-    tDuty: ''
+    chooseList:[
+          {value:0, text:'全部'},
+          {value:1, text:'已完成'},
+          {value:2, text:'进行中'},
+        ],
+    dateRange:[{text: "最近一周"},{text: "最近一月"},{text: "最近三月"},{text: "最近一年"},{text: "一年以前"}]
+  }
+
+  handleClose = () => {
+    this.setState({ open: false });
+  }
+
+  queryWorktimeStatusByDate=(e, data, index)=>{
+    var { queryStart, queryEnd } = this.state;
+    e.persist();
+    // 切换显示高亮
+    for(var i of e.target.parentElement.children){
+      i.className = i.className.replace('text-blue','');
+    }
+
+    e.target.className += ' text-blue';
+
+    queryEnd = new Date().format('yyyy-MM-dd');
+
+    if(index==0){
+      queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
+    }else if(index==1){
+      queryStart = new Date(new Date()-1000*60*60*24*30).format('yyyy-MM-dd');//一月
+    }else if(index==2){
+      queryStart = new Date(new Date()-1000*60*60*24*90).format('yyyy-MM-dd');//三月
+    }else if(index==3){
+      queryStart = new Date(new Date()-1000*60*60*24*365).format('yyyy-MM-dd');//一年
+    }else if(index==4){
+      queryStart = new Date(new Date()-1000*60*60*24*3650).format('yyyy-MM-dd');//一年以前
+      queryEnd = new Date(new Date()-1000*60*60*24*365).format('yyyy-MM-dd');
+    }
+
+    fetch(config.server.queryWorkHourByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
+      // console.log(data);
+      this.props.changeWorktimeData(data.results || []);
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+
+  }
+
+
+  addTemplate = () => {
+    this.setState({ open: true });
   }
 
   tips = this.props.tips;
 
-  handleClose = () => {
-    this.setState({ open: false, dutyModal: false });
-  }
-
-  addTemplate = (type) => {
-    if(type==0){
-      this.setState({ open: true, serverURL: config.server.addTemplate,ifAdd: 1 });
-      this.setState({tName: '', tProcedure: '', tDuty: ''});
-    }else if(type==1){
-      this.setState({ open: true, serverURL: config.server.updateTemplate,ifAdd: 0 });
-    }
-  }
-
-
-
   render(){
     var classes = '';
+    var {dateRange} = this.state;
     return (
-      <div>
-        <Toolbar >
+       <div className={classes.title}>
+            <Toolbar >
               <Typography variant="h6" id="tableTitle" align="left">
-                已删除模板
+                {this.props.title}
               </Typography>
         </Toolbar>
-          <Grid container>
-                <Grid xs = {12} item align="right">
-                  <span className="btn text-blue" style={{display: 'inline-block', margin: "1rem 12rem 2rem"}}></span>
-                </Grid>
-              </Grid>
-          <div className={classes.spacer} />
-        </div>
+        <Grid container align="left"  style={{margin:'1rem 0 1rem',padding: '0 1.2rem'}}>
+          <Grid item xs={6} align="left">
+
+          </Grid>
+
+          <Grid item align="right" xs={6}>
+            <TextField style={{marginTop:0,marginLeft:'1rem'}}
+            placeholder="请输入员工名称或ID查询"
+            className={classes.textField}
+            type="text"
+            onChange = {(e)=>this.props.queryByKeyword(e)}
+            margin="normal"
+            InputLabelProps={{
+              shrink: true,
+            }}></TextField>
+          </Grid>
+        </Grid>
+          </div>
       )
   }
 };
@@ -200,7 +245,7 @@ const styles = theme => ({
 
 
 
-class RecycleTemplete extends React.Component {
+class QueryWorkTimeForUser extends React.Component {
   state = {
     order: 'asc',
     orderBy: 'calories',
@@ -209,40 +254,38 @@ class RecycleTemplete extends React.Component {
     page: 0,
     rowsPerPage: config.pageChangeNum || 13,
     open: true,
-    confirmOpen: false,
+    deleteOpen: false,
     title: "确认",
-    content: "确定删除该模板吗？"
-  };
+    content: "确定删除该订单吗？"
+  }
 
   componentWillMount() {
     // 组件初次加载数据申请
-    fetch(config.server.listAllTemplate+'?ifDelete=1').then(res=>res.json()).then(data=>{
+    var procedureID = this.props.match.params.id;
+
+    var querySingleIndent = this.props.match.params;
+    // console.log(procedureID, querySingleIndent);
+    this.setState({ifProcedure: true});
+
+    this.queryWorkHourForUser();
+
+    var queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
+    var queryEnd = new Date().format('yyyy-MM-dd');
+
+  }
+
+
+  queryWorkHourForUser = () => {
+    fetch(config.server.queryWorkTimeForUser+'?indentID=').then(res=>res.json()).then(data=>{
       console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
-      this.changeTemplateData(data.results || []);
+      this.changeWorktimeData(data.results || []);
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
+
   }
 
-  handleRequestSort = (event, property) => {
-    const orderBy = property;
-    let order = 'desc';
-
-    if (this.state.orderBy === property && this.state.order === 'desc') {
-      order = 'asc';
-    }
-
-    this.setState({ order, orderBy });
-  };
-
-  handleSelectAllClick = event => {
-    if (event.target.checked) {
-      this.setState(state => ({ selected: state.data.map(n => n.id) }));
-      return;
-    }
-    this.setState({ selected: [] });
-  };
 
   handleClick = (event, id) => {
     const { selected } = this.state;
@@ -275,65 +318,36 @@ class RecycleTemplete extends React.Component {
 
   isSelected = id => this.state.selected.indexOf(id) !== -1;
 
+  queryByKeyword = (e) =>{
+    e.persist();
 
-
-  // 删除模板弹窗
-  deleteTemplate=(data, index)=>{
-    this.setState({confirmOpen: true});
-    var nexFun = ()=>{
-      fetch(config.server.deleteTemplate,{method:"POST",
-        headers:{
-          'Content-Type': 'application/json',
-        },
-        body:JSON.stringify({id: data.id})
-      }).then(res=>res.json()).then(data=>{
-        if(data.code!=200){
-            this.tips(data.msg);return;
-        }
-
-        this.state.data.splice(index, 1);
-        this.setState({data: this.state.data});
-        this.tips('删除模板成功');
-      }).catch(e=>this.tips('网络出错了，请稍候再试'));
-
-    };
-
-    this.setState({confirmOpen: true,title: "确认",content: "确定删除该模板吗？",deleteFun: nexFun});
-  }
-
-
-  // 还原模板
-  recycleTemplate = (data, index) =>{
-
-    var nexFun = () => {
-      fetch(config.server.recycleTemplate,{method:"POST",
-        headers:{
-          'Content-Type': 'application/json',
-        },
-        body:JSON.stringify({id: data.id})
-      }).then(res=>res.json()).then(data=>{
-        if(data.code!=200){
-          this.tips(data.msg);return;
-        }
-        // 删除数据
-        this.state.data.splice(index, 1);
-        this.setState({data: this.state.data});
-      }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
-
+    if(!this.state.dataBak){
+      this.state.dataBak = this.state.data;
     }
 
-    this.setState({confirmOpen: true,title: "确认",content: "确定还原该模板吗？",confirmSure: nexFun});
+    this.state.data = this.state.dataBak.filter((item)=>{
+      return item.userName.indexOf(e.target.value)!=-1 || item.userID.indexOf(e.target.value)!=-1 ;
+    });
+    this.setState({data: this.state.data });
 
   }
 
-
-  // 关闭删除模板弹窗
-  confirmClose=()=>{
-    this.setState({confirmOpen: false});
+  // 删除用户弹窗
+  deleteUser=()=>{
+    this.setState({deleteOpen: true})
   }
 
+  // 关闭删除用户弹窗
+  deleteModalClose=()=>{
+    this.setState({deleteOpen: false})
+  }
 
-  changeTemplateData = (data, type) =>{
+  toIndent = () => {
+    this.setState({ifProcedure: false});
+    this.queryIndentWorkHour();
+  }
+
+  changeWorktimeData = (data, type) =>{
     // 默认替换，1为push，2为修改
     if(type==1){
       this.state.data.push(data);
@@ -362,17 +376,19 @@ class RecycleTemplete extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { data, order, orderBy, selected, rowsPerPage, page } = this.state;
+    const { data, order, orderBy, selected, rowsPerPage, page, ifProcedure } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+
+    this.state.date_in =[new Date(), new Date()];
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar changeTemplateData = {this.changeTemplateData} ref="modalMethod" tips={this.tips} />
+        <EnhancedTableToolbar title="员工工时" toIndent = {this.toIndent} ifProcedure={true} queryByKeyword = {this.queryByKeyword} changeWorktimeData={this.changeWorktimeData} tips = {this.tips} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
               numSelected={selected.length}
-              order={order}
+              order={order} rows={procedure_rows}
               orderBy={orderBy}
               rowCount={data.length}
             />
@@ -383,26 +399,28 @@ class RecycleTemplete extends React.Component {
                   return (
                     <TableRow
                       hover
-
+                      onClick={event => this.handleClick(event, n.id)}
                       role="checkbox"
                       aria-checked={isSelected}
                       tabIndex={-1}
-                      key={n.id}
+                      key={page * rowsPerPage + index}
                       selected={isSelected}
                     >
-                      <TableCell align="center">{page * rowsPerPage+(index+1)}</TableCell>
-                      <TableCell align="center">{n.id}</TableCell>
-                      <TableCell align="center">{n.name}</TableCell>
-                      <TableCell align="center" component="th" scope="row" padding="none">
-                        {n.procedure}
-                      </TableCell>
-                      <TableCell align="center" component="th" scope="row" padding="none">
-                        {n.duty}
-                      </TableCell>
-                      <TableCell align="center">
-                        <span className="pointer btn text-blue" onClick={()=>this.recycleTemplate(n, index)}>还原</span>
-                        {/*<span className="pointer btn text-red" onClick={()=>this.deleteTemplate(n, index)}>删除</span>*/}
-                      </TableCell>
+                      <TableCell align="center">{page * rowsPerPage + index+1}</TableCell>
+                      <TableCell align="center">{n.userName}</TableCell>
+                                            {/*<TableCell align="center">{n.productNum}</TableCell>*/}
+                      <TableCell align="center">{ (n.hourcount)?n.hourcount.toFixed(3):0 }</TableCell>
+                      {/*<TableCell align="center">{n.planNum}</TableCell>
+                                            <TableCell align="center"> {n.countHour}</TableCell>
+                                            <TableCell align="center">{n.singleHour = ((n.countHour/(n.countWorker||1)) || 0).toFixed(5) }</TableCell>
+                                            <TableCell align="center">{n.factor}</TableCell>
+                                            <TableCell align="center">{n.cost = ((n.singleHour*n.factor).toFixed(5) || 0)}</TableCell>
+                                            <TableCell align="center">{n.countWorker}</TableCell>*/}
+                      {/*<TableCell align="center">{n.counthour}</TableCell>*/}
+                      {/* <TableCell align="center" className = "btn text-blue" onClick={()=>this.setState({ifProcedure: true})}>查看流程工时</TableCell>*/}
+
+                      {/*<TableCell align="left">{n.remark}</TableCell>
+                        <TableCell align="left">{n.feedback}</TableCell>*/}
                     </TableRow>
                   );
                 })}
@@ -413,7 +431,7 @@ class RecycleTemplete extends React.Component {
               )}
             </TableBody>
           </Table>
-          <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.state.confirmSure} />
+          <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
         </div>
         <TablePagination
           rowsPerPageOptions={[10, 20, 30]}
@@ -430,20 +448,22 @@ class RecycleTemplete extends React.Component {
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
-         <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
-          anchorOrigin={{horizontal:"center",vertical:"top"}}
-          open={this.state.tipsOpen}
-          ContentProps={{
-            'className':'info'
-          }}
-          message={<span id="message-id" >{this.state.tipInfo}</span>}  />
+        <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
+        anchorOrigin={{horizontal:"center",vertical:"top"}}
+        open={this.state.tipsOpen}
+        ContentProps={{
+          'className':'info'
+        }}
+        message={<span id="message-id" >{this.state.tipInfo?this.state.tipInfo:''}</span>} />
       </Paper>
     );
+
+
   }
 }
 
-RecycleTemplete.propTypes = {
+QueryWorkTimeForUser.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(RecycleTemplete);
+export default withStyles(styles)(QueryWorkTimeForUser);

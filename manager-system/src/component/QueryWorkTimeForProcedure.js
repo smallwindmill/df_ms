@@ -403,7 +403,7 @@ class QueryWorkTimeForProcedure extends React.Component {
                       role="checkbox"
                       aria-checked={isSelected}
                       tabIndex={-1}
-                      key={n.id}
+                      key={page * rowsPerPage + index}
                       selected={isSelected}
                     >
                       <TableCell align="center">{page * rowsPerPage + index+1}</TableCell>

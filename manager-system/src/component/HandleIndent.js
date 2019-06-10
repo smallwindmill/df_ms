@@ -86,12 +86,12 @@ const rows = [
   { id: 'protein', numeric: true, disablePadding: false, label: '预计上线日期' },
   { id: 'protein', numeric: true, disablePadding: false, label: '实际开工日期' },
   { id: 'protein', numeric: true, disablePadding: false, label: '实际完成日期' },
-  { id: 'protein', numeric: true, disablePadding: false, label: '订单状态' },
   { id: 'protein', numeric: true, disablePadding: false, label: '优先级' },
   { id: 'protein', numeric: true, disablePadding: false, label: '是否新品' },
   { id: 'protein', numeric: true, disablePadding: false, label: '备注' },
   { id: 'protein', numeric: true, disablePadding: false, label: '反馈' },
   { id: 'protein', numeric: true, disablePadding: false, label: '模板编号'},
+  { id: 'protein', numeric: true, disablePadding: false, label: '订单状态' },
   { id: 'protein', numeric: true, disablePadding: false, label: '操作' }
 ];
 
@@ -118,7 +118,7 @@ class EnhancedTableHead extends React.Component {
             (row, index) => (
               <TableCell
                 key={'EnhancedTableHead'+index}
-                align={row.numeric ? 'left' : 'left'}
+                align='center'
                 padding={row.disablePadding ? 'none' : 'default'}
                 sortDirection={orderBy === row.id ? order : false}
               >
@@ -211,7 +211,7 @@ class EnhancedTableToolbar extends React.Component{
             // nextFunction();
           }
 
-          this.tips(<span>本次共上传<span class="text-blue">{data.results.total}</span>条数据，<span class="text-red">{data.results.fail}</span>条失败，<span class="text-blue">{data.results.success}</span>条成功</span>, 'stay');
+          this.tips(<span>本次共上传<span class="text-blue">{data.results.total}</span>条数据，<span class="text-red">{data.results.fail}</span>条失败，<span class="text-blue">{data.results.success}</span>条成功</span>, 'stay');this.props.initLoadData();
           this.setState({ open: false });window.loading(false);
 
        }).catch(error=>{
@@ -321,7 +321,7 @@ class EnhancedTableToolbar extends React.Component{
           </div>
           <div className={classes.spacer} />{this.addTemplateModal()}
         </Toolbar>
-        <Grid container  style={{margin:'1rem 0 1rem',padding: '0 1.2rem'}}>
+        <Grid container  style={{margin:'1rem 0 0',padding: '0 1.2rem'}}>
 
           <Grid item xs={6} align="left">
             <Grid item xs={12} className="filterTool small">
@@ -390,6 +390,10 @@ class HandleIndent extends React.Component {
   componentWillMount() {
     // 组件初次加载数据申请
     console.log(this.props);
+    this.initLoadData();
+  }
+
+  initLoadData = () => {
     fetch(config.server.listAllIndentByDate).then(res=>res.json()).then(data=>{
       console.log(data);
       if(data.code!=200){
@@ -519,7 +523,7 @@ class HandleIndent extends React.Component {
 
   // 关闭删除订单弹窗
   confirmClose=()=>{
-    this.setState({confirmOpen: false})
+    this.setState({confirmOpen: false, ifInfo: false})
   }
 
 
@@ -601,6 +605,33 @@ class HandleIndent extends React.Component {
     this.setState({data: this.state.data });
   }
 
+  // 设置开始订单
+  startIndent = (data, index) => {
+
+    var nexFun = ()=>{
+      // 设置订单为完成状态
+      fetch(config.server.updateIndentInfo,{method:"POST",
+        headers:{
+            'Content-Type': 'application/json',
+        },
+        body:JSON.stringify({id: data.id, status: 1,remark: data.remark})
+      }).then(res=>res.json()).then(data1=>{
+        // console.log(data);
+        if(data1.code!=200){
+            this.tips(data1.msg);return;
+        }
+        this.tips('订单已开始');
+        // this.state.data[index].status = 1;
+        data.status = 1;
+        // 新增数据
+        this.changeIndentData('', 2);
+        this.setState({open: false});
+      }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
+
+    };
+
+    this.setState({confirmOpen: true,title: "确认",content: "确定开始订单吗？",sureFun: nexFun, ifInfo: true});
+  }
 
   // 设置完成订单
   finishIndent = (data, index) => {
@@ -614,15 +645,15 @@ class HandleIndent extends React.Component {
         headers:{
             'Content-Type': 'application/json',
         },
-        body:JSON.stringify({id: data.id, status: 1,remark: data.remark})
+        body:JSON.stringify({id: data.id, status: 2,remark: data.remark})
       }).then(res=>res.json()).then(data1=>{
         // console.log(data);
         if(data1.code!=200){
-            this.tips(data.msg);return;
+            this.tips(data1.msg);return;
         }
         this.tips('订单已完成');
         // this.state.data[index].status = 1;
-        data.status = 1;
+        data.status = 2;
         // 新增数据
         this.changeIndentData('', 2);
         this.setState({open: false});
@@ -769,7 +800,7 @@ class HandleIndent extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar  tips = {this.tips}  queryByKeyword = {this.queryByKeyword} queryIndentByDate = {this.queryIndentByDate} queryIndentByType = {this.queryIndentByType} />
+        <EnhancedTableToolbar  tips = {this.tips} initLoadData = { this.initLoadData } queryByKeyword = {this.queryByKeyword} queryIndentByDate = {this.queryIndentByDate} queryIndentByType = {this.queryIndentByType} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table+' nowrap'} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -791,24 +822,25 @@ class HandleIndent extends React.Component {
                       key={index}
                       selected={isSelected}
                     >
-                      <TableCell align="left">{ page * rowsPerPage+index+1 }</TableCell>
-                      <TableCell align="left">{n.erp}</TableCell>
-                      <TableCell align="left">{n.materialCode}</TableCell>
-                      <TableCell align="left">{n.materialName}</TableCell>
-                      <TableCell align="left">{n.planNum}</TableCell>
-                      <TableCell align="left">{n.planFinishDate ? new Date(n.planFinishDate).format('yyyy-MM-dd'):false}</TableCell>
-                      <TableCell align="left">{n.planOnline ? new Date(n.planOnline).format('yyyy-MM-dd'):false}</TableCell>
-                      <TableCell align="left">{n.actualStart ? new Date(n.actualStart).format('yyyy-MM-dd'):false}</TableCell>
-                      <TableCell align="left">{n.actualFinish ? new Date(n.actualFinish).format('yyyy-MM-dd'):false}</TableCell>
-                      <TableCell align="left" className = {n.status?'text-blue':''}>{n.status?"完成":"进行中"}</TableCell>
-                      <TableCell align="left" className = {n.priority?'text-blue':''}>{n.priority?"是":"否"}</TableCell>
-                      <TableCell align="left" className = {n.ifNew?'text-blue':''}>{n.ifNew?"是":"否"}</TableCell>
-                      <TableCell align="left">{n.remark}</TableCell>
-                      <TableCell align="left">{n.feedback}</TableCell>
-                      <TableCell align="left">{n.templateID}</TableCell>
-                      <TableCell align="left">
+                      <TableCell align="center">{ page * rowsPerPage+index+1 }</TableCell>
+                      <TableCell align="center">{n.erp}</TableCell>
+                      <TableCell align="center">{n.materialCode}</TableCell>
+                      <TableCell align="center">{n.materialName}</TableCell>
+                      <TableCell align="center">{n.planNum}</TableCell>
+                      <TableCell align="center">{n.planFinishDate ? new Date(n.planFinishDate).format('yyyy-MM-dd'):false}</TableCell>
+                      <TableCell align="center">{n.planOnline ? new Date(n.planOnline).format('yyyy-MM-dd'):false}</TableCell>
+                      <TableCell align="center">{n.actualStart ? new Date(n.actualStart).format('yyyy-MM-dd'):false}</TableCell>
+                      <TableCell align="center">{n.actualFinish ? new Date(n.actualFinish).format('yyyy-MM-dd'):false}</TableCell>
+                      <TableCell align="center" className = {n.priority?'text-blue':''}>{n.priority?"是":"否"}</TableCell>
+                      <TableCell align="center" className = {n.ifNew?'text-blue':''}>{n.ifNew?"是":"否"}</TableCell>
+                      <TableCell align="center">{n.remark}</TableCell>
+                      <TableCell align="center">{n.feedback}</TableCell>
+                      <TableCell align="center">{n.templateID}</TableCell>
+                      <TableCell align="center" className = {n.status==2?"text-success":(n.status==1?"text-blue":"")}>{n.status==2?"完成":(n.status==1?"进行中":"未开始")}</TableCell>
+                      <TableCell align="center">
+                        {n.status==1?<span className="pointer btn text-success"   onClick={()=>this.finishIndent(n, index)}>设为完成</span>:''}
+                        {n.status==0?<span className="pointer btn text-blue"   onClick={()=>this.startIndent(n, index)}>开始订单</span>:''}
                         <span className="pointer btn text-blue"   onClick={()=>this.updateIndent(n, index)}>修改</span>
-                        {n.status?'已完成':<span className="pointer btn text-success"   onClick={()=>this.finishIndent(n, index)}>设为完成</span>}
                         <span className="pointer btn text-red" onClick={()=>this.deleteIndent(n, index)}>删除</span>
                       </TableCell>
                     </TableRow>
@@ -840,7 +872,7 @@ class HandleIndent extends React.Component {
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
         {this.updateUserPowerModal()}
-        <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.state.sureFun} />
+        <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.state.sureFun} ifInfo = {this.state.ifInfo} />
         <Snackbar style={{marginTop:'70px'}}
           anchorOrigin={{horizontal:"center",vertical:"top"}}
           open={this.state.tipsOpen}

@@ -29,6 +29,7 @@ import QueryProduceIndent from './QueryProduceIndent';
 import QueryFactor from './QueryFactor';
 import QueryWorkTime from './QueryWorkTime';
 import QueryWorkTimeForProcedure from './QueryWorkTimeForProcedure';
+import QueryWorkTimeForUser from './QueryWorkTimeForUser';
 
 
 import ProduceShowPage from './ProduceShowPage';
@@ -64,6 +65,7 @@ class ContentContainer extends React.Component{
       this.judgeUser();
       window.loading = this.loading;
       setTimeout(this.judgeCalendar, 4000);
+      this.autoLoginTime = 0;
     }
 
     componentWillUnmount() {
@@ -72,6 +74,7 @@ class ContentContainer extends React.Component{
         clearTimeout(this.state.autoLoginTimer);
       }
     }
+
 
     // 自动登录
     judgeUser = () => {
@@ -108,8 +111,11 @@ class ContentContainer extends React.Component{
         }).catch(e=>{
           this.loading(false);
           this.tips('网络出错了，登陆失败，请稍候再试');
+          this.autoLoginTime++;
           // 出错过后重新登陆
-          this.state.autoLoginTimer = setTimeout(this.judgeUser, 10000);
+          if(this.autoLoginTime<=5){
+            this.state.autoLoginTimer = setTimeout(this.judgeUser, 10000);
+          }
         });
       }
     }
@@ -207,6 +213,7 @@ class ContentContainer extends React.Component{
                         <Route path="/workTime/queryWorkTime" component={QueryWorkTime} />
                         <Route path="/workTime/queryProcedureWorkTime:type" component={QueryWorkTime} />
                         <Route path="/workTime/queryWorkTimeForProcedure" component={QueryWorkTimeForProcedure} />
+                        <Route path="/workTime/queryWorkTimeForUser" component={QueryWorkTimeForUser} />
 
                         <Route path="/produceIndent/queryProduceIndent" component={QueryProduceIndent} />
                         <Route path="/produceIndent/exportProduceIndent" component={ExportProduceIndent} />

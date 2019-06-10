@@ -26,12 +26,10 @@ var config = {
       updateTemplate: serverIP+'/updateTemplate',
       deleteTemplate: serverIP+'/deleteTemplate',
 
-
       uploadExcelForAddIndent: serverIP+'/uploadExcelForAddIndent',
       listAllIndentByDate: serverIP+'/listAllIndentByDate',
       updateIndentInfo: serverIP+'/updateIndentInfo',
       deleteIndent: serverIP+'/deleteIndent',
-
 
       listAllFactor: serverIP+'/listAllFactor',
       updateFactor: serverIP+'/updateFactor',
@@ -41,8 +39,7 @@ var config = {
 
       queryWorkHourByDate: serverIP+'/queryWorkHourByDate',
       queryProcedureWorkTime: serverIP+'/queryProcedureWorkHourByDate',
-
-
+      queryWorkTimeForUser: serverIP+'/queryWorkHourForUser',
 
       exportTimeIndentServer: serverIP+'/listAllIndentStatusByDate',//exportTimeIndentServer
       exportIndentMatchTemplete: serverIP+'/listIndentMatchTemplete',
@@ -77,7 +74,7 @@ var config = {
   changeToStr: function(data){
       return JSON.stringify(data);
   },
-  pageChangeNum: 13
+  pageChangeNum: 9
 
 }
 

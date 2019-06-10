@@ -124,7 +124,7 @@ thead tr th{
     font-weight: bold!important;color: #000!important;font-size: .9rem!important;
 }
 .produceShowTable{
-    border-collapse: collapse;
+    border-collapse: collapse;table-layout: fixed;
 }
 .produceShowTable tr{
     padding: 4px 0;
@@ -138,7 +138,7 @@ thead tr th{
 .produceShowTable td,.produceShowTable  th{
     padding: 7px 2px;border:1px solid #ccc;
     border-left: 0;
-    border-right: 0;
+    border-right: 0;overflow: hidden;
 }
 .produceShowTable th{
     border-bottom:0;border-top:0;padding-bottom: 1rem;/* background: #333;color: #fff; */
@@ -199,7 +199,7 @@ div[class*='MuiFormLabel-root'] {
 
 
 .showPage *, .mailDialog *{
-    font-size: 32px!important;
+    font-size: 28px!important;
 }
 
 .showPage td{padding: 2rem 0!important;}
@@ -253,11 +253,15 @@ div[class*='MuiFormLabel-root'] {
 .work-calendar .fc-unthemed td.fc-past{
    cursor: not-allowed; pointer-events: none;
 }
+.work-calendar div.fc-bg  td.fc-today{
+   /* animation: shakeAnimation .5s infinite; */
+   animation: fadeIn 2s infinite;
+}
 .work-calendar div.fc-bg  table .fc-future{
 
 }
 .fc-unthemed td.fc-today {
-    background: #c8ffff;
+    /* background: #c8ffff; */
 }
 
 
@@ -270,8 +274,12 @@ div[class*='MuiFormLabel-root'] {
     animation:translateBottom .6s ;
 }
 
-.childScrollReturn div[class*='MuiDialog-container']>div{
-    animation:translateTop .8s ;
+.childScrollReturnLeft div[class*='MuiDialog-container']>div{
+    animation:translateLeft .8s ;
+}
+
+.childScrollReturnRight div[class*='MuiDialog-container']>div{
+    animation:translateRight .8s ;
 }
 
 @keyframes translateBottom{
@@ -283,7 +291,7 @@ div[class*='MuiFormLabel-root'] {
     }
 }
 
-@keyframes translateTop{
+@keyframes translateLeft{
     /* 0%{
         transform: translateY(0vh);opacity: 1;
     }
@@ -295,6 +303,21 @@ div[class*='MuiFormLabel-root'] {
     }
     100%{
         transform: translateX(-150vw);opacity: 0;
+    }
+}
+
+@keyframes translateRight{
+    /* 0%{
+        transform: translateY(0vh);opacity: 1;
+    }
+    100%{
+        transform: translateY(-180vh);opacity: 0;
+    } */
+    0%{
+        transform: translateX(0vw);opacity: 1;
+    }
+    100%{
+        transform: translateX(150vw);opacity: 0;
     }
 }
 
@@ -366,4 +389,39 @@ div[class*='MuiFormLabel-root'] {
     100%{
         transform: rotate(360deg);
     }
+}
+
+@keyframes shakeAnimation{
+    0%{
+        transform: rotate(0deg);
+    }
+    25%{
+        transform: rotate(15deg);
+    }
+    75%{
+        transform: rotate(-15deg);
+    }
+    100%{
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes fadeIn{
+    0%{
+        background: #c8ffff;
+        opacity: 1;
+    }
+    50%{
+        opacity: .8;
+        background: #c8dddd;
+    }
+    100%{
+        opacity: 1;
+        background: #c8ffff;
+    }
+}
+
+
+th, td{
+    padding-right: 1rem!important;padding-left: 1rem!important;
 }
