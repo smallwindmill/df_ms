@@ -161,8 +161,8 @@ class EnhancedTableToolbar extends React.Component{
     if(!userID){
       this.tips('用户工号不能为空');return;
     }
-    if(userID.length!=4){
-      this.tips('用户工号需要四位数');return;
+    if(userID.length!=9){
+      this.tips('请输入九位用户工号');return;
     }
     if(!userName){
       this.tips('用户名称不能为空');return;
@@ -291,7 +291,7 @@ class EnhancedTableToolbar extends React.Component{
 
           <Grid item xs={12} style={{paddingTop:0}}>
           <TextField fullWidth style={{marginTop:0}}
-            placeholder="请输入四位用户工号"
+            placeholder="请输入九位用户工号"
             label="用户工号"
             className={classes.textField}
             value = {this.state.userID}
@@ -583,6 +583,7 @@ class QueryUser extends React.Component {
           <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun={this.confirmSure} />
         </div>
         <TablePagination
+          className="TablePagination"
           component="div"
           count={data.length}
           rowsPerPage={rowsPerPage}

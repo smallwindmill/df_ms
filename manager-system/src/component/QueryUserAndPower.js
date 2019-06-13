@@ -229,7 +229,7 @@ class QueryUserAndPower extends React.Component {
   componentWillMount() {
     // 组件初次加载数据申请
     fetch(config.server.listAllUserPower).then(res=>res.json()).then(data=>{
-      console.log(data);
+      // console.log(data);
       this.changeUserData(data.results || []);
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
@@ -498,13 +498,14 @@ class QueryUserAndPower extends React.Component {
                 })}
               {emptyRows > 0 && (
                 <TableRow style={{ height: 49 * emptyRows }}>
-                  <TableCell colSpan={6} />
+                  <TableCell colSpan={10} />
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </div>
         <TablePagination
+          className="TablePagination"
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
           count={data.length}

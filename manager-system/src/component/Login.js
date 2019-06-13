@@ -108,7 +108,7 @@ class Login extends React.Component {
         localStorage.user = config.changeToStr(data.results);//不自动更新本地数据，避免修改信息后仍能正常访问
           this.props.tips("登陆成功");
       }, 1000);
-      window.ReactHistory.push('/user/queryUser');
+      window.ReactHistory.push('/produceMSF/template');
     }).catch(e=>{this.props.loading(false);this.props.tips('网络出错了，请稍候再试')});
 
 

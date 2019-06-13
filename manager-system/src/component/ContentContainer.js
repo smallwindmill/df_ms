@@ -88,7 +88,7 @@ class ContentContainer extends React.Component{
           this.tips('身份信息过期，请重新登录', 5000);
         }
 
-        this.props.history.push('/login');this.loading(false);
+        this.props.history.push('/produceMSF/login');this.loading(false);
       }else{
         this.loading(true);
         pwd = pwd.replace(/2a3/g, 1).replace(/\*%/,'' ).replace(/\%&/,'' );
@@ -99,7 +99,7 @@ class ContentContainer extends React.Component{
             body:JSON.stringify({userID: userID, pwd: pwd})
         }).then(res=>res.json()).then(data=>{
           if(data.code!=200){
-            this.tips(data.msg);
+            this.tips(data.msg);this.loading(false);
             return;
           }
           // this.tips("登陆成功");
@@ -133,7 +133,7 @@ class ContentContainer extends React.Component{
         // this.tips();
         // this.setState()
         var nextFun = () => {
-          window.ReactHistory.push('/calendar');
+          window.ReactHistory.push('/produceMSF/calendar');
         }
         this.confirm('提示', '距离'+after.format('yyyy-MM')+'月不到一星期了，是否立即设置工作日历？', true, nextFun );
       }
@@ -191,51 +191,52 @@ class ContentContainer extends React.Component{
                   </div>
                   <div id = "rightContent">
                     <Switch>
-                        <Route path="/user" exact component={QueryUser} />
-                        <Route path="/user/addUser" component={AddUser} />
-                        <Route path="/user/queryUser" component={QueryUser} />
-                        <Route path="/user/queryUserAndPower" component={QueryUserAndPower}  />
+                        <Route path="/produceMSF/user" exact component={QueryUser} />
+                        <Route path="/produceMSF/user/addUser" component={AddUser} />
+                        <Route path="/produceMSF/user/queryUser" component={QueryUser} />
+                        <Route path="/produceMSF/user/queryUserAndPower" component={QueryUserAndPower}  />
 
-                        <Route path="/templete/" component={HandleTemplate} />
-                        <Route path="/templete/handleTemplate" component={HandleTemplate} />
+                        <Route path="/produceMSF/template/" component={HandleTemplate} />
+                        <Route path="/produceMSF/template/handleTemplate" component={HandleTemplate} />
 
-                        <Route path="/handleIndent" exact component={AddIndent} />
-                        <Route path="/handleIndent/addIndent" exact component={AddIndent} />
-                        <Route path="/handleIndent/queryIndent" component={QueryIndent} />
-                        <Route path="/handleIndent/queryIndentStatus" component={QueryIndentStatus} />
+                        <Route path="/produceMSF/handleIndent" exact component={AddIndent} />
+                        <Route path="/produceMSF/handleIndent/addIndent" exact component={AddIndent} />
+                        <Route path="/produceMSF/handleIndent/queryIndent" component={QueryIndent} />
+                        <Route path="/produceMSF/handleIndent/queryIndentStatus" component={QueryIndentStatus} />
 
-                        <Route path="/handleIndent/exportProduceIndent" component={ExportProduceIndent} />
-
-
-
-                        <Route path="/workTime" exact component={QueryFactor} />
-                        <Route path="/workTime/queryFactor" component={QueryFactor} />
-                        <Route path="/workTime/queryWorkTime" component={QueryWorkTime} />
-                        <Route path="/workTime/queryProcedureWorkTime:type" component={QueryWorkTime} />
-                        <Route path="/workTime/queryWorkTimeForProcedure" component={QueryWorkTimeForProcedure} />
-                        <Route path="/workTime/queryWorkTimeForUser" component={QueryWorkTimeForUser} />
-
-                        <Route path="/produceIndent/queryProduceIndent" component={QueryProduceIndent} />
-                        <Route path="/produceIndent/exportProduceIndent" component={ExportProduceIndent} />
-
-                        <Route path="/produceShowPage" component={ProduceShowPage} />
-
-                        <Route path="/dutyIndent" exact component={DutyIndent} />
-                        <Route path="/dutyIndent/info" component={DutyIndentInfo} />
-                        <Route path="/dutyIndent/info:id" component={DutyIndentInfo} />
-                        <Route path="/indent/info:indent" component={DutyIndentInfo} />
-
-                       {/* <Route path="/dutyIndent/info:id" component={DutyIndentInfo} />
-                         <Route path="/dutyIndent/info:id" component={DutyIndentInfo} />*/}
+                        <Route path="/produceMSF/handleIndent/exportProduceIndent" component={ExportProduceIndent} />
 
 
-                        <Route path="/recycle"  exact component={recycleTemplate} />
-                        <Route path="/recycle/template"  component={recycleTemplate} />
-                        <Route path="/recycle/indent"  component={recycleIndent} />
 
-                        <Route path="/calendar"  ><WorkCalendar tips={this.tips} /></Route>
+                        <Route path="/produceMSF/workTime" exact component={QueryFactor} />
+                        <Route path="/produceMSF/workTime/queryFactor" component={QueryFactor} />
+                        <Route path="/produceMSF/workTime/queryWorkTime" component={QueryWorkTime} />
+                        <Route path="/produceMSF/workTime/queryProcedureWorkTime:type" component={QueryWorkTime} />
+                        <Route path="/produceMSF/workTime/queryWorkTimeForProcedure" component={QueryWorkTimeForProcedure} />
+                        <Route path="/produceMSF/workTime/queryWorkTimeForUser" component={QueryWorkTimeForUser} />
 
-                        <Route path="/"  ><NotFound  /></Route>
+                        <Route path="/produceMSF/produceIndent/queryProduceIndent" component={QueryProduceIndent} />
+                        <Route path="/produceMSF/produceIndent/exportProduceIndent" component={ExportProduceIndent} />
+
+                        <Route path="/produceMSF/produceShowPage" component={ProduceShowPage} />
+
+                        <Route path="/produceMSF/dutyIndent" exact component={DutyIndent} />
+                        <Route path="/produceMSF/dutyIndent/info" component={DutyIndentInfo} />
+                        <Route path="/produceMSF/dutyIndent/info:id" component={DutyIndentInfo} />
+                        <Route path="/produceMSF/indent/info:indent" component={DutyIndentInfo} />
+
+                       {/* <Route path="/produceMSF/dutyIndent/info:id" component={DutyIndentInfo} />
+                         <Route path="/produceMSF/dutyIndent/info:id" component={DutyIndentInfo} />*/}
+
+
+                        <Route path="/produceMSF/recycle"  exact component={recycleTemplate} />
+                        <Route path="/produceMSF/recycle/template"  component={recycleTemplate} />
+                        <Route path="/produceMSF/recycle/indent"  component={recycleIndent} />
+
+                        <Route path="/produceMSF/calendar"  ><WorkCalendar tips={this.tips} /></Route>
+
+                        <Route path="/produceMSF/" exact component={HandleTemplate} ></Route>
+                        <Route path="/produceMSF/"  component={NotFound} ></Route>
 
                     </Switch>
                   </div>

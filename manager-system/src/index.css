@@ -12,9 +12,6 @@ body {
   overflow: hidden;
 }
 
-#rightContent table[class*='MuiTable-root'] tr *{
-    font-size: 1rem!important;
-}
 
 header>div:nth-child(1){
     flex: 1;
@@ -75,7 +72,7 @@ code {
 .MuiListItemText-inset:first-child{
     padding-left: 1rem!important;
 }
-div[class*="MuiButtonBase-root"]{
+#leftMenu>div>div{
      padding-top: 0!important;padding-bottom: 0!important;
 }
 #leftMenu a{
@@ -153,9 +150,8 @@ thead tr th{
     color: #3399dd;
 }
 
-#rightContent div[class*='MuiTablePagination-root'] div[class*='MuiInputBase-root'] > div,
-#rightContent div[class*='MuiTablePagination-root'] span[class*='MuiTablePagination-caption']:nth-child(2)
-{display: none;}
+#rightContent .TablePagination div>span:nth-child(2), #rightContent .TablePagination div>div:nth-child(3){display: none;}
+
 
 
 div[class*='MuiFormLabel-root'] {
@@ -176,7 +172,7 @@ div[class*='MuiFormLabel-root'] {
     width: 6.5%;
 }
 #produceShowTableHead th:nth-child(2), #produceShowTable td:nth-child(2), #produceShowTableHead th:nth-child(3), #produceShowTable td:nth-child(3){width: 17.5%;}
-#dutyModal div[class*='MuiBackdrop']{
+#dutyModal>div:first-child{
     opacity:  0!important;
 }
 .emptyShow{
@@ -189,16 +185,21 @@ div[class*='MuiFormLabel-root'] {
 }
 .dutyChip{ overflow: hidden; }
 .dutyChip span{height: 100%;}
-.mailDialog div[class*='MuiDialog-container']>div{
+.mailDialog>div>div{
     max-width: 95%;overflow: hidden;
 }
 
-.modal.lg div[class*='MuiDialog-container']>div{
+.modal.lg>div>div{
     max-width: 45%;
 }
 
+/* ×ÖÌå´óÐ¡ÉèÖÃ */
 
-.showPage *, .mailDialog *{
+#rightContent table tr th,
+#rightContent table tr td{
+    font-size: 1rem!important;
+}
+#rightContent .showPage *,#rightContent .showPage table tr td, #rightContent .showPage table tr th, .mailDialog *{
     font-size: 28px!important;
 }
 
@@ -269,16 +270,16 @@ div[class*='MuiFormLabel-root'] {
     display: none!important;
 }
 
-.mailDialog div[class*='MuiDialog-container']>div{
+.mailDialog>div>div{
     /* transform: translateY(-45vh);transition: 1s; */
     animation:translateBottom .6s ;
 }
 
-.childScrollReturnLeft div[class*='MuiDialog-container']>div{
+.childScrollReturnLeft>div>div{
     animation:translateLeft .8s ;
 }
 
-.childScrollReturnRight div[class*='MuiDialog-container']>div{
+.childScrollReturnRight>div>div{
     animation:translateRight .8s ;
 }
 

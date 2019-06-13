@@ -231,7 +231,7 @@ class EnhancedTableToolbar extends React.Component{
     fetch(config.server.listSystemUserByType+"?type=3").then(res=>res.json()).then(data=>{
       // console.log(data);
       if(data.code!=200){
-        this.tips('获取组长人员列表失败，请稍后重试');return;
+        this.tips(data.msg);return;
       }
       this.setState({dutyModal: true, workers: data.results, selectedWorkers: []});
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
@@ -645,9 +645,10 @@ class HandleTemplete extends React.Component {
               )}
             </TableBody>
           </Table>
-          <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.confirmSure} />
+          {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
         </div>
         <TablePagination
+          className="TablePagination"
           rowsPerPageOptions={[10, 20, 30]}
           component="div"
           count={data.length}
@@ -662,6 +663,7 @@ class HandleTemplete extends React.Component {
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
+         <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.confirmSure} />
          <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
           anchorOrigin={{horizontal:"center",vertical:"top"}}
           open={this.state.tipsOpen}

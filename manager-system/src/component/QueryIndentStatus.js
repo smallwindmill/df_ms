@@ -65,8 +65,8 @@ const DialogActions = withStyles(theme => ({
 const rows = [
   { id: 'name', numeric: false, disablePadding: true, label: '序号' },
   { id: 'name', numeric: false, disablePadding: true, label: '订单编号' },
-  { id: 'name', numeric: false, disablePadding: true, label: '物料长代码' },
-  { id: 'carbs', numeric: true, disablePadding: false, label: '物料名称' },
+  { id: 'name', numeric: false, disablePadding: true, label: '货号' },
+  { id: 'carbs', numeric: true, disablePadding: false, label: '货物名称' },
   { id: 'calories', numeric: false, disablePadding: false, label: '生产流程' },
   { id: 'calories', numeric: false, disablePadding: false, label: '流程负责人' },
   { id: 'calories', numeric: false, disablePadding: false, label: '流程状态' },
@@ -428,7 +428,7 @@ class QueryIndentStatus extends React.Component {
                         {n.status==2?"完成":(n.status==1?"进行中":"未开始")}
                       </TableCell>
                       <TableCell align="center">
-                        {n.status !=0?<span className="pointer btn text-blue" onClick = {()=>this.props.history.push('/indent/info'+n.id)}>{n.status==2?'详情':'查看'}</span>:'——'}
+                        {n.status !=0?<span className="pointer btn text-blue" onClick = {()=>this.props.history.push('/produceMSF/indent/info'+n.id)}>{n.status==2?'详情':'查看'}</span>:'——'}
                         {/*<span className="pointer btn text-blue">{1==1?'':'修改'}</span>
                         <span className="pointer btn text-red" onClick={this.deleteUser}>删除</span>*/}
                       </TableCell>
@@ -437,7 +437,7 @@ class QueryIndentStatus extends React.Component {
                 })}
               {emptyRows > 0 && (
                 <TableRow style={{ height: 49 * emptyRows }}>
-                  <TableCell colSpan={6} />
+                  <TableCell colSpan={8} />
                 </TableRow>
               )}
             </TableBody>
@@ -446,6 +446,7 @@ class QueryIndentStatus extends React.Component {
           <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
         </div>
         <TablePagination
+          className="TablePagination"
           rowsPerPageOptions={[10, 20, 30]}
           component="div"
           count={data.length}

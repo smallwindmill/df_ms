@@ -61,7 +61,7 @@ class WorkCalendar extends React.Component {
     // this.initCalendar();
     fetch(config.server.queryWorkCalendar).then(res=>res.json()).then(data=>{
       if(data.code!==200){
-        this.tips('获取工作日历数据失败，请稍后重试');return;
+        this.tips(data.msg);return;
       }
       // workDate = data.result;
       // console.log(workDate);

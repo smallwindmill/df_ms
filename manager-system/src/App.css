@@ -107,7 +107,7 @@ div[class*='DateFormatInput-input']{
   min-width: 90px!important;
 }
 .small{
-  font-size: smaller;
+  font-size: smaller!important;
 }
 .bold, .blod{font-weight: bold;padding-right: 1rem;}
 

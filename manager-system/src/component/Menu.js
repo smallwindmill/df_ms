@@ -52,7 +52,7 @@ class Menu extends React.Component{
               }]
         },{
             name: "模板管理",
-            route: "templete",
+            route: "template",
             /* children:[{
                 name: "添加模板"
             },{
@@ -180,10 +180,10 @@ class Menu extends React.Component{
       if(!this.props.menuConfig) return false;
       var userType = this.props.menuConfig.type;
       var menuConfig = this.props.menuConfig.power;
-      console.log(menuConfig);
+      // console.log(menuConfig);
       // 匹配用户权限及功能模块展示
       /*this.state.menus[0].power = menuConfig.login;
-      this.state.menus[1].power = menuConfig.templete;
+      this.state.menus[1].power = menuConfig.template;
       this.state.menus[4].power = menuConfig.listIndent;
       this.state.menus[2].power = menuConfig.handleIndent;
       this.state.menus[3].power = menuConfig.handleWorkhour;
@@ -194,7 +194,7 @@ class Menu extends React.Component{
       this.state.menus[8].power = userType==1?true:false;//工作日历*/
       // console.log(this.state.menus);
       this.state.menus[0].power = menuConfig.login;
-      this.state.menus[1].power = menuConfig.templete;
+      this.state.menus[1].power = menuConfig.template;
       this.state.menus[2].power = menuConfig.handleIndent;
       this.state.menus[3].power = menuConfig.handleWorkhour;
       this.state.menus[4].power = menuConfig.showPage;
@@ -213,7 +213,7 @@ class Menu extends React.Component{
       return datas.map((data, index) =>(
         (data.power==0)?'':(<div key={index}>
                            <ListItem button className={new RegExp(data.route+'$').test(path)?'bg-secondary':''} onClick={this.handleClick.bind(this, data.children?'open'+index:'')}>
-                                <Link to ={"/"+(data.route?data.route:'/')}>{data.name}</Link>
+                                <Link to ={"/produceMSF/"+(data.route?data.route:'/')}>{data.name}</Link>
                                {data.children ?(that.state["open"+index] || new RegExp(data.route).test(path) ? <ExpandLess /> : <ExpandMore />):""}
                            </ListItem>
                               {data.children?(<Collapse in={this.state["open"+index] || new RegExp(data.route).test(path)} timeout="auto" unmountOnExit>

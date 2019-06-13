@@ -212,7 +212,7 @@ class MessageBar extends React.Component{
         return (
           <header className="App-header">
             <div id="logo" style={{height: '66px'}}>
-                <div style={{display: 'inline-block',height:'75%',marginTop: '8px', verticalAlign:'top'}}><img style={{height:'100%'}} src="/logo.png" /></div>
+                <div style={{display: 'inline-block',height:'75%',marginTop: '8px', verticalAlign:'top'}}><img style={{height:'100%'}} src="./logo.png" /></div>
                 <div style={{display: 'inline-block',lineHeight:'66px',verticalAlign:'top',paddingLeft: '.5rem'}}>极趣科技生产管理系统</div>
             </div>
             <div id="messagebar">

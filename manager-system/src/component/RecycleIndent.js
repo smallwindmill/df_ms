@@ -77,10 +77,10 @@ const DialogActions = withStyles(theme => ({
 }))(MuiDialogActions);
 
 const rows = [
-  { id: 'name', numeric: false, disablePadding: true, label: '编号' },
+  { id: 'name', numeric: false, disablePadding: true, label: '序号' },
   { id: 'name', numeric: false, disablePadding: true, label: 'erp号' },
-  { id: 'carbs', numeric: true, disablePadding: false, label: '物料长代码' },
-  { id: 'calories', numeric: false, disablePadding: false, label: '物料名称' },
+  { id: 'carbs', numeric: true, disablePadding: false, label: '货号' },
+  { id: 'calories', numeric: false, disablePadding: false, label: '货物名称' },
   { id: 'protein', numeric: true, disablePadding: false, label: '计划生产数量' },
   { id: 'protein', numeric: true, disablePadding: false, label: '计划完工日期' },
   { id: 'protein', numeric: true, disablePadding: false, label: '预计上线日期' },
@@ -250,7 +250,7 @@ class RecycleIndent extends React.Component {
 
   componentWillMount() {
     // 组件初次加载数据申请
-    console.log(this.props);
+    // console.log(this.props);
     fetch(config.server.listAllIndentByDate+'?ifDelete=1').then(res=>res.json()).then(data=>{
       if(data.code!=200){
         this.tips(data.msg);return;
@@ -634,6 +634,7 @@ class RecycleIndent extends React.Component {
             {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
         </div>
         <TablePagination
+          className="TablePagination"
           rowsPerPageOptions={[1*config.page, 2*config.page, 3*config.page]}
           component="div"
           count={data.length}

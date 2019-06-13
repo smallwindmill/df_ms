@@ -217,9 +217,9 @@ class RecycleTemplete extends React.Component {
   componentWillMount() {
     // 组件初次加载数据申请
     fetch(config.server.listAllTemplate+'?ifDelete=1').then(res=>res.json()).then(data=>{
-      console.log(data);
+      // console.log(data);
       if(data.code!=200){
-        this.tips(data.msg);return;
+        return;
       }
       this.changeTemplateData(data.results || []);
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
@@ -413,9 +413,10 @@ class RecycleTemplete extends React.Component {
               )}
             </TableBody>
           </Table>
-          <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.state.confirmSure} />
+          {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
         </div>
         <TablePagination
+          className="TablePagination"
           rowsPerPageOptions={[10, 20, 30]}
           component="div"
           count={data.length}
@@ -430,6 +431,7 @@ class RecycleTemplete extends React.Component {
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
+        <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.state.confirmSure} />
          <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
           anchorOrigin={{horizontal:"center",vertical:"top"}}
           open={this.state.tipsOpen}

@@ -311,7 +311,7 @@ class QueryWorkTime extends React.Component {
   queryIndentWorkHour = () => {
 
     fetch(config.server.queryWorkHourByDate).then(res=>res.json()).then(data=>{
-      console.log(data);
+      // console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
@@ -323,7 +323,7 @@ class QueryWorkTime extends React.Component {
   queryProcedureWorkHour = (data_in) => {
     console.log(data_in);
     fetch(config.server.queryProcedureWorkTime+'?indentID='+data_in.indentID).then(res=>res.json()).then(data=>{
-      console.log(data);
+      // console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
@@ -478,9 +478,10 @@ class QueryWorkTime extends React.Component {
                 )}
               </TableBody>
             </Table>
-            <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
+            {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
           </div>
           <TablePagination
+            className="TablePagination"
             rowsPerPageOptions={[10, 20, 30]}
             component="div"
             count={data.length}
@@ -495,6 +496,7 @@ class QueryWorkTime extends React.Component {
             onChangePage={this.handleChangePage}
             onChangeRowsPerPage={this.handleChangeRowsPerPage}
           />
+          <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
           <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
           anchorOrigin={{horizontal:"center",vertical:"top"}}
           open={this.state.tipsOpen}
@@ -549,14 +551,16 @@ class QueryWorkTime extends React.Component {
                   })}
                 {emptyRows > 0 && (
                   <TableRow style={{ height: 49 * emptyRows }}>
-                    <TableCell colSpan={6} />
+                    <TableCell colSpan={9} />
                   </TableRow>
                 )}
               </TableBody>
             </Table>
+            {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
             <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
           </div>
           <TablePagination
+            className="TablePagination"
             rowsPerPageOptions={[10, 20, 30]}
             component="div"
             count={data.length}

@@ -6,7 +6,6 @@ import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
-import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -67,8 +66,8 @@ const DialogActions = withStyles(theme => ({
 var rows = [
   // { id: 'name', numeric: false, disablePadding: true, label: '序号' },
   { id: 'name', numeric: false, disablePadding: true, label: '订单编号' },
-  { id: 'name', numeric: false, disablePadding: true, label: '物料长代码' },
-  { id: 'carbs', numeric: false, disablePadding: false, label: '物料名称' },
+  { id: 'name', numeric: false, disablePadding: true, label: '货号' },
+  { id: 'carbs', numeric: false, disablePadding: false, label: '货物名称' },
   { id: 'calories', numeric: false, disablePadding: false, label: '订单流程' },
   { id: 'calories', numeric: false, disablePadding: false, label: '订单负责人' },
   { id: 'calories', numeric: false, disablePadding: false, label: '流程状态' },
@@ -82,7 +81,7 @@ var rows2 = [
   { id: 'name', numeric: false, disablePadding: true, label: '流程生产人员' },
   { id: 'name', numeric: false, disablePadding: true, label: '生产人数量' },
   { id: 'name', numeric: false, disablePadding: true, label: '实际生产数量' },
-  { id: 'carbs', numeric: true, disablePadding: false, label: '流程开始生产时间' },
+  { id: 'carbs', numeric: true, disablePadding: false, label: '开始生产时间' },
   { id: 'carbs', numeric: true, disablePadding: false, label: '状态'},
   { id: 'calories', numeric: false, disablePadding: false, label: '操作' },
 ];
@@ -181,7 +180,7 @@ class EnhancedTableToolbar extends React.Component{
             <Grid container>
               <Grid item xs={6}>
                   <Typography variant="h6" id="tableTitle" align="left">
-                    负责的订单操作-详情
+                    {this.props.allPower?'':'负责的'}订单操作-详情
                   </Typography>
                 </Grid>
                 <Grid item xs={6} align="right">
@@ -328,7 +327,12 @@ class DutyIndentInfo extends React.Component {
 
     fetch(config.server.listSystemUserByType+"?type="+4).then(res=>res.json()).then(data=>{
       if(data.code!=200){
-        this.tips('获取生产人员列表失败，请稍后重试');return;
+        if(data.results && data.results.length){
+          this.tips(data.msg);
+        }else{
+          this.tips('生产人员数量为0，请先添加生产人员');
+        }
+        return;
       }
       this.setState({modalOpen: true, workers: data.results, selectedWorkers: []});
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
@@ -765,7 +769,7 @@ class DutyIndentInfo extends React.Component {
 
 
           <Grid item xs={6} style={{paddingTop:0}}>
-            {/*<FormLabel component="legend">流程开始生产时间</FormLabel>
+            {/*<FormLabel component="legend">开始生产时间</FormLabel>
                         <DateFormatInput  className="inline-block" name='date-input' value={ new Date(selectedDataCopy.startTime) } onChange={(date)=>{selectedDataCopy.planFinishDate = date.format('yyyy-MM-dd');this.setState({ selectedDataCopy: selectedDataCopy })} } style={{marginbottom:'2rem'}} />
                         <TimeFormatInput name='time-input' value={selectedDataCopy.startDateTime?new Date(selectedDataCopy.startDateTime):new Date() } onChange={(date)=>{console.log(date);selectedDataCopy.startDateTime = date;this.setState({ selectedDataCopy: selectedDataCopy })} }/>*/}
           </Grid>
@@ -808,7 +812,7 @@ class DutyIndentInfo extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar />
+        <EnhancedTableToolbar allPower = {this.state.allPower} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -855,7 +859,7 @@ class DutyIndentInfo extends React.Component {
               </Grid>
         </Toolbar>
 
-        <div style={{maxHeight: '55vh',overflow: 'auto'}}>
+        <div style={{maxHeight: '55vh',overflow: 'auto',background:'rgba(200,200,200)'}}>
         <Table className={classes.table} aria-labelledby="tableTitle">
           <EnhancedTableHead
             order={order}

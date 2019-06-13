@@ -188,7 +188,7 @@ class EnhancedTableToolbar extends React.Component{
   updateFactorModal = (type, data) =>{
     this.setState({tName: data.name, tProcedure: data.content, tDuty: data.duty});
     this.setState({selectedData: data, selectedDataCopy: JSON.parse(JSON.stringify(data))});
-    console.log(data);
+    // console.log(data);
     this.addFactor(type);
   }
 
@@ -354,7 +354,7 @@ class QueryFactor
   componentWillMount() {
     // 组件初次加载数据申请
     fetch(config.server.listAllFactor).then(res=>res.json()).then(data=>{
-      console.log(data);
+      // console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
@@ -490,9 +490,11 @@ class QueryFactor
               )}
             </TableBody>
           </Table>
+          {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
           <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
         </div>
         <TablePagination
+          className="TablePagination"
           component="div"
           count={data.length}
           rowsPerPage={rowsPerPage}

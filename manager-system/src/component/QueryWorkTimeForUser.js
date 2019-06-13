@@ -277,7 +277,7 @@ class QueryWorkTimeForUser extends React.Component {
 
   queryWorkHourForUser = () => {
     fetch(config.server.queryWorkTimeForUser+'?indentID=').then(res=>res.json()).then(data=>{
-      console.log(data);
+      // console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
@@ -431,9 +431,11 @@ class QueryWorkTimeForUser extends React.Component {
               )}
             </TableBody>
           </Table>
+          {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
           <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
         </div>
         <TablePagination
+          className="TablePagination"
           rowsPerPageOptions={[10, 20, 30]}
           component="div"
           count={data.length}

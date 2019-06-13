@@ -66,8 +66,8 @@ const DialogActions = withStyles(theme => ({
 const rows = [
   { id: 'name', numeric: false, disablePadding: true, label: '序号' },
   { id: 'name', numeric: false, disablePadding: true, label: '订单编号' },
-  { id: 'name', numeric: false, disablePadding: true, label: '物料长代码' },
-  { id: 'carbs', numeric: true, disablePadding: false, label: '物料名称' },
+  { id: 'name', numeric: false, disablePadding: true, label: '货号' },
+  { id: 'carbs', numeric: true, disablePadding: false, label: '货物名称' },
   { id: 'calories', numeric: false, disablePadding: false, label: '订单流程' },
   { id: 'calories', numeric: false, disablePadding: false, label: '订单负责人' },
   { id: 'calories', numeric: false, disablePadding: false, label: '流程状态' },
@@ -372,6 +372,7 @@ class QueryProduceIndent extends React.Component {
               )}
             </TableBody>
           <TablePagination
+            className="TablePagination"
             rowsPerPageOptions={[10, 20, 30]}
             component="div"
             count={data.length}

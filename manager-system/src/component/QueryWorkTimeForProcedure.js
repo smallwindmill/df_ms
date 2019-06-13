@@ -277,7 +277,7 @@ class QueryWorkTimeForProcedure extends React.Component {
 
   queryProcedureWorkHour = () => {
     fetch(config.server.queryProcedureWorkTime+'?indentID=').then(res=>res.json()).then(data=>{
-      console.log(data);
+      // console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
@@ -426,14 +426,15 @@ class QueryWorkTimeForProcedure extends React.Component {
                 })}
               {emptyRows > 0 && (
                 <TableRow style={{ height: 49 * emptyRows }}>
-                  <TableCell colSpan={6} />
+                  <TableCell colSpan={10} />
                 </TableRow>
               )}
             </TableBody>
           </Table>
-          <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
+          {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
         </div>
         <TablePagination
+          className="TablePagination"
           rowsPerPageOptions={[10, 20, 30]}
           component="div"
           count={data.length}
@@ -448,6 +449,7 @@ class QueryWorkTimeForProcedure extends React.Component {
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
+        <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
         <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
         anchorOrigin={{horizontal:"center",vertical:"top"}}
         open={this.state.tipsOpen}

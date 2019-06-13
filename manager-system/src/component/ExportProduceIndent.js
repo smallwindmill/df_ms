@@ -6,7 +6,6 @@ import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
-import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -189,8 +188,8 @@ class ExportProduceIndent extends React.Component {
 
     var _headers = [
         { k: 'erp', v: 'erp编号' },
-        { k: 'materialCode', v: '物料编号' },
-        { k: 'materialName', v: '物料名称' },
+        { k: 'materialCode', v: '货号' },
+        { k: 'materialName', v: '货物名称' },
         { k: 'planNum', v: '计划生产数量' },
         { k: 'planOnline', v: '计划上线时间' },
         { k: 'planFinishDate', v: '计划完成时间' },
@@ -228,8 +227,8 @@ class ExportProduceIndent extends React.Component {
   exportAllIndent = () =>{
     var _headers = [
         { k: 'erp', v: 'erp编号' },
-        { k: 'materialCode', v: '物料编号' },
-        { k: 'materialName', v: '物料名称' },
+        { k: 'materialCode', v: '货号' },
+        { k: 'materialName', v: '货物名称' },
         { k: 'planNum', v: '计划生产数量' },
         { k: 'planOnline', v: '计划上线时间' },
         { k: 'planFinishDate', v: '计划完成时间' },
@@ -256,8 +255,8 @@ class ExportProduceIndent extends React.Component {
   exportMatchIndent = () =>{
       var _headers = [
           { k: 'erp', v: 'erp编号' },
-          { k: 'materialCode', v: '物料编号' },
-          { k: 'materialName', v: '物料名称' },
+          { k: 'materialCode', v: '货号' },
+          { k: 'materialName', v: '货物名称' },
           { k: 'name', v: '流程名称' },
           { k: 'procedure', v: '详细流程' },
           { k: 'duty', v: '流程对应负责人' }
@@ -282,8 +281,8 @@ class ExportProduceIndent extends React.Component {
 
     var _headers = [
         { k: 'erp', v: 'erp编号' },
-        { k: 'materialCode', v: '物料编号' },
-        { k: 'materialName', v: '物料名称' },
+        { k: 'materialCode', v: '货号' },
+        { k: 'materialName', v: '货物名称' },
         { k: 'planNum', v: '计划生产数量' },
         { k: 'planOnline', v: '计划上线时间' },
         { k: 'planFinishDate', v: '计划完成时间' },

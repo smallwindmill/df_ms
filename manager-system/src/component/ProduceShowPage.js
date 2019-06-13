@@ -75,6 +75,11 @@ class ProduceShowPage extends React.Component {
     var {data} = this.state;
 
     var dataCopy = JSON.parse(JSON.stringify(data));
+    if(!dataCopy.length){
+      console.log('暂无播报信息');
+      return;
+    }
+
     dataCopy = dataCopy.filter((index)=>{
       return index.status || index.priority || index.ifNew;
     });
@@ -90,13 +95,13 @@ class ProduceShowPage extends React.Component {
         if(i.status==2 || i.priority || i.ifNew){
           var str;
           if(i.ifNew && i.priority){
-            str = ('编号为' + i.erp +'的新品加急订单的'+ i.name + '流程' + ((i.status==2)?'已完成，请下一环节准备':('已开始')));
+            str = ('编号为' + i.erp +'的新品加急订单的'+ i.name + '流程' + ((i.status==2)?'已完成，请下一环节准备':(i.status==1?'已开始':'准备中')));
           }else if(i.ifNew){
-            str = ('编号为' + i.erp +'的新品订单的'+ i.name + '流程' + ((i.status==2)?'已完成，请下一环节准备':('已开始')));
+            str = ('编号为' + i.erp +'的新品订单的'+ i.name + '流程' + ((i.status==2)?'已完成，请下一环节准备':(i.status==1?'已开始':'准备中')));
           }else if(i.priority){
-            str = ('编号为' + i.erp +'的加急订单的'+ i.name + '流程' + ((i.status==2)?'已完成，请下一环节准备':('已开始')));
+            str = ('编号为' + i.erp +'的加急订单的'+ i.name + '流程' + ((i.status==2)?'已完成，请下一环节准备':(i.status==1?'已开始':'准备中')));
           }else{
-            str = ('编号为' + i.erp +'的订单的'+ i.name + '流程' + ((i.status==2)?'已完成，请下一环节准备':('已开始')));
+            str = ('编号为' + i.erp +'的订单的'+ i.name + '流程' + ((i.status==2)?'已完成，请下一环节准备':(i.status==1?'已开始':'准备中')));
           }
            console.log(str);
            this.speakInfo(str);
@@ -205,7 +210,7 @@ class ProduceShowPage extends React.Component {
 
   stopSpeakInfo =() => {
     var { stopSpeak } = this.state;
-    this.state.audio.pause();
+    if(this.state.audio) this.state.audio.pause();
     this.setState({stopSpeak: !stopSpeak});
   }
 
@@ -257,8 +262,8 @@ class ProduceShowPage extends React.Component {
         <thead onDoubleClick={this.toogleLoop}><tr>
             <th>序号</th>
             <th>ERP号</th>
-            <th>物料长代码</th>
-            <th>物料名称</th>
+            <th>货号</th>
+            <th>货物名称</th>
             <th>计划生产数量</th>
             <th>实际开工</th>
             <th>计划完工</th>
@@ -277,9 +282,9 @@ class ProduceShowPage extends React.Component {
             <td>{single.materialName}</td>
             <td>{single.planNum}</td>
             <td>{single.actualStart}</td>
-            <td>{single.planFinishDate}</td>
+            <td>{single.planFinishDate?(new Date(single.planFinishDate).format('yyyy-MM-dd')):''}</td>
+            <td>{single.name}<small className="small">{single.status==1?'进行中':(single.status==2?'已完成':'准备中')}</small></td>
             {/*<td>{single.status?'完成':'进行中'}</td>*/}
-            <td>{single.name}</td>
             <td title={single.remark?single.remark:'    '}>{single.remark}</td>
           </tr>
         ))}</tbody></table></div>

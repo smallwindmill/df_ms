@@ -62,8 +62,8 @@ const DialogActions = withStyles(theme => ({
 const rows = [
   { id: 'name', numeric: false, disablePadding: true, label: '序号' },
   { id: 'name', numeric: false, disablePadding: true, label: '订单编号' },
-  { id: 'name', numeric: false, disablePadding: true, label: '物料长代码' },
-  { id: 'carbs', numeric: true, disablePadding: false, label: '物料名称' },
+  { id: 'name', numeric: false, disablePadding: true, label: '货号' },
+  { id: 'carbs', numeric: true, disablePadding: false, label: '货物名称' },
   { id: 'calories', numeric: false, disablePadding: false, label: '订单流程' },
   { id: 'calories', numeric: false, disablePadding: false, label: '订单负责人' },
   { id: 'calories', numeric: false, disablePadding: false, label: '流程状态' },
@@ -434,7 +434,7 @@ class DutyIndent extends React.Component {
                       <TableCell align="center">
                             {n.status==0?<span className={"pointer btn "+(n.status?"text-blue":"text-blue")} onClick={()=>this.startProcedure(n, "上一流程未完成，确定开始该流程吗？", true)}>开始流程</span>:n.status==2?
                             <span className={"pointer btn "+(n.status?"text-success":"text-success")} onClick={()=>this.startProcedure(n, "确定重新开始该流程吗？")}>重新开始流程</span>:''}
-                            <span className={"pointer btn text-blue"} onClick={()=>{if(n.status==0){this.tips('当前流程还未开始');return;};this.props.history.push('/dutyIndent/info'+n.id)}}>{(n.status==2)?'详情':(n.status==1?'查看':'')}</span>
+                            <span className={"pointer btn text-blue"} onClick={()=>{if(n.status==0){this.tips('当前流程还未开始');return;};this.props.history.push('/produceMSF/dutyIndent/info'+n.id)}}>{(n.status==2)?'详情':(n.status==1?'查看':'')}</span>
                           </TableCell>
                     </TableRow>
                   );
@@ -446,8 +446,10 @@ class DutyIndent extends React.Component {
               )}
             </TableBody>
           </Table>
+          {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
         </div>
         <TablePagination
+          className="TablePagination"
           rowsPerPageOptions={[10, 20, 30]}
           component="div"
           count={data.length}

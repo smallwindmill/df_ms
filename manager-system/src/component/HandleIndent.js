@@ -77,10 +77,10 @@ const DialogActions = withStyles(theme => ({
 }))(MuiDialogActions);
 
 const rows = [
-  { id: 'name', numeric: false, disablePadding: true, label: '编号' },
+  { id: 'name', numeric: false, disablePadding: true, label: '序号' },
   { id: 'name', numeric: false, disablePadding: true, label: 'erp号' },
-  { id: 'carbs', numeric: true, disablePadding: false, label: '物料长代码' },
-  { id: 'calories', numeric: false, disablePadding: false, label: '物料名称' },
+  { id: 'carbs', numeric: true, disablePadding: false, label: '货号' },
+  { id: 'calories', numeric: false, disablePadding: false, label: '货物名称' },
   { id: 'protein', numeric: true, disablePadding: false, label: '计划生产数量' },
   { id: 'protein', numeric: true, disablePadding: false, label: '计划完工日期' },
   { id: 'protein', numeric: true, disablePadding: false, label: '预计上线日期' },
@@ -207,7 +207,7 @@ class EnhancedTableToolbar extends React.Component{
           console.log(data);
           if(data.code!=200){
             window.loading(false);
-            this.tips('文件上传出错，请稍后再试','1000');return;
+            this.tips(data.msg || '文件上传出错，请稍后再试','1000');return;
             // nextFunction();
           }
 
@@ -216,6 +216,7 @@ class EnhancedTableToolbar extends React.Component{
 
        }).catch(error=>{
             window.loading(false);
+            this.tips('文件上传出错，请稍后再试','1000');
             console.log(error);
         })
 
@@ -291,7 +292,7 @@ class EnhancedTableToolbar extends React.Component{
           </Grid>
           <Grid item xs={8}>
            <span className=""><small> 请选择一个excel文件上传,
-          文件列名依次为:编号、物料长代码、物料名称、计划生产数量、计划完工日期、 预计上线日期、制单日期、优先级、新品、备注、模板选择。<a className="text-blue" href={config.templete.indentUrl} download="订单模板">点击由此下载模板</a>。</small></span>
+          文件列名依次为:erp号、货号、货物名称、计划生产数量、计划完工日期、 预计上线日期、制单日期、优先级、新品、备注、模板选择。<a className="text-blue" href={config.templete.indentUrl} download="订单模板">点击由此下载模板</a>。</small></span>
           </Grid>
 
 
@@ -389,13 +390,13 @@ class HandleIndent extends React.Component {
 
   componentWillMount() {
     // 组件初次加载数据申请
-    console.log(this.props);
+    // console.log(this.props);
     this.initLoadData();
   }
 
   initLoadData = () => {
     fetch(config.server.listAllIndentByDate).then(res=>res.json()).then(data=>{
-      console.log(data);
+      // console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
@@ -857,6 +858,7 @@ class HandleIndent extends React.Component {
             {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
         </div>
         <TablePagination
+          className="TablePagination"
           rowsPerPageOptions={[1*config.page, 2*config.page, 3*config.page]}
           component="div"
           count={data.length}
