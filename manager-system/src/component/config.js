@@ -1,6 +1,6 @@
-// var serverIP = '123.5666.77/produceMS';
-//var serverIP = 'http://127.0.0.1:2030/produceMS';
-var serverIP = 'http://101.200.62.233:2030/produceMS';
+// var serverIP = 'http://127.0.0.1:2030/produceMS';
+// var serverIP = 'http://101.200.62.233:2030/produceMS';
+var serverIP = 'http://47.101.39.165:2030/produceMS';
 //var serverIP = 'http://192.168.1.101:2030/produceMS';
 
 // 接口地址拼接

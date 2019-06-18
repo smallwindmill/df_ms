@@ -325,7 +325,8 @@ class DutyIndentInfo extends React.Component {
       this.setState({ifAdd: false, selectedInfoData:data, productNum: data.productNum, actualNum: data.actualNum,selectedIndex: index});
     }
 
-    fetch(config.server.listSystemUserByType+"?type="+4).then(res=>res.json()).then(data=>{
+    // fetch(config.server.listSystemUserByType+"?type="+4).then(res=>res.json()).then(data=>{
+    fetch(config.server.listSystemUser).then(res=>res.json()).then(data=>{
       if(data.code!=200){
         if(data.results && data.results.length){
           this.tips(data.msg);
@@ -359,7 +360,7 @@ class DutyIndentInfo extends React.Component {
     var workder_in = [];
     for(var i of selectedWorkers){
       // workder_in.push(i.id);
-      workder_in.push(i.name);
+      workder_in.push(i.userName);
     }
 
     if(ifAdd){
@@ -727,7 +728,7 @@ class DutyIndentInfo extends React.Component {
        padding: '.5rem 0'
     };
     const styleChip = {
-      margin:'3px 5px'
+      margin:'6px 8px',padding: '0px 3px'
     };
     return (<Dialog
       aria-labelledby="customized-dialog-title"
@@ -778,7 +779,7 @@ class DutyIndentInfo extends React.Component {
             <Grid item xs={6} style={{paddingTop: 0, boxShadow: "9px 0px 16px -12px #666"}}>
               <div className="bold">待选择人员{'  '+(workers.length+selectedWorkers.length)+'/'+workers.length}</div>
               <div className='plane waitingChoose' style = {styleCon}>
-              {workers.map((worker,index)=><Chip key = {index} label={worker.name}  style = {styleChip} className={classes.chip} onClick={()=>this.selectToRight(worker, index)}/>)}
+              {workers.map((worker,index)=><Chip key = {index} label={worker.userName}  style = {styleChip} className={classes.chip} onClick={()=>this.selectToRight(worker, index)}/>)}
               </div>
             </Grid>
 
@@ -786,7 +787,7 @@ class DutyIndentInfo extends React.Component {
               <div className="bold">已选择人员{'  '+(workers.length+selectedWorkers.length)+'/'+selectedWorkers.length}</div>
               <div className='plane choosed' style = {styleCon}>
               {selectedWorkers.map((worker,index)=><Chip key = {index} style = {styleChip}
-                label={worker.name}
+                label={worker.userName}
                 className={classes.chip} onDelete={()=>this.selectToLeft(worker, index)}
               />)}
               </div>

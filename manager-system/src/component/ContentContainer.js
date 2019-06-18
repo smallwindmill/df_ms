@@ -10,7 +10,6 @@ import MessageBar from './Messagebar';
 import Menu from './Menu';
 import Login from './Login';
 
-import AddUser from './AddUser';
 import QueryUser from './QueryUser';
 import QueryUserAndPower from './QueryUserAndPower';
 
@@ -19,7 +18,6 @@ import HandleTemplate from './HandleTemplate';
 import HandleIndent  from './HandleIndent';
 // import {HandleIndent as AddIndent} from './HandleIndent';
 
-import QueryIndent from './QueryIndent';
 import ExportProduceIndent from './ExportProduceIndent';
 import QueryIndentStatus from './QueryIndentStatus';
 
@@ -192,7 +190,6 @@ class ContentContainer extends React.Component{
                   <div id = "rightContent">
                     <Switch>
                         <Route path="/produceMSF/user" exact component={QueryUser} />
-                        <Route path="/produceMSF/user/addUser" component={AddUser} />
                         <Route path="/produceMSF/user/queryUser" component={QueryUser} />
                         <Route path="/produceMSF/user/queryUserAndPower" component={QueryUserAndPower}  />
 
@@ -201,7 +198,6 @@ class ContentContainer extends React.Component{
 
                         <Route path="/produceMSF/handleIndent" exact component={AddIndent} />
                         <Route path="/produceMSF/handleIndent/addIndent" exact component={AddIndent} />
-                        <Route path="/produceMSF/handleIndent/queryIndent" component={QueryIndent} />
                         <Route path="/produceMSF/handleIndent/queryIndentStatus" component={QueryIndentStatus} />
 
                         <Route path="/produceMSF/handleIndent/exportProduceIndent" component={ExportProduceIndent} />

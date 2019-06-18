@@ -462,7 +462,7 @@ class HandleIndent extends React.Component {
       headers:{
           'Content-Type': 'application/json',
       },
-      body:JSON.stringify({id: id, planNum: planNum,planFinishDate: planFinishDate,planOnline: planOnline,actualStart: actualStart,actualFinish: actualFinish,priority: priority,ifNew: ifNew,ifOutsource: ifOutsource,duty: duty,status: status,remark: remark})
+      body:JSON.stringify({id: id, planNum: planNum,planFinishDate: planFinishDate,planOnline: planOnline,actualStart: actualStart,actualFinish: actualFinish,priority: priority,ifNew: ifNew,ifOutsource: ifOutsource,duty: duty,remark: remark})
     }).then(res=>res.json()).then(data=>{
       // console.log(data);
       if(data.code!=200){

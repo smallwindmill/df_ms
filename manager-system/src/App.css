@@ -111,6 +111,11 @@ div[class*='DateFormatInput-input']{
 }
 .bold, .blod{font-weight: bold;padding-right: 1rem;}
 
+
+#templateUserModal>div{
+  margin-bottom: -1rem;
+}
+
 .translateRight{
   transition: 10s linear;
   -webkit-transform: translateX(100%);

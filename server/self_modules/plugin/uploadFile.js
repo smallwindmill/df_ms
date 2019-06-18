@@ -1,6 +1,6 @@
-storageFile = function(file,fs,moment,connection, floder, nextFun){
+storageFile = function(file,fs, moment,connection, floder, nextFun){
     // 复制文件,先判断文件是否存在
-    let name = 'upload/'+floder+'/'+file.originalFilename;
+    let name = 'upload/'+floder+'/'+file.originalFilename+moment().format("YYYYMMDDHHMMSS");
     let newName='';
 
 
@@ -27,7 +27,7 @@ storageFile = function(file,fs,moment,connection, floder, nextFun){
           }
        })
     }
-
+    console.log(name);
     // 判断文件夹是否存在
    fs.exists('upload/'+floder,function(exists){
     if(!exists){

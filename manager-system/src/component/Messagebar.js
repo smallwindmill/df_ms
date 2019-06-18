@@ -83,7 +83,7 @@ class MessageBar extends React.Component{
 
     componentDidMount() {
       // 更新消息数据
-      this.state.messageTimer = setInterval(this.queryMessageTimer, 10000);
+      this.state.messageTimer = setInterval(this.queryMessageTimer, 20000);
 
     }
 

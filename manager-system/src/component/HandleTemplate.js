@@ -163,7 +163,10 @@ class EnhancedTableToolbar extends React.Component{
   //添加模板/更新模板时的判断
   addTempleteSure=()=>{
       // console.log(this.state);
-      var { tName, tProcedure, tDuty,DutyWorkers, ifAdd, selectedData } = this.state;
+      var { tID, tName, tProcedure, tDuty,DutyWorkers, ifAdd, selectedData } = this.state;
+      if(!tID){
+          this.tips('请先填写模板编号');return;
+      }
 
       if(!tName){
           this.tips('请先填写模板名称');return;
@@ -177,7 +180,7 @@ class EnhancedTableToolbar extends React.Component{
           this.tips('请填写流程对应负责人');return;
       }
 
-      var tProcedureLen = tProcedure.split(' ');
+      var tProcedureLen = tProcedure.replace(/ $/,'').replace(/^ /,'').split(' ');
       var tDutyLen = tDuty.replace(/ $/,'').replace(/^ /,'').split(' ');
 
       // if(tProcedureLen.length!=tDutyLen.length){
@@ -195,7 +198,7 @@ class EnhancedTableToolbar extends React.Component{
         headers:{
           'Content-Type': 'application/json',
         },
-        body:JSON.stringify({id:selectedData?selectedData.id:'', name: tName, procedure: tProcedure, duty: postDuty.replace(/ $/,'').replace(/^ /,'')})
+        body:JSON.stringify({id: tID, name: tName, procedure: tProcedure, duty: postDuty.replace(/ $/,'').replace(/^ /,'')})
       }).then(res=>res.json()).then(data=>{
         if(data.code!=200){
           this.tips(data.msg);return;
@@ -210,6 +213,7 @@ class EnhancedTableToolbar extends React.Component{
             this.state.selectedData.name = tName;
             this.state.selectedData.procedure = tProcedure;
             this.state.selectedData.duty = tDuty;
+            this.state.selectedData.id = tID;
           }
           this.props.changeTemplateData('', 2);   //修改
         }
@@ -219,7 +223,7 @@ class EnhancedTableToolbar extends React.Component{
 
   // 更新模板
   updateTemplateModal = (type, data) =>{
-    this.setState({tName: data.name, tProcedure: data.procedure, tDuty: data.duty});
+    this.setState({tID: data.id, tName: data.name, tProcedure: data.procedure, tDuty: data.duty});
     this.setState({selectedData: data, selectedDataCopy: JSON.parse(JSON.stringify(data))});
     // console.log(data);
     this.addTemplate(type);
@@ -329,6 +333,21 @@ class EnhancedTableToolbar extends React.Component{
           <Grid container >
           <Grid item xs={12} style={{paddingTop:'.5rem'}}>
           <TextField fullWidth style={{marginTop:0}}
+            placeholder="请输入模板编号"
+            label="模板编号"
+            disabled = {ifAdd?false:true}
+            className={classes.textField}
+            value = {this.state.tID}
+            onChange={(e)=>this.setState({tID:e.target.value})}
+            margin="normal"
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+          </Grid>
+
+          <Grid item xs={12} style={{paddingTop:'.5rem'}}>
+          <TextField fullWidth style={{marginTop:0}}
             placeholder="请输入模板名称"
             label="模板名称"
             className={classes.textField}
@@ -384,7 +403,7 @@ class EnhancedTableToolbar extends React.Component{
           {/*人员选择模态框*/}
           <Dialog
           aria-labelledby="customized-dialog-title" id = "dutyModal"
-          open={this.state.dutyModal} style={{marginTop:'14rem', oveflow: "hidden"}} onClose = {()=>this.setState({dutyModal: false})}
+          open={this.state.dutyModal} style={{marginTop:'18rem', oveflow: "hidden"}} onClose = {()=>this.setState({dutyModal: false})}
         >
           <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem",width: '408px'}}>
               <Grid container >

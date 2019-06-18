@@ -199,12 +199,16 @@ div[class*='MuiFormLabel-root'] {
 #rightContent table tr td{
     font-size: 1rem!important;
 }
+/* #rightContent div='work-calendar'] table tr th,#rightContent div[class!='work-calendar'] table tr td{ */
+#rightContent>div:not(.work-calendar) table:not(.produceShowTable) tr th,#rightContent>div:not(.work-calendar) table:not(.produceShowTable) tr td{
+    text-align: left;
+}
 #rightContent .showPage *,#rightContent .showPage table tr td, #rightContent .showPage table tr th, .mailDialog *{
     font-size: 28px!important;
 }
 
 .showPage td{padding: 2rem 0!important;}
-#rightContent>div.work-calendar{width: 80%; height:90%; margin: 2rem auto 0;overflow-y: hidden;}
+#rightContent>div.work-calendar{width: 80%; height:90%; margin: .5rem auto 0;overflow-y: hidden;}
 .work-calendar button{box-shadow: none!important;}
 .work-calendar .fc-button-primary,.work-calendar .fc-button-primary:focus,.work-calendar .fc-button-primary:active{background: none!important;border:none;color:#333;}
 .work-calendar .fc-button-primary:hover,.work-calendar .fc-button-primary:focus,.work-calendar .fc-button-primary:active{color:#4488cc;}

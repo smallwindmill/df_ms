@@ -467,7 +467,7 @@ class QueryUser extends React.Component {
 
     };
 
-    this.setState({confirmOpen: true,title: "确认",content: "确定删除用户<span class='text-blue'>"+data.userName+"</span>吗？",deleteFun: nexFun});
+    this.setState({confirmOpen: true,title: "确认",content: "删除用户后可能会使部分订单的人员失效，确定删除用户吗<span class='text-blue'>"+data.userName+"</span>吗？",deleteFun: nexFun});
   }
 
   // 关闭删除用户弹窗
