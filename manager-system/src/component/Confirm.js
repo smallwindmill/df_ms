@@ -19,7 +19,7 @@ class Confirm extends React.Component {
   // 关闭方法由父组件传入
   render() {
     // console.log(this.props);
-    const { open, title, content, closeFun, sureFun, cancelFun, ifAutoClose,ifInfo } = this.props;
+    const { open, title, content, closeFun, sureFun, cancelFun, ifAutoClose, ifInfo, cancelText, sureText } = this.props;
     return (
       <div>
         <Dialog
@@ -37,10 +37,10 @@ class Confirm extends React.Component {
           </DialogContent>
           <DialogActions>
             <Button onClick={closeFun} color="primary">
-              取消
+              {cancelText || '取消'}
             </Button>
             <Button onClick={()=>{closeFun();if(sureFun)sureFun()}} color="primary" autoFocus>
-              确定
+              {sureText || '确定'}
             </Button>
           </DialogActions>
         </Dialog>

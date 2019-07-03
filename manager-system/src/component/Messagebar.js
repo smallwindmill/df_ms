@@ -83,7 +83,8 @@ class MessageBar extends React.Component{
 
     componentDidMount() {
       // 更新消息数据
-      this.state.messageTimer = setInterval(this.queryMessageTimer, 20000);
+      this.queryMessage();
+      this.state.messageTimer = setInterval(this.queryMessage, 20000);
 
     }
 
@@ -93,10 +94,13 @@ class MessageBar extends React.Component{
       }
     }
 
-    // 更新消息等数据
+    // 更新消息
     updateBarData = (userName, messages) => {
-      this.setState({userName: userName || '', mailMessage: messages || []});
-
+      this.setState({userName: userName || ''});
+      if(messages!=undefined){
+        this.setState({mailMessage: messages});
+      }
+      // 首次加载弹窗延时
       if(this.state.firstLoad==0){
           if(this.state.mailMessage.length){
             setTimeout(this.mailClick, 1500);
@@ -105,11 +109,12 @@ class MessageBar extends React.Component{
       this.setState({firstLoad: ++this.state.firstLoad});
     }
 
-    queryMessageTimer = () => {
+    queryMessage = () => {
       var userID = config.changeToJson(localStorage.user || '{}').userID;
+      var type = config.changeToJson(localStorage.user || '{}').type;
 
       if(!userID) return;
-      fetch(config.server.queryMessage+'?userID='+userID).then(res=>res.json()).then(data=>{
+      fetch(config.server.queryMessage+'?userID='+userID+'&userType='+type).then(res=>res.json()).then(data=>{
         if(data.code!=200){
           return;
         }
@@ -141,6 +146,7 @@ class MessageBar extends React.Component{
     // 注销登录
     logoutClick=()=>{
       this.setState({logOut: true});
+      sessionStorage.path = '';
       // this.setState({sureFun: this.logoutSureFun})
     }
 
@@ -156,7 +162,7 @@ class MessageBar extends React.Component{
        // delete localStorage.user;
        localStorage.user = "";
        // window.location.href='/login';
-       window.ReactHistory.push('/login');
+       window.ReactHistory.push('/produceMSF/login');
     }
 
     logoutClickClose=()=>{
@@ -192,8 +198,11 @@ class MessageBar extends React.Component{
           <ul style={{paddingRight:"2rem"}}>
           {this.state.mailMessage.map((mail, index)=>(
             <li style={{padding:".2rem 0",position: 'relative'}} className="mail-message" key={'mailLi'+index}>
-            <span>{index+1}. </span>{mail.content.split('//%//')[0]} {(mail.content.split('//%//')[1]?(<i className="small text-blue">{mail.content.split('//%//')[1]}</i>):'')} <small style={{paddingLeft: '1rem'}}>{mail.time?new Date(mail.time).format('yyyy-MM-dd hh:mm:ss'):''}</small>
-            <span className="text-red pointer" style={{marginLeft:'1rem',textAlign: "right"}} onClick={()=>{this.markMessage(mail, index)}}>已读 </span>
+              <span>{index+1}. </span>
+              <span className="text-blue btn" title={mail.from}>{mail.fromName}</span>
+              <span>{'发来消息: '+mail.content.split('//%//')[0]} {(mail.content.split('//%//')[1]?(<i className="small text-blue">{mail.content.split('//%//')[1]}</i>):'')} </span>
+              <small style={{paddingLeft: '1rem'}}>{mail.time?new Date(mail.time).format('yyyy-MM-dd hh:mm:ss'):''}</small>
+              <span className="text-red pointer" style={{marginLeft:'1rem',textAlign: "right"}} onClick={()=>{this.markMessage(mail, index)}}>已读 </span>
            </li>))}</ul>
            { this.state.mailMessage.length==0?<ul><li className="mail-message text-blue">暂无消息</li></ul>:false}
         </DialogContent>
@@ -219,7 +228,7 @@ class MessageBar extends React.Component{
             {userName?(<div className={""} >
                 欢迎你，<span  className="text-blue" style={{padding:"0 .2rem"}}>{userName}</span>{user.type==1?('[ 主管 ]'):(user.type==2?('[ 领班 ]'):user.type==3?('[ 组长 ]'):'[ 员工 ]')}
                 {/*<span color="primary"onClick={this.loginClick}>登陆</span>*/}
-                <span color="const" style={{display:(userName?'ff':'none'), padding: '0 2rem 0 1.2rem'}} className={"btn text-red "} onClick={this.logoutClick}>注销</span>
+                <span color="const" style={{display:(userName?'ff':'none'), padding: '0 2rem 0 1.2rem'}} id="logout" className={"btn text-red "} onClick={this.logoutClick}>注销</span>
                 <IconButton fontSize="large" color="inherit"style = {{marginTop: '-3px'}} onClick={this.mailClick}>
                   <Badge badgeContent={mailMessage.length} color="secondary">
                     <MailIcon  />

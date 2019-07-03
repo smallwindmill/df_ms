@@ -64,6 +64,7 @@ const rows = [
   { id: 'name', numeric: false, disablePadding: true, label: '订单编号' },
   { id: 'name', numeric: false, disablePadding: true, label: '货号' },
   { id: 'carbs', numeric: true, disablePadding: false, label: '货物名称' },
+  { id: 'calories', numeric: false, disablePadding: false, label: '生产数量' },
   { id: 'calories', numeric: false, disablePadding: false, label: '订单流程' },
   { id: 'calories', numeric: false, disablePadding: false, label: '订单负责人' },
   { id: 'calories', numeric: false, disablePadding: false, label: '流程状态' },
@@ -163,40 +164,41 @@ class EnhancedTableToolbar extends React.Component{
     var classes = '';
     return (
        <div className={classes.title}>
-            <Toolbar >
-              <Typography variant="h6" id="tableTitle" align="left">
-                负责的订单操作
-              </Typography>
-        </Toolbar>
-        <Grid container align="right" style={{margin:'-1rem 0 1rem',padding: '0 1.2rem'}}>
-          <Grid item xs={12}>
-              <TextField style={{marginTop:0,padding:'0 .5rem'}}
-                select label="状态选择:"
-                className={classes.textField}
-                margin="normal"
-                onChange = {(e)=>{e.persist();this.props.queryDutyIndentByType(e)}}
-                SelectProps={{
-                native: true,
-                className: 'text-blue select',
-                align: 'center',
-               }}
-              >{this.state.chooseList.map((option, index) => (
-                <option key={'option'+index} value={option.value}>
-                  {option.text}
-                </option>
-              ))}</TextField>
+          <Toolbar >
+                <Typography variant="h6" id="tableTitle" align="left">
+                  负责的订单操作
+                </Typography>
+          </Toolbar>
+          <Grid container align="right" style={{margin:'-1rem 0 1rem',padding: '0 1.2rem'}}>
+            <Grid item xs={12}>
+                <TextField style={{marginTop:0,display: 'none', padding:'0 .5rem'}}
+                  select label="状态选择:"
+                  className={classes.textField}
+                  margin="normal"
+                  onChange = {(e)=>{e.persist();this.props.queryDutyIndentByType(e)}}
+                  SelectProps={{
+                  native: true,
+                  className: 'text-blue select',
+                  align: 'center',
+                 }}
+                >{this.state.chooseList.map((option, index) => (
+                  <option key={'option'+index} value={option.value}>
+                    {option.text}
+                  </option>
+                ))}</TextField>
 
-              <TextField style={{marginTop:0,marginLeft:'1rem'}} label = "筛选"
-              placeholder="请输入订单号或货号查询"
-              className={classes.textField}
-              type="text"
-              onChange = {(e)=>this.props.queryByKeyword(e)}
-              margin="normal"
-              InputLabelProps={{
-                shrink: true,
-              }}></TextField>
-            </Grid></Grid>
-          </div>
+                <TextField style={{marginTop:0,marginLeft:'1rem'}} label = "筛选"
+                placeholder="请输入订单号或货号查询"
+                className={classes.textField}
+                type="text"
+                onChange = {(e)=>this.props.queryByKeyword(e)}
+                margin="normal"
+                InputLabelProps={{
+                  shrink: true,
+                }}></TextField>
+            </Grid>
+          </Grid>
+        </div>
       )
   }
 };
@@ -239,7 +241,7 @@ class DutyIndent extends React.Component {
     var pwd = config.changeToJson(localStorage.user).pwd;
 
     fetch(config.server.queryDutyProcedureByStatus+'?userID='+userID).then(res=>res.json()).then(data=>{
-      console.log(data);
+      // console.log(data);
       if(data.code!=200){
           this.tips(data.msg);return;
       }
@@ -323,7 +325,6 @@ class DutyIndent extends React.Component {
 
   queryDutyIndentByType = (e) =>{
     var value = e.target.value;
-    console.log(value);
     if(!this.state.dataBak){
       this.state.dataBak = this.state.data;
     }
@@ -421,6 +422,9 @@ class DutyIndent extends React.Component {
                       <TableCell align="center">{n.materialCode}</TableCell>
                       <TableCell align="center" component="th" scope="row" padding="none">
                         {n.materialName}
+                      </TableCell>
+                      <TableCell align="center" component="th" scope="row" padding="none">
+                        {n.planNum}
                       </TableCell>
                       <TableCell align="center" component="th" scope="row" padding="none">
                         {n.procedure}

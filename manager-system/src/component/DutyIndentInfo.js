@@ -68,6 +68,7 @@ var rows = [
   { id: 'name', numeric: false, disablePadding: true, label: '订单编号' },
   { id: 'name', numeric: false, disablePadding: true, label: '货号' },
   { id: 'carbs', numeric: false, disablePadding: false, label: '货物名称' },
+  { id: 'calories', numeric: false, disablePadding: false, label: '生产数量' },
   { id: 'calories', numeric: false, disablePadding: false, label: '订单流程' },
   { id: 'calories', numeric: false, disablePadding: false, label: '订单负责人' },
   { id: 'calories', numeric: false, disablePadding: false, label: '流程状态' },
@@ -254,6 +255,8 @@ class DutyIndentInfo extends React.Component {
     }
     // console.log(this.props, this.props.match.params);
     this.setState({pid: procedureID});
+    this.setState({pageUserType: config.changeToJson(localStorage.user).type});
+
 
     // fetch(config.server.queryDutyProcedureById+'?id='+procedureID+'&userID='+userID).then(res=>res.json()).then(data=>{
     fetch(config.server.queryDutyProcedureById+'?id='+procedureID).then(res=>res.json()).then(data=>{
@@ -289,12 +292,7 @@ class DutyIndentInfo extends React.Component {
 
   isSelected = id => this.state.selected.indexOf(id) !== -1;
 
-  // 删除用户弹窗
-  deleteUser=()=>{
-    this.setState({confirmOpen: true})
-  }
-
-  // 关闭删除用户弹窗
+  // 关闭删除弹窗
   deleteModalClose=()=>{
     this.setState({confirmOpen: false})
   }
@@ -319,30 +317,36 @@ class DutyIndentInfo extends React.Component {
   addProcedureInfo = (ifAdd, data, index) =>{
     // 添加流程详情时请求生产人员
     if(ifAdd==0){
-      this.setState({ifAdd: true, productNum: '', actualNum:''});
+
+        this.setState({ifAdd: true, productNum: '', actualNum:''});
+        fetch(config.server.listSystemUser).then(res=>res.json()).then(data=>{
+          if(data.code!=200){
+            if(data.results && data.results.length){
+              this.tips(data.msg);
+            }else{
+              this.tips('生产人员数量为0，请先添加生产人员');
+            }
+            return;
+          }
+          var innerData = data.results.filter((index)=>{
+            return (index.userID!="DFCD009527" && index.userID!="DFCD00175" && index.userID!="DFCD00032" && index.userID!="DFCD00011" && index.userID!="DFCD00032" && index.userID!="DFCD00033"  && index.type!="1");
+          });
+          this.setState({modalOpen: true, workers: innerData.sort((a)=>{return a.userName}), selectedWorkers: []});
+        }).catch(e=>this.tips('网络出错了，请稍候再试'));
+
     }else{
       // this.setState({ifAdd: false, selectedData: JSON.parse(JSON.stringify(data)), selectedIndex: index});
-      this.setState({ifAdd: false, selectedInfoData:data, productNum: data.productNum, actualNum: data.actualNum,selectedIndex: index});
+      this.setState({ifAdd: false, selectedInfoData:data, productNum: data.productNum, selectedWorkers: data.worker.split(' '),duty: data.duty, selectedIndex: index});
+      this.setState({modalOpen: true});
     }
 
     // fetch(config.server.listSystemUserByType+"?type="+4).then(res=>res.json()).then(data=>{
-    fetch(config.server.listSystemUser).then(res=>res.json()).then(data=>{
-      if(data.code!=200){
-        if(data.results && data.results.length){
-          this.tips(data.msg);
-        }else{
-          this.tips('生产人员数量为0，请先添加生产人员');
-        }
-        return;
-      }
-      this.setState({modalOpen: true, workers: data.results, selectedWorkers: []});
-    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+
   }
 
   // 提交流程详情
   addInfoSure = () =>{
     var { productNum, actualNum, selectedWorkers, selectedDataCopy, selectedInfoData, pid, ifAdd } = this.state;
-
     if(!productNum){
       this.tips('生产数量不能为0');return;
     }
@@ -351,6 +355,14 @@ class DutyIndentInfo extends React.Component {
     if(!ifNum){
         this.tips('生产数量不能为非数字');return;
     }
+
+    if(actualNum){
+      ifNum = new RegExp(/^\d+$/).test(actualNum);
+      if(!ifNum){
+          this.tips('实际完成数量不能为非数字');return;
+      }
+    }
+
 
     if(selectedWorkers.length == 0){
       this.tips('至少选择一个生产人员');return;
@@ -369,6 +381,7 @@ class DutyIndentInfo extends React.Component {
       var server = config.server.updateDutyProcedureDetailStatus;
     }
 
+    window.loading(true);
     fetch(server,{method:"POST",
       headers:{
         'Content-Type': 'application/json',
@@ -377,21 +390,21 @@ class DutyIndentInfo extends React.Component {
       body:JSON.stringify({pid: pid,id: selectedInfoData?selectedInfoData.id:'', productNum:productNum, actualNum: actualNum, worker:workder_in.join(' ')})
     }).then(res=>res.json()).then(data=>{
       if(data.code!=200){
-        this.tips(data.msg);return;
+        this.tips(data.msg);window.loading(false);return;
       }
       if(ifAdd){
         this.changeInfoData(data.results, 1);
-        this.tips('新增流程详情成功');
+        this.tips('新增流程详情成功');window.loading(false);
       }else{
         selectedInfoData.productNum = productNum;
         selectedInfoData.actualNum = actualNum;
         selectedInfoData.worker = workder_in.join(' ');
-        this.tips('修改流程详情成功');
+        this.tips('修改流程详情成功');window.loading(false);
         this.setState({selectedInfoData, selectedInfoData});
       }
 
       this.modalClose();
-    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+    }).catch(e=>{console.log(e);window.loading(false);this.tips('网络出错了，请稍候再试');});
 
   }
 
@@ -406,18 +419,11 @@ class DutyIndentInfo extends React.Component {
 
   }
 
-
-  // 关闭删除用户弹窗
   confirmClose=()=>{
     this.setState({confirmOpen: false});
   }
 
-  confirmSure = ()=>{
-    if(this.state.confirmSure){
-      this.state.confirmSure();
-    }
-  }
-
+  // 流程完成弹窗
   finishProcedure = (data_out, index)=>{
 
     var { infoData } = this.state;
@@ -433,16 +439,17 @@ class DutyIndentInfo extends React.Component {
       this.tips('详情表中还有'+info_finish+'条记录为进行状态，请完成后再设置流程状态');return;
     }
 
-    this.setState({InfoModalOpen: true, selectedDataCopy: data_out, selectIndex: index});
+    this.setState({InfoModalOpen: true, selectParData: data_out, selectIndex: index});
   }
 
-  scrapProcedure = (data_out, index)=>{
-    this.setState({destroyModalOpen: true, selectedDataCopy: data_out, selectIndex: index});
+  //
+  scrapProcedureDetail = (data_out, index)=>{
+    this.setState({destroyModalOpen: true, selectParData: data_out, selectIndex: index});
   }
 
   // 设置流程完成
   setFinishSure = (data_out, index) => {
-    var { id, next_info, data,infoData, selectedDataCopy } = this.state;
+    var { id, next_info, data,infoData, selectParData } = this.state;
     // console.log(id, next_info);
     var pid = this.props.match.params.id;
 
@@ -453,7 +460,7 @@ class DutyIndentInfo extends React.Component {
       headers:{
          'Content-Type': 'application/json',
       },
-      body:JSON.stringify({pid: pid,id: selectedDataCopy.id, status: 2, remark: next_info})
+      body:JSON.stringify({pid: pid,id: selectParData.id, status: 2, remark: next_info})
     }).then(res=>res.json()).then(data=>{
       if(data.code != 200){
         this.tips(data.msg);return;
@@ -502,7 +509,7 @@ class DutyIndentInfo extends React.Component {
     this.setState({selectedDataCopy:n, selectIndex: index});
 
     if(!n.actualNum){
-      this.tips('实际完成产品数量不能为空');return;
+      this.tips('请先填写实际完成产品数量');return;
     }
 
     var nextFun = () =>{
@@ -528,6 +535,30 @@ class DutyIndentInfo extends React.Component {
     };
 
     this.setState({confirmOpen: true, content: '确定当前步骤已完成吗？',confirmSure: nextFun});
+  }
+
+  // 领班删除环节
+   deleteProcedureDetail=(data, index)=>{
+    this.setState({confirmOpen: true});
+    var nexFun = ()=>{
+      fetch(config.server.deleteProcedureDetail,{method:"POST",
+        headers:{
+          'Content-Type': 'application/json',
+        },
+        body:JSON.stringify({id: data.id})
+      }).then(res=>res.json()).then(data=>{
+        if(data.code!=200){
+            this.tips(data.msg);return;
+        }
+
+        this.state.infoData.splice(index, 1);
+        this.setState({data: this.state.data});
+        this.tips('删除成功');
+      }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
+
+    };
+
+    this.setState({confirmOpen: true,title: "确认",content: "确定删除该流程细节吗？",confirmSure: nexFun});
   }
 
 
@@ -723,7 +754,7 @@ class DutyIndentInfo extends React.Component {
 
     const { workers, ifAdd, selectedWorkers,selectedDataCopy, productNum, actualNum } = this.state;
     const styleCon = {
-       height: '20rem',
+       height: '30vh',
        overflowY : 'auto',
        padding: '.5rem 0'
     };
@@ -732,7 +763,7 @@ class DutyIndentInfo extends React.Component {
     };
     return (<Dialog
       aria-labelledby="customized-dialog-title"
-      open={this.state.modalOpen} style={{marginTop:'-10rem'}} className="modal lg"
+      open={this.state.modalOpen} style={{marginTop:'-10vh'}} className="modal lg"
     >
       <DialogTitle id="customized-dialog-title"  onClose={this.modalClose}>
         {ifAdd?'添加':'编辑'}流程详情
@@ -774,25 +805,26 @@ class DutyIndentInfo extends React.Component {
                         <DateFormatInput  className="inline-block" name='date-input' value={ new Date(selectedDataCopy.startTime) } onChange={(date)=>{selectedDataCopy.planFinishDate = date.format('yyyy-MM-dd');this.setState({ selectedDataCopy: selectedDataCopy })} } style={{marginbottom:'2rem'}} />
                         <TimeFormatInput name='time-input' value={selectedDataCopy.startDateTime?new Date(selectedDataCopy.startDateTime):new Date() } onChange={(date)=>{console.log(date);selectedDataCopy.startDateTime = date;this.setState({ selectedDataCopy: selectedDataCopy })} }/>*/}
           </Grid>
+          {!ifAdd?<div style={{margin: '2rem 0'}}></div>:''}
 
-          <Grid container style={{paddingTop: "1rem"}}>
-            <Grid item xs={6} style={{paddingTop: 0, boxShadow: "9px 0px 16px -12px #666"}}>
-              <div className="bold">待选择人员{'  '+(workers.length+selectedWorkers.length)+'/'+workers.length}</div>
-              <div className='plane waitingChoose' style = {styleCon}>
-              {workers.map((worker,index)=><Chip key = {index} label={worker.userName}  style = {styleChip} className={classes.chip} onClick={()=>this.selectToRight(worker, index)}/>)}
-              </div>
-            </Grid>
+          {ifAdd?<Grid container style={{paddingTop: "1rem"}}>
+                      <Grid item xs={6} style={{paddingTop: 0, boxShadow: "9px 0px 16px -12px #666"}}>
+                        <div className="bold">待选择人员{'  '+(workers.length+selectedWorkers.length)+'/'+workers.length}</div>
+                        <div className='plane waitingChoose' style = {styleCon}>
+                        {workers.map((worker,index)=><Chip key = {index} label={worker.userName}  style = {styleChip} className={classes.chip} onClick={()=>this.selectToRight(worker, index)}/>)}
+                        </div>
+                      </Grid>
 
-            <Grid item xs={6} style={{paddingTop:0,paddingLeft: "23px",paddingBottom: "2rem"}}>
-              <div className="bold">已选择人员{'  '+(workers.length+selectedWorkers.length)+'/'+selectedWorkers.length}</div>
-              <div className='plane choosed' style = {styleCon}>
-              {selectedWorkers.map((worker,index)=><Chip key = {index} style = {styleChip}
-                label={worker.userName}
-                className={classes.chip} onDelete={()=>this.selectToLeft(worker, index)}
-              />)}
-              </div>
-            </Grid>
-          </Grid>
+                      <Grid item xs={6} style={{paddingTop:0, paddingLeft: "23px",paddingBottom: "2rem"}}>
+                        <div className="bold">已选择人员{'  '+(workers.length+selectedWorkers.length)+'/'+selectedWorkers.length}</div>
+                        <div className='plane choosed' style = {styleCon}>
+                        {selectedWorkers.map((worker,index)=><Chip key = {index} style = {styleChip}
+                          label={worker.userName}
+                          className={classes.chip} onDelete={()=>this.selectToLeft(worker, index)}
+                        />)}
+                        </div>
+                      </Grid>
+                    </Grid>:''}
 
           <Grid item xs={12} align="center">
             <Button variant="outlined" onClick={this.addInfoSure} style={{marginRight: 1+"rem"}} color="primary" className={classes.button}>
@@ -807,7 +839,7 @@ class DutyIndentInfo extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { data, infoData, order, orderBy, selected, rowsPerPage, page, allPower } = this.state;
+    const { data, infoData, order, orderBy, selected, rowsPerPage, page, allPower, pageUserType } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
     rows[rows.length-1].hidden = true;
 
@@ -831,6 +863,9 @@ class DutyIndentInfo extends React.Component {
                     <TableCell align="center">{data.materialCode}</TableCell>
                     <TableCell align="center" component="th" scope="row" padding="none">
                       {data.materialName}
+                    </TableCell>
+                    <TableCell align="center" component="th" scope="row" padding="none">
+                      {data.planNum}
                     </TableCell>
                     <TableCell align="center" component="th" scope="row" padding="none">
                       {data.procedure}
@@ -888,17 +923,21 @@ class DutyIndentInfo extends React.Component {
                       {n.status==2?'已完成':(n.status==-1?'已报废':(n.status==1?'已完成':'进行中'))}
                     </TableCell>
                     <TableCell align="center" id={n.status}>
+
+                      {pageUserType==2?(<span className="pointer btn text-red" onClick={()=>this.deleteProcedureDetail(n, index)}>删除</span>):('')}
+
                       {!allPower && data.status==1?
-                        (n.status==0?<span className='pointer btn text-red' onClick={()=>this.scrapProcedure(n, index)}>设为报废</span>:(<span className={n.status==-1?'text-notice':''}>{n.status== 1?'':'——'}</span>) )
+                        (n.status==0?<span className='pointer btn text-red' onClick={()=>this.scrapProcedureDetail(n, index)}>设为报废</span>:(<span className={n.status==-1?'text-notice':''}>{n.status== 1?'':'——'}</span>) )
                       :('——')}
 
                       {!allPower && data.status==1?
                         (n.status==0?(<span className="pointer btn text-blue" onClick={()=>{this.addProcedureInfo(1, n, index)}}>修改</span>):(<span  className={n.status==1?'text-success':''}>{n.status== 1?'——':''}</span>))
-                      :(<span className="text-success">——</span>)}
+                      :(<span className="">——</span>)}
 
                       {!allPower && data.status==1?
                         (n.status==0?(<span className="pointer btn text-success" onClick={()=>this.finishProcedureDetail(n, index)}>设为完成</span>):(<span  className={n.status==1?'text-success':''}>{n.status== 1?'——':''}</span>))
-                      :(<span className="text-success">——</span>)}
+                      :(<span className="">——</span>)}
+
                     </TableCell>
                   </TableRow>
                 );
@@ -928,7 +967,7 @@ class DutyIndentInfo extends React.Component {
                                 <span onClick={()=>this.addProcedureInfo(0)} className="pointer addProcedureBtn"><AddIcon style={{marginBottom: '-5px'}} />添加详情</span>
                               </Grid>
                             </Grid>)}
-          <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} sureFun = {this.confirmSure} />
+        <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} sureFun = {this.state.confirmSure} />
         </div>
         {this.addInfoModal()}
         {this.setFinishModal()}

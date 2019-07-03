@@ -103,14 +103,13 @@ div[class*='MuiInput-root']{
   /* width: 150px!important; */
 }
 
-div[class*='DateFormatInput-input']{
-  min-width: 90px!important;
-}
 .small{
   font-size: smaller!important;
 }
 .bold, .blod{font-weight: bold;padding-right: 1rem;}
-
+.text-center{
+  text-align: center;
+}
 
 #templateUserModal>div{
   margin-bottom: -1rem;

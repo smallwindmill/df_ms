@@ -172,8 +172,33 @@ class Menu extends React.Component{
       this.changeMenuConfig();
     }
 
+    componentDidMount() {
+      // 如果没有记录，每次刷新页面进入第一，避免通过路由访问无权限的页面
+      setTimeout(()=>{
+        if(sessionStorage.path && sessionStorage.path.indexOf('login')==-1){
+          window.ReactHistory.push(sessionStorage.path);
+        }else{
+          var ele = document.querySelectorAll('#leftMenu .nav-router')[0];
+          if(ele) ele.click();
+        }
+      }, 500);
+
+
+      window.onunload = function(e){
+        e.returnValue = 'dfdf';
+        var path = window.ReactHistory?window.ReactHistory.location.pathname:'';
+        sessionStorage.path = path;
+
+        alert(path);
+        //var ele = document.querySelectorAll('#logout')[0];
+        //if(ele) ele.click();
+      }
+
+    }
+
     componentWillUnmount(){
         // clearInterval(this.timerID);
+
     }
 
     changeMenuConfig = () =>{
@@ -182,26 +207,21 @@ class Menu extends React.Component{
       var menuConfig = this.props.menuConfig.power;
       // console.log(menuConfig);
       // 匹配用户权限及功能模块展示
-      /*this.state.menus[0].power = menuConfig.login;
-      this.state.menus[1].power = menuConfig.template;
-      this.state.menus[4].power = menuConfig.listIndent;
-      this.state.menus[2].power = menuConfig.handleIndent;
-      this.state.menus[3].power = menuConfig.handleWorkhour;
-      this.state.menus[5].power = menuConfig.showPage;
-      this.state.menus[6].power = menuConfig.captain;
-
-      this.state.menus[7].power = true;//回收站
-      this.state.menus[8].power = userType==1?true:false;//工作日历*/
-      // console.log(this.state.menus);
       this.state.menus[0].power = menuConfig.login;
-      this.state.menus[1].power = menuConfig.template;
+      this.state.menus[1].power = menuConfig.handleTemplate;//模板
       this.state.menus[2].power = menuConfig.handleIndent;
       this.state.menus[3].power = menuConfig.handleWorkhour;
-      this.state.menus[4].power = menuConfig.showPage;
-      this.state.menus[5].power = menuConfig.captain;
+      this.state.menus[4].power = menuConfig.showpage;
+      this.state.menus[5].power = menuConfig.captain;//组长
 
-      this.state.menus[6].power = true;//回收站
-      this.state.menus[7].power = userType==1?true:false;//工作日历
+      if(userType == 1 || userType == 2){
+        this.state.menus[6].power = true;//回收站
+        this.state.menus[7].power = true;//工作日历
+      }else{
+        this.state.menus[6].power = false;//回收站
+        this.state.menus[7].power = false;//工作日历
+      }
+
 
       this.setState({menus: this.state.menus});
     }
@@ -213,7 +233,7 @@ class Menu extends React.Component{
       return datas.map((data, index) =>(
         (data.power==0)?'':(<div key={index}>
                            <ListItem button className={new RegExp(data.route+'$').test(path)?'bg-secondary':''} onClick={this.handleClick.bind(this, data.children?'open'+index:'')}>
-                                <Link to ={"/produceMSF/"+(data.route?data.route:'/')}>{data.name}</Link>
+                                <Link to ={"/produceMSF/"+(data.route?data.route:'/')} className="nav-router">{data.name}</Link>
                                {data.children ?(that.state["open"+index] || new RegExp(data.route).test(path) ? <ExpandLess /> : <ExpandMore />):""}
                            </ListItem>
                               {data.children?(<Collapse in={this.state["open"+index] || new RegExp(data.route).test(path)} timeout="auto" unmountOnExit>

@@ -192,11 +192,10 @@ class EnhancedTableToolbar extends React.Component{
         <Grid container  style={{margin:'1rem 0 1rem',padding: '0 1.2rem'}}>
 
           <Grid item xs={6} align="left">
-
+              <span className="btn text-red" onClick={this.props.deleteAllIndent}>清空订单</span>
           </Grid>
 
           <Grid item align="right" xs={6}>
-            {/*<span className="btn text-blue" onClick={this.addTemplate}>导入订单</span>*/}
             <TextField style={{marginTop:0,marginLeft:'1rem'}}
             placeholder="请输入订单号或货号查询"
             className={classes.textField}
@@ -293,41 +292,6 @@ class RecycleIndent extends React.Component {
   isSelected = id => this.state.selected.indexOf(id) !== -1;
 
 
-  // 打开更新订单弹窗
-  updateIndent = (data, index) =>{
-    this.setState({login: data.login||0,indent: data.indent||0,workhour: data.workhour||0,allindent: data.allindent||0,captain: data.captain||0});
-    this.setState({open: true, selectedDataBak: data, selectedData: JSON.parse(JSON.stringify(data)) });
-  }
-
-  // 更新订单
-  setIndentSure=()=>{
-    var { selectedDataBak, selectedData } = this.state;
-    var { id,planNum,planFinishDate,planOnline,actualStart, actualFinish,priority,ifNew,ifOutsource,duty,status,remark } = this.state.selectedData;
-
-    fetch(config.server.updateIndentInfo,{method:"POST",
-      headers:{
-          'Content-Type': 'application/json',
-      },
-      body:JSON.stringify({id: id, planNum: planNum,planFinishDate: planFinishDate,planOnline: planOnline,actualStart: actualStart,actualFinish: actualFinish,priority: priority,ifNew: ifNew,ifOutsource: ifOutsource,duty: duty,status: status,remark: remark})
-    }).then(res=>res.json()).then(data=>{
-      // console.log(data);
-      if(data.code!=200){
-          this.tips(data.msg);return;
-      }
-      this.tips('订单信息更新成功');
-
-      if(!selectedDataBak.actualFinish){
-        // selectedDataBak.actualFinish = new Date().format('yyyy.MM.dd');
-      }
-
-      for(var i in selectedDataBak){
-        selectedDataBak[i] = selectedData[i];
-      }
-
-      this.changeIndentData('', 2);
-      this.setState({open: false});
-    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
-  }
 
   changeIndentData = (data, type) =>{
     // 默认替换，1为push，2为修改
@@ -360,12 +324,34 @@ class RecycleIndent extends React.Component {
 
         this.state.data.splice(index, 1);
         this.setState({data: this.state.data});
-        this.tips('删除订单成功');
+        this.tips('已彻底删除该订单');
       }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
     };
 
-    this.setState({confirmOpen: true,title: "确认",content: "确定删除该订单吗？",confirmSure: nexFun});
+    this.setState({confirmOpen: true,title: "确认",content: "彻底删除该订单后，将不能再还原，确定删除吗？",confirmSure: nexFun});
+  }
+
+  // 清空
+  deleteAllIndent=(data, index)=>{
+    this.setState({confirmOpen: true});
+    var nexFun = ()=>{
+      fetch(config.server.deleteIndent,{method:"POST",
+        headers:{
+          'Content-Type': 'application/json',
+        },
+        body:JSON.stringify({id: 'all'})
+      }).then(res=>res.json()).then(data=>{
+        if(data.code!=200){
+            this.tips(data.msg);return;
+        }
+        this.setState({data: []});
+        this.tips('已清空所有订单');
+      }).catch(e=>this.tips('网络出错了，请稍候再试'));
+
+    };
+
+    this.setState({confirmOpen: true,title: "确认",content: "确定删除回收站内所有订单吗？",confirmSure: nexFun});
   }
 
   // 关闭删除用户弹窗
@@ -412,149 +398,6 @@ class RecycleIndent extends React.Component {
   }
 
 
-  // 设置完成订单
-  finishIndent = (data, index) => {
-    console.log(data);
-    if(!data.actualFinish){
-      this.tips('请先设置订单完成时间');return;
-    }
-    var nexFun = ()=>{
-      // 设置订单为完成状态
-      fetch(config.server.updateIndentInfo,{method:"POST",
-        headers:{
-            'Content-Type': 'application/json',
-        },
-        body:JSON.stringify({id: data.id, status: 1,remark: data.remark})
-      }).then(res=>res.json()).then(data1=>{
-        // console.log(data);
-        if(data1.code!=200){
-            this.tips(data.msg);return;
-        }
-        this.tips('订单已完成');
-        // this.state.data[index].status = 1;
-        data.status = 1;
-        // 新增数据
-        this.changeIndentData('', 2);
-        this.setState({open: false});
-      }).catch(e=>this.tips('网络出错了，请稍候再试'));
-
-    };
-
-    this.setState({confirmOpen: true,title: "确认",content: "确定修改该订单为完成状态吗？",sureFun: nexFun});
-  }
-
-  // 更新订单信息弹窗
-  updateUserPowerModal = ()=>{
-    var classes = '';
-    const DialogTitle = withStyles(theme => ({
-      root: {
-        borderBottom: `1px solid ${theme.palette.divider}`,
-        margin: 0,
-        padding: theme.spacing.unit * 2,
-      },
-      closeButton: {
-        position: 'absolute',
-        right: theme.spacing.unit,
-        top: theme.spacing.unit,
-        color: theme.palette.grey[500],
-      },
-    }))(props => {
-      const { children, classes, onClose } = props;
-      return (
-        <MuiDialogTitle disableTypography className={classes.root}>
-          <Typography variant="h6">{children}</Typography>
-          {onClose ? (
-            <IconButton aria-label="Close" className={classes.closeButton} onClick={onClose}>
-              <CloseIcon />
-            </IconButton>
-          ) : null}
-        </MuiDialogTitle>
-      );
-    });
-
-    var { selectedData } = this.state;
-
-    var { name, planNum, planFinishDate, planOnline, actualStart, actualFinish, status, priority, ifNew, remark, feedback} = this.state.selectedData;
-
-    return (<Dialog
-      aria-labelledby="customized-dialog-title"
-      open={this.state.open} style={{marginTop:'-10rem'}}
-    >
-      <DialogTitle id="customized-dialog-title"  onClose={this.handleClose}>
-        订单信息更新{name ?('—'+name):false}
-      </DialogTitle>
-      <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem"}}>
-        <Grid container spacing={24}>
-
-          <Grid item xs={12} style={{paddingTop:0}}>
-            <FormLabel component="legend">计划生产数量</FormLabel>
-            <TextField fullWidth style={{marginTop:0}}
-              placeholder="请输入计划生产数量"
-              className={classes.textField}
-              value = {planNum}
-              onChange={(e)=>{selectedData.planNum=e.target.value;this.setState({selectedData: selectedData})}}
-              margin="normal"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={6} style={{paddingTop:0}}>
-            <FormLabel component="legend">计划上线时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ planOnline?new Date(planOnline):'' } onChange={(date)=>{selectedData.planOnline = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
-          </Grid>
-
-          <Grid item xs={6} style={{paddingTop:0}}>
-            <FormLabel component="legend">计划完成时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ planFinishDate?new Date(planFinishDate):'' } onChange={(date)=>{selectedData.planFinishDate = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
-          </Grid>
-
-          <Grid item xs={6} style={{paddingTop:0}}>
-            <FormLabel component="legend">实际开始时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ actualStart?new Date(actualStart):'' } onChange={(date)=>{selectedData.actualStart = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
-          </Grid>
-
-          <Grid item xs={6} style={{paddingTop:0}}>
-            <FormLabel component="legend">实际完成时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ actualFinish?new Date(actualFinish):'' } onChange={(date)=>{selectedData.actualFinish = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
-          </Grid>
-
-          <Grid item xs={6} style={{paddingTop:0}}>
-            <FormLabel component="legend">是否加急</FormLabel>
-            <RadioGroup aria-label="是否加急" style={{flexDirection:"row"}} name="priority" value={(priority || 0)+''} onChange={(e)=>{e.persist();selectedData.priority=(e.target.value=='0'?0:1);this.setState({selectedData:selectedData})}}          >
-               <FormControlLabel value="0" control={<Radio color="default" />} label="否" />
-               <FormControlLabel value="1" control={<Radio color="default" />} label="是" />
-            </RadioGroup>
-          </Grid>
-
-          <Grid item xs={6} style={{paddingTop:0}}>
-              <FormLabel component="legend">是否新品</FormLabel>
-              <RadioGroup aria-label="是否新品" style={{flexDirection:"row"}} name="ifNew" value={(ifNew|| 0)+'' } onChange={(e)=>{e.persist();selectedData.ifNew=(e.target.value=='0'?0:1);this.setState({selectedData:selectedData})}}          >
-                 <FormControlLabel value="0" control={<Radio color="default" />} label="否" />
-                 <FormControlLabel value="1" control={<Radio color="default" />} label="是" />
-              </RadioGroup>
-          </Grid>
-
-
-          <Grid item xs={6} style={{paddingTop:0}}>
-
-          </Grid>
-
-          <Grid item xs={6} style={{paddingTop:0}}>
-
-          </Grid>
-
-
-          <Grid item xs={12} align="center">
-            <Button variant="outlined" onClick={this.setIndentSure} style={{marginRight: 1+"rem"}} color="primary" className={classes.button}>保存</Button>
-            <Button variant="outlined" style={{marginRight: 1+"rem"}} color="secondary" className={classes.button}>重置</Button>
-          </Grid>
-          </Grid>
-
-        </form>
-    </Dialog>)
-  }
 
 
   tips = (msg, type) => {
@@ -579,7 +422,7 @@ class RecycleIndent extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar  tips = {this.tips}  queryByKeyword = {this.queryByKeyword}  />
+        <EnhancedTableToolbar  tips = {this.tips}  queryByKeyword = {this.queryByKeyword}  deleteAllIndent={this.deleteAllIndent} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table+' nowrap'} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -617,8 +460,8 @@ class RecycleIndent extends React.Component {
                       <TableCell align="center">{n.feedback}</TableCell>
                       <TableCell align="center">{n.templateID}</TableCell>
                       <TableCell align="center">
-                        <span className="pointer btn text-blue"   onClick={()=>this.recycleIndent(n, index)}>还原</span>
-                        {/*<span className="pointer btn text-red" onClick={()=>this.deleteIndent(n, index)}>删除</span>*/}
+                        <span className="pointer btn text-blue"   onClick={()=>this.recycleIndent(n, page * rowsPerPage+index)}>还原</span>
+                        {<span className="pointer btn text-red" onClick={()=>this.deleteIndent(n, page * rowsPerPage+index)}>删除</span>}
                       </TableCell>
                     </TableRow>
                   )
@@ -649,7 +492,6 @@ class RecycleIndent extends React.Component {
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
-        {this.updateUserPowerModal()}
         <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.state.confirmSure} />
         <Snackbar style={{marginTop:'70px'}}
           anchorOrigin={{horizontal:"center",vertical:"top"}}

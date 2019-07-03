@@ -67,6 +67,7 @@ const rows = [
   { id: 'name', numeric: false, disablePadding: true, label: '订单编号' },
   { id: 'name', numeric: false, disablePadding: true, label: '货号' },
   { id: 'carbs', numeric: true, disablePadding: false, label: '货物名称' },
+  { id: 'ff', numeric: true, disablePadding: false, label: '数量' },
   { id: 'calories', numeric: false, disablePadding: false, label: '生产流程' },
   { id: 'calories', numeric: false, disablePadding: false, label: '流程负责人' },
   { id: 'calories', numeric: false, disablePadding: false, label: '流程状态' },
@@ -146,7 +147,18 @@ class EnhancedTableToolbar extends React.Component{
           {value:2, text:'进行中'},
         ],
     dateRange:[{text: "全部"},{text: "最近一周"},{text: "最近一月"},{text: "最近三月"},{text: "最近一年"},{text: "一年以前"}],
-    typeQuery:[{text: "全部",code: 0},{text: "加急",code: 1},{text: "新品",code: 2},{text: "外协",code: 3}]
+    typeQuery:[
+      {text: "全部",code: 0},
+      {text: "加急",code: 1},
+      {text: "新品",code: 2},
+      //{text: "外协",code: 3}
+    ],
+    sitQuery:[
+      {text: "全部",code: 'all'},
+      {text: "未开始",code: 0},
+      {text: "进行中",code: 1},
+      {text: "已完成",code: 2}
+    ]
   }
 
   handleClose = () => {
@@ -170,7 +182,7 @@ class EnhancedTableToolbar extends React.Component{
 
   render(){
     var classes = '';
-    var {dateRange, typeQuery} = this.state;
+    var {dateRange, typeQuery, sitQuery} = this.state;
     return (
        <div className={classes.title}>
             <Toolbar >
@@ -182,11 +194,15 @@ class EnhancedTableToolbar extends React.Component{
             <Grid item align="left" xs={6}>
               <Grid item xs={12} className="filterTool small">
                   <span className="blod">时间</span>
-                  {dateRange.map((date,index)=>(<span key = {index} className={"btn "+(index===0?'text-blue':'')} onClick={(e)=>this.props.queryIndentStatusByDate(e, date, index)}> {date.text}</span>))}
+                  {dateRange.map((date,index)=>(<span key = {index} className={"btn-sm "+(index===0?'bg-primary':'')} onClick={(e)=>this.props.queryIndentStatusByDate(e, date, index)}> {date.text}</span>))}
               </Grid>
               <Grid item xs={12} className="filterTool small" style = {{margin: '1rem 0'}}>
                   <span className="blod">类型</span>
-                  {typeQuery.map((data,index)=>(<span key = {index} className={"btn "+(index===0?'text-blue':'')} onClick={(e)=>this.props.queryIndentStatusByType(e, data, index)}> {data.text}</span>))}
+                  {typeQuery.map((data,index)=>(<span key = {index} className={"btn-sm "+(index===0?'bg-primary':'')} onClick={(e)=>this.props.queryIndentStatusByType(e, data, index)}> {data.text}</span>))}
+              </Grid>
+              <Grid item xs={12} align="left" className="filterTool small" style = {{margin: '1rem 0'}}>
+                <span className="blod">状态</span>
+                {sitQuery.map((data,index)=>(<span key = {index} className={"type-sit btn-sm "+(index==0?'bg-primary':'')} onClick={(e)=>this.props.queryIndentStatusBySit(e, data, index)}> {data.text}</span>))}
               </Grid>
             </Grid>
 
@@ -246,7 +262,6 @@ class QueryIndentStatus extends React.Component {
 
     var queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
     var queryEnd = new Date().format('yyyy-MM-dd');
-
     // fetch(config.server.listAllIndentStatusByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
     fetch(config.server.listAllIndentStatusByDate).then(res=>res.json()).then(data=>{
       if(data.code !== 200){
@@ -255,6 +270,10 @@ class QueryIndentStatus extends React.Component {
       this.changeIndentStatusData(data.results || []);
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
+  }
+
+  componentDidMount(){
+    setTimeout(()=>{document.querySelectorAll('.filterTool .type-sit')[2].click();}, 100);//默认展示进行中订单
   }
 
 
@@ -299,11 +318,11 @@ class QueryIndentStatus extends React.Component {
     var { queryStart, queryEnd } = this.state;
     e.persist();
     // 切换显示高亮
-    var doms = document.querySelectorAll('.filterTool .text-blue');
+    var doms = document.querySelectorAll('.filterTool .bg-primary');
     for(var i of doms){
-      i.className = i.className.replace('text-blue','');
+      i.className = i.className.replace('bg-primary','');
     }
-    e.target.className += ' text-blue';
+    e.target.className += ' bg-primary';
 
     queryEnd = new Date().format('yyyy-MM-dd');
 
@@ -338,24 +357,62 @@ class QueryIndentStatus extends React.Component {
     e.persist();
     // 切换显示高亮
     for(var i of e.target.parentElement.children){
-      i.className = i.className.replace('text-blue','');
+      i.className = i.className.replace('bg-primary','');
     }
-    e.target.className += ' text-blue';
+    e.target.className += ' bg-primary';
 
     if(!this.state.dataBak){
       this.state.dataBak = this.state.data;
     }
 
     if(data.code == 0){
+      this.setState({priority: undefined, ifNew: undefined}, this.queryDataWithPro);
+    }else if(data.code == 1){
+      this.setState({priority: 1, ifNew: undefined},this.queryDataWithPro);
+    }else if(data.code == 2){
+      this.setState({priority: undefined, ifNew: 1}, this.queryDataWithPro);
+    }
+
+    // this.setState({data: this.state.data });
+  }
+
+  // 根据订单状态筛选值
+  queryIndentStatusBySit = (e, data, index) => {
+    e.persist();
+    // 切换显示高亮
+    for(var i of e.target.parentElement.children){
+      i.className = i.className.replace('bg-primary','');
+    }
+    e.target.className += ' bg-primary';
+
+    if(!this.state.dataBak){
+      this.state.dataBak = this.state.data;
+    }
+    if(data.code == 'all'){
+      this.setState({status: undefined}, this.queryDataWithPro);
+    }else{
+      this.setState({status: data.code}, this.queryDataWithPro);
+    }
+  }
+
+  queryDataWithPro = () => {
+    var { priority, ifNew, status } = this.state;
+    if(status!=undefined && priority){
+      this.state.data = this.state.dataBak.filter((item)=>{ return item.status==status && item.priority==priority});
+    }else if(status!=undefined && ifNew){
+      this.state.data = this.state.dataBak.filter((item)=>{ return item.status==status && item.ifNew==ifNew});
+    }else if(priority){
+      this.state.data = this.state.dataBak.filter((item)=>{ return item.priority==priority});
+    }else if(ifNew){
+      this.state.data = this.state.dataBak.filter((item)=>{ return item.ifNew==ifNew});
+    }else if(status!=undefined){
+      this.state.data = this.state.dataBak.filter((item)=>{ return item.status==status});
+    }else{
       this.state.data = this.state.dataBak;
-    }if(data.code == 1){
-      this.state.data = this.state.dataBak.filter((item)=>{ return item.priority==1;});
-    }if(data.code == 2){
-      // return item.ifNew==1;
-      this.state.data = this.state.dataBak.filter((item)=>{ return item.ifNew==1;});
     }
 
     this.setState({data: this.state.data });
+
   }
 
 
@@ -392,7 +449,7 @@ class QueryIndentStatus extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar tips = {this.tips} queryByKeyword = {this.queryByKeyword} queryIndentStatusByDate = {this.queryIndentStatusByDate} queryIndentStatusByType = {this.queryIndentStatusByType} />
+        <EnhancedTableToolbar tips = {this.tips} queryByKeyword = {this.queryByKeyword} queryIndentStatusByDate = {this.queryIndentStatusByDate} queryIndentStatusByType = {this.queryIndentStatusByType} queryIndentStatusBySit = {this.queryIndentStatusBySit}/>
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -412,13 +469,14 @@ class QueryIndentStatus extends React.Component {
                       aria-checked={isSelected}
                       tabIndex={-1}
                       key={index}
-                      selected={isSelected}
+                      selected={isSelected}  className = {n.priority?'bg-red2':(n.ifNew?'bg-blue2':'')}
                     >
                       <TableCell align="center">{page * rowsPerPage+(index+1)}</TableCell>
                       <TableCell align="center">{n.erp}</TableCell>
                       <TableCell align="center">{n.materialCode}</TableCell>
                       <TableCell align="center">{n.materialName}</TableCell>
-                      <TableCell align="center" component="th" scope="row" padding="none">
+                      <TableCell align="center">{n.planNum}</TableCell>
+                      <TableCell align="center" component="th" scope="row" title="流程名称" padding="none">
                         {n.name}
                       </TableCell>
                       <TableCell align="center" component="th" scope="row" padding="none">

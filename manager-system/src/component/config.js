@@ -1,6 +1,6 @@
-// var serverIP = 'http://127.0.0.1:2030/produceMS';
+var serverIP = 'http://127.0.0.1:2030/produceMS';
 // var serverIP = 'http://101.200.62.233:2030/produceMS';
-var serverIP = 'http://47.101.39.165:2030/produceMS';
+// var serverIP = 'http://47.101.39.165:2030/produceMS';
 //var serverIP = 'http://192.168.1.101:2030/produceMS';
 
 // 接口地址拼接
@@ -47,6 +47,8 @@ var config = {
       addProcedureInfo: serverIP+'/addProcedureInfo',
 
       listAllIndent: serverIP+'/listAllIndent',
+
+      queryAudioTokenID: serverIP+'/queryAudioTokenID',
       listShowPageData: serverIP+'/listShowPageData',
 
       queryProcedureInfo: serverIP+'/queryProcedureInfo',
@@ -55,6 +57,7 @@ var config = {
       updateDutyProcedureStatus:  serverIP+'/updateDutyProcedureStatus',
 
       addProcedureInfo: serverIP+'/addProcedureInfo',
+      deleteProcedureDetail: serverIP+'/deleteProcedureDetail',
       updateDutyProcedureDetailStatus: serverIP+'/updateDutyProcedureDetailStatus',
 
       recycleTemplate: serverIP+'/recycleTemplate',
@@ -63,11 +66,15 @@ var config = {
       queryWorkCalendar: serverIP+'/queryWorkCalendar',
       updateWorkCalendar: serverIP+'/updateWorkCalendar',
   },
+  baiduAudioAPI: {
+    id: "EPZZcrsFYYPUPqhDiq6APbKZ",
+    secret: "BGyMaGYUAiFoCdB71mmxtNIYRGmH7Myg"
+  },
 
 
 
 
-  templete:{indentUrl:'/produceMSF/assets/订单上传文件模板.xlsx'},
+  templete:{indentUrl:'/produceMSF/assets/订单上传文件模板.xlsx'},//订单上传页面的示例Excel路径
 
   changeToJson: function(data){
       return JSON.parse(data);

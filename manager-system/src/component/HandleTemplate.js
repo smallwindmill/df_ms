@@ -154,7 +154,7 @@ class EnhancedTableToolbar extends React.Component{
   addTemplate = (type) => {
     if(type==0){
       this.setState({ open: true, serverURL: config.server.addTemplate,ifAdd: 1 });
-      this.setState({tName: '', tProcedure: '', tDuty: ''});
+      this.setState({tID:'', tName: '', tProcedure: '', tDuty: ''});
     }else if(type==1){
       this.setState({ open: true, serverURL: config.server.updateTemplate,ifAdd: 0 });
     }
@@ -194,14 +194,15 @@ class EnhancedTableToolbar extends React.Component{
         postDuty += i.id+' ';
       }
 
+      window.loading(true);
       fetch(this.state.serverURL,{method:"POST",
         headers:{
           'Content-Type': 'application/json',
         },
-        body:JSON.stringify({id: tID, name: tName, procedure: tProcedure, duty: postDuty.replace(/ $/,'').replace(/^ /,'')})
+        body:JSON.stringify({id: tID, name: tName, procedure: tProcedure.replace(/ $/,'').replace(/^ /,''), duty: postDuty.replace(/ $/,'').replace(/^ /,'')})
       }).then(res=>res.json()).then(data=>{
         if(data.code!=200){
-          this.tips(data.msg);return;
+          this.tips(data.msg);window.loading(false);return;
         }
         // 新增数据
         if(ifAdd){
@@ -217,8 +218,8 @@ class EnhancedTableToolbar extends React.Component{
           }
           this.props.changeTemplateData('', 2);   //修改
         }
-        this.setState({open: false});
-    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
+        this.setState({open: false});window.loading(false);
+    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试');window.loading(false);});
   }
 
   // 更新模板
@@ -331,20 +332,20 @@ class EnhancedTableToolbar extends React.Component{
       </DialogTitle>
       <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem"}}>
           <Grid container >
-          <Grid item xs={12} style={{paddingTop:'.5rem'}}>
-          <TextField fullWidth style={{marginTop:0}}
-            placeholder="请输入模板编号"
-            label="模板编号"
-            disabled = {ifAdd?false:true}
-            className={classes.textField}
-            value = {this.state.tID}
-            onChange={(e)=>this.setState({tID:e.target.value})}
-            margin="normal"
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
-          </Grid>
+          {ifAdd?(<Grid item xs={12} style={{paddingTop:'.5rem'}}>
+                    <TextField fullWidth style={{marginTop:0}}
+                      placeholder="请输入模板编号"
+                      label="模板编号"
+                      disabled = {ifAdd?false:true}
+                      className={classes.textField}
+                      value = {this.state.tID}
+                      onChange={(e)=>this.setState({tID:e.target.value})}
+                      margin="normal"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                    />
+                    </Grid>):''}
 
           <Grid item xs={12} style={{paddingTop:'.5rem'}}>
           <TextField fullWidth style={{marginTop:0}}
@@ -561,7 +562,7 @@ class HandleTemplete extends React.Component {
         if(data.code!=200){
             this.tips(data.msg);return;
         }
-
+        console.log(this.state.data, index);
         this.state.data.splice(index, 1);
         this.setState({data: this.state.data});
         this.tips('删除模板成功');
@@ -651,8 +652,8 @@ class HandleTemplete extends React.Component {
                         {n.duty}
                       </TableCell>
                       <TableCell align="center">
-                        <span className="pointer btn text-blue" onClick={()=>this.updateTemplate(n, index)}>修改</span>
-                        <span className="pointer btn text-red" onClick={()=>this.deleteTemplate(n, index)}>删除</span>
+                        <span className="pointer btn text-blue" onClick={()=>this.updateTemplate(n, page * rowsPerPage+index)}>修改</span>
+                        <span className="pointer btn text-red" onClick={()=>this.deleteTemplate(n, page * rowsPerPage+index)}>删除</span>
                       </TableCell>
                     </TableRow>
                   );

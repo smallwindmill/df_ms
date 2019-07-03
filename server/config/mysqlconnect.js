@@ -1,13 +1,56 @@
 // 数据库连接配置
 var mysql = require('mysql');
 var config = require('./config.js');
+var moment = require('moment');
 
 var mysql_config = config.mysql_config;//数据库配置
 
-
+// var connection;
 // 不使用连接池
-var connection = handleDisconnection()=>{
-  connection = mysql.createConnection(mysql_config);
+
+
+class mysqlConnection{
+
+  constructor(connection){
+    this.connection = '';
+    this.update();
+  }
+
+  update(){
+    // var connection = this.connection;
+    var that = this;
+
+    var connection = mysql.createConnection(mysql_config);
+    that.connection = connection;
+    connection.connect(function(err){
+      if(err){
+        setTimeout(function(){that.connection.end();that.update()},1000);
+        console.log('出错了:',err);
+        console.log('\r\n'+moment().format('YYYYMMDD-HHmmss')+'-请求重新连接\r\n');
+      }else{
+        console.log('\r\n'+moment().format('YYYYMMDD-HHmmss')+'-重新连接成功\r\n');
+      }
+    })
+    connection.on('error', function(err) {
+        console.log('db error', err);
+        // if(err.code === 'PROTOCOL_CONNECTION_LOST') {
+        if(err) {
+            console.log('db error执行重连:'+err.message);
+            console.log('\r\n'+moment().format('YYYYMMDD-HHmmss')+'-请求重新连接\r\n');
+            that.connection.end();that.update();
+        } else {
+            throw err;
+        }
+        // 'PROTOCOL_ENQUEUE_AFTER_FATAL_ERROR
+    })
+  }
+
+  lastest(){
+    return this.connection;
+  }
+
+
+  /*var connection = mysql.createConnection(mysql_config);
   connection.connect(function(err){
     if(err){
       setTimeout(function(){handleDisconnection()},1000);
@@ -26,9 +69,9 @@ var connection = handleDisconnection()=>{
       } else {
           throw err;
       }
-  })
+  })*/
 }
-handleDisconnection();
+// handleDisconnection();
 
 
 //连接池查询
@@ -93,6 +136,7 @@ var connection = {
   }
 }*/
 
+var mysqlConnectionInstance = new mysqlConnection();
+// mysqlConnectionInstance.update();
 
-
-module.exports = connection;
+module.exports = mysqlConnectionInstance;

@@ -151,14 +151,6 @@ class EnhancedTableToolbar extends React.Component{
     this.setState({ open: false, dutyModal: false });
   }
 
-  addTemplate = (type) => {
-    if(type==0){
-      this.setState({ open: true, serverURL: config.server.addTemplate,ifAdd: 1 });
-      this.setState({tName: '', tProcedure: '', tDuty: ''});
-    }else if(type==1){
-      this.setState({ open: true, serverURL: config.server.updateTemplate,ifAdd: 0 });
-    }
-  }
 
 
 
@@ -172,8 +164,8 @@ class EnhancedTableToolbar extends React.Component{
               </Typography>
         </Toolbar>
           <Grid container>
-                <Grid xs = {12} item align="right">
-                  <span className="btn text-blue" style={{display: 'inline-block', margin: "1rem 12rem 2rem"}}></span>
+                <Grid xs = {12} item align="left">
+                  <span className="btn text-red" onClick={this.props.deleteAllTemplate} style={{display: 'inline-block', margin: "1rem 1rem 2rem"}}>清空模板</span>
                 </Grid>
               </Grid>
           <div className={classes.spacer} />
@@ -293,12 +285,34 @@ class RecycleTemplete extends React.Component {
 
         this.state.data.splice(index, 1);
         this.setState({data: this.state.data});
-        this.tips('删除模板成功');
+        this.tips('已彻底删除该模板');
       }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
     };
 
-    this.setState({confirmOpen: true,title: "确认",content: "确定删除该模板吗？",deleteFun: nexFun});
+    this.setState({confirmOpen: true,title: "确认",content: "彻底删除该模板后，将不能再还原，确定删除吗？",confirmSure: nexFun});
+  }
+
+  // 清空
+  deleteAllTemplate=(data, index)=>{
+    this.setState({confirmOpen: true});
+    var nexFun = ()=>{
+      fetch(config.server.deleteTemplate,{method:"POST",
+        headers:{
+          'Content-Type': 'application/json',
+        },
+        body:JSON.stringify({id: 'all'})
+      }).then(res=>res.json()).then(data=>{
+        if(data.code!=200){
+            this.tips(data.msg);return;
+        }
+        this.setState({data: []});
+        this.tips('已清空所有模板');
+      }).catch(e=>this.tips('网络出错了，请稍候再试'));
+
+    };
+
+    this.setState({confirmOpen: true,title: "确认",content: "确定删除回收站内所有模板吗？",confirmSure: nexFun});
   }
 
 
@@ -367,7 +381,7 @@ class RecycleTemplete extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar changeTemplateData = {this.changeTemplateData} ref="modalMethod" tips={this.tips} />
+        <EnhancedTableToolbar changeTemplateData = {this.changeTemplateData} ref="modalMethod" tips={this.tips} deleteAllTemplate={this.deleteAllTemplate} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -400,8 +414,8 @@ class RecycleTemplete extends React.Component {
                         {n.duty}
                       </TableCell>
                       <TableCell align="center">
-                        <span className="pointer btn text-blue" onClick={()=>this.recycleTemplate(n, index)}>还原</span>
-                        {/*<span className="pointer btn text-red" onClick={()=>this.deleteTemplate(n, index)}>删除</span>*/}
+                        <span className="pointer btn text-blue" onClick={()=>this.recycleTemplate(n, page * rowsPerPage+index)}>还原</span>
+                        {<span className="pointer btn text-red" onClick={()=>this.deleteTemplate(n, page * rowsPerPage+index)}>删除</span>}
                       </TableCell>
                     </TableRow>
                   );

@@ -478,7 +478,7 @@ class QueryFactor
                         {n.factor}
                       </TableCell>
                       <TableCell align="center">
-                        <span className="pointer btn text-blue" onClick={()=>this.updateFactor(n, index)}>修改</span>
+                        <span className="pointer btn text-blue" onClick={()=>this.updateFactor(n, page * rowsPerPage+index)}>修改</span>
                       </TableCell>
                     </TableRow>
                   );

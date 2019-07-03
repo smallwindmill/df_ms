@@ -173,6 +173,7 @@ class EnhancedTableToolbar extends React.Component{
     }
 
     // 新增(更新)用户上传数据
+    window.loading(true);
     fetch(this.state.serverURL,{method:"POST",
       headers:{
         'Content-Type': 'application/json',
@@ -181,7 +182,7 @@ class EnhancedTableToolbar extends React.Component{
     }).then(res=>res.json()).then(data=>{
       // 新增数据
       if(data.code!=200){
-          this.tips(data.msg);return;
+          this.tips(data.msg);window.loading(false);return;
       }
 
       if(ifAdd && data.results){
@@ -198,9 +199,9 @@ class EnhancedTableToolbar extends React.Component{
         }
         this.props.changeUserData('', 2);
       }
-      this.setState({open: false});
+      this.setState({open: false});window.loading(false);
 
-    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
+    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试');window.loading(false);});
 
   }
 
@@ -289,20 +290,20 @@ class EnhancedTableToolbar extends React.Component{
           ))}</TextField>
           </Grid>
 
-          <Grid item xs={12} style={{paddingTop:0}}>
-          <TextField fullWidth style={{marginTop:0}}
-            placeholder="请输入九位用户工号"
-            label="用户工号"
-            className={classes.textField}
-            value = {this.state.userID}
-            disabled = {this.state.ifAdd?false:true}
-            onChange={(e)=>this.setState({userID: e.target.value})}
-            margin="normal"
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
-          </Grid>
+          {this.state.ifAdd?(<Grid item xs={12} style={{paddingTop:0}}>
+                    <TextField fullWidth style={{marginTop:0}}
+                      placeholder="请输入九位用户工号"
+                      label="用户工号"
+                      className={classes.textField}
+                      value = {this.state.userID}
+                      disabled = {this.state.ifAdd?false:true}
+                      onChange={(e)=>this.setState({userID: e.target.value})}
+                      margin="normal"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                    />
+                    </Grid>):''}
 
           <Grid item xs={12} style={{paddingTop:0}}>
           <TextField fullWidth style={{marginTop:0}}
@@ -356,20 +357,20 @@ class EnhancedTableToolbar extends React.Component{
           <Grid container align="right" style={{padding: '1rem 1.2rem'}}>
             <Grid item xs={6} align="left" className="filterTool small" style = {{margin: '1rem 0'}}>
                 <span className="blod">类型</span>
-                {userTypeArr.map((data,index)=>(<span key = {index} className={"btn "+(index==0?'text-blue':'')} onClick={(e)=>this.props.queryUserByType(e, data)}> {data.text}</span>))}
+                {userTypeArr.map((data,index)=>(<span key = {index} className={"btn-sm "+(index==0?'bg-primary':'')} onClick={(e)=>this.props.queryUserByType(e, data)}> {data.text}</span>))}
             </Grid>
             <Grid item xs={6}>
-            <span className="btn text-blue" onClick={()=>this.addUser(0)} style={{margin:'0rem 0 4rem',padding: '0 1.2rem'}}>添加用户</span>
-              <TextField style={{marginTop:0,marginLeft:'1rem'}}
-              placeholder="请输入用户名称查询"
-              className={classes.textField}
-              type="text"
-              onChange = {(e)=>this.queryByKeyword(e)}
-              margin="normal"
-              InputLabelProps={{
-                shrink: true,
-              }}></TextField>
-              </Grid>
+              <span className="btn text-blue" onClick={()=>this.addUser(0)} style={{margin:'0rem 0 4rem',padding: '0 1.2rem'}}>添加用户</span>
+                <TextField style={{marginTop:0,marginLeft:'1rem'}}
+                placeholder="请输入用户名称查询"
+                className={classes.textField}
+                type="text"
+                onChange = {(e)=>this.queryByKeyword(e)}
+                margin="normal"
+                InputLabelProps={{
+                  shrink: true,
+                }}></TextField>
+            </Grid>
           </Grid>
 
         {this.addUserModal()}
@@ -412,11 +413,16 @@ class QueryUser extends React.Component {
 
   componentWillMount() {
     // 组件初次加载数据申请
+    this.initLoadData();
+  }
+
+  initLoadData = () => {
     fetch(config.server.listSystemUser).then(res=>res.json()).then(data=>{
       // console.log(data);
-      // this.setState({pageUserType: config.changeToJson(localStorage.user).type});
-      var pageUserType = config.changeToJson(localStorage.user).type;
-      this.changeUserData(data.results.filter((n)=>{return pageUserType<=n.type}) || []);
+      this.setState({pageUserType: config.changeToJson(localStorage.user).type});
+      // var pageUserType = config.changeToJson(localStorage.user).type;
+      // this.changeUserData(data.results.filter((n)=>{return pageUserType<=n.type}) || []);
+      this.changeUserData(data.results || []);
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
   }
 
@@ -485,21 +491,23 @@ class QueryUser extends React.Component {
     e.persist();
     // 切换显示高亮
     for(var i of e.target.parentElement.children){
-      i.className = i.className.replace('text-blue','');
+      i.className = i.className.replace('bg-primary','');
     }
-    e.target.className += ' text-blue';
+    e.target.className += ' bg-primary';
 
     if(!this.state.dataBak){
       this.state.dataBak = this.state.data;
     }
 
     if(data.value == 0){
-      this.state.data = this.state.dataBak;
+      // this.state.data = this.state.dataBak;
+      this.initLoadData();//全部时刷新数据
     }else{
       this.state.data = this.state.dataBak.filter((item)=>{ return item.type==data.value;});
+      this.setState({data: this.state.data });
     }
 
-    this.setState({data: this.state.data });
+
   }
 
   changeUserData = (data, type) =>{
@@ -534,6 +542,8 @@ class QueryUser extends React.Component {
     const { data, order, orderBy, selected, rowsPerPage, page, pageUserType } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
+      // this.changeUserData(data.results.filter((n)=>{return pageUserType<=n.type}) || []);
+
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
         <EnhancedTableToolbar changeUserData = {this.changeUserData} queryUserByType = {this.queryUserByType} ref="modalMethod" tips = {this.tips} />
@@ -567,8 +577,8 @@ class QueryUser extends React.Component {
                         {n.type==4?'生产员工':(n.type==3?'组长':n.type==2?'领班':n.type==1?'主管':'')}
                       </TableCell>
                       <TableCell align="center">
-                        <span className="pointer btn text-blue" onClick={()=>this.updateUser(n, index)}>修改</span>
-                        <span className="pointer btn text-red" onClick={()=>this.deleteUser(n, index)}>删除</span>
+                        {pageUserType>n.type?'——':<span className="pointer btn text-blue" onClick={()=>this.updateUser(n, page * rowsPerPage+index)}>修改</span>}
+                         {pageUserType>n.type?'——':<span className="pointer btn text-red" onClick={()=>this.deleteUser(n, page * rowsPerPage+index)}>删除</span>}
                       </TableCell>
                     </TableRow>
                   );

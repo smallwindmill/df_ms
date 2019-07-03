@@ -81,8 +81,8 @@ class Login extends React.Component {
     }
 
     if(!password){
-      this.props.tips("请先填写用户密码");
-      return;
+      //this.props.tips("请先填写用户密码");
+      //return;
     }
 
     this.props.loading(true);
@@ -90,9 +90,9 @@ class Login extends React.Component {
         headers:{
           'Content-Type': 'application/json',
         },
-        body:JSON.stringify({userID: name, pwd: password})
+        body:JSON.stringify({userID: name, pwd: password||''})
     }).then(res=>res.json()).then(data=>{
-      console.log(data);
+      // console.log(data);
       if(data.code!=200){
         this.props.tips(data.msg);this.props.loading(false);
         return;
@@ -107,9 +107,10 @@ class Login extends React.Component {
 
         localStorage.user = config.changeToStr(data.results);//不自动更新本地数据，避免修改信息后仍能正常访问
           this.props.tips("登陆成功");
+          setTimeout(()=>{this.props.judgeCalendar()}, 1500);
       }, 1000);
-      window.ReactHistory.push('/produceMSF/template');
-    }).catch(e=>{this.props.loading(false);this.props.tips('网络出错了，请稍候再试')});
+      window.ReactHistory.push('/produceMSF/Way');
+    }).catch(e=>{this.props.loading(false);this.props.tips('与服务器连接失败，请稍候再试')});
 
 
 

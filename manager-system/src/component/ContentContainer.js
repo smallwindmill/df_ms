@@ -62,8 +62,22 @@ class ContentContainer extends React.Component{
     componentWillMount() {
       this.judgeUser();
       window.loading = this.loading;
-      setTimeout(this.judgeCalendar, 4000);
       this.autoLoginTime = 0;
+
+      var bar = document.querySelectorAll('#processLoading')[0];
+      setTimeout(()=>{
+        document.querySelectorAll('#initLoading')[0].remove();
+        bar.className = 'end';
+      }, 1000)
+
+
+      setTimeout(()=>{
+        //bar.remove();
+      }, 4000);
+
+    }
+
+    componentDidMount(){
     }
 
     componentWillUnmount() {
@@ -105,10 +119,11 @@ class ContentContainer extends React.Component{
             // localStorage.user = config.changeToStr(data.results);//不自动更新本地数据，避免修改信息后仍能正常访问
             this.changeLoginData(data.results);
             this.loading(false);
+            setTimeout(()=>{this.judgeCalendar()}, 1500);
           }, 1000);
         }).catch(e=>{
           this.loading(false);
-          this.tips('网络出错了，登陆失败，请稍候再试');
+          this.tips('与服务器连接失败，登陆出错，请稍候再试');
           this.autoLoginTime++;
           // 出错过后重新登陆
           if(this.autoLoginTime<=5){
@@ -121,24 +136,24 @@ class ContentContainer extends React.Component{
     judgeCalendar = () => {
       // 根据距离下月所剩时间， 提示主任设置工作日历
       // var today = new Date().format('yyyy-MM-dd');
-      if(this.state.user.type!=1){
+      if(this.state.user.type == 3 || this.state.user.type == 4 ){
         return;
       }
-      var today = new Date('2019-5-26');
-      var after = new Date(new Date('2019-5-26').getTime()+1000*60*60*24*7);
-
-      if(after < today){
-        // this.tips();
-        // this.setState()
+      var today = new Date();
+      var after = new Date(new Date().getTime()+1000*60*60*24*7);
+      // console.log(after.getMonth(), today.getMonth());
+      if(after.getMonth() > today.getMonth()){
         var nextFun = () => {
+          localStorage.judgeCal = 1;
           window.ReactHistory.push('/produceMSF/calendar');
         }
-        this.confirm('提示', '距离'+after.format('yyyy-MM')+'月不到一星期了，是否立即设置工作日历？', true, nextFun );
+        // console.log(today, after, after > today);
+        this.confirm('提示', '距离'+after.format('yyyy-MM')+'月不到一星期了，是否立即设置工作日历？', true, nextFun, '已经设置了', '去设置' );
       }
     }
 
-    confirm = (title, content, show, nextFun) => {
-      this.setState({confirmOpen: show, confirmTitle:title, confirmContent:content, sureFun: nextFun});
+    confirm = (title, content, show, nextFun,cancelText, sureText) => {
+      this.setState({confirmOpen: show, confirmTitle:title, confirmContent:content, sureFun: nextFun, cancelText:cancelText, sureText: sureText});
     }
 
     closeFun = () => {
@@ -147,7 +162,7 @@ class ContentContainer extends React.Component{
 
     changeLoginData = (user)=>{
       this.setState({user: user});
-      this.refs.messageBar.updateBarData(user.userName, user.messages);
+      this.refs.messageBar.updateBarData(user.userName);//初始消息不再由父组件更新
     }
 
 
@@ -169,7 +184,7 @@ class ContentContainer extends React.Component{
 
     render() {
         var props = this.props;
-        var { user, loading } = this.state;
+        var { user, loading, sureText, cancelText } = this.state;
         window.ReactHistory = this.props.history;
 
 
@@ -181,7 +196,7 @@ class ContentContainer extends React.Component{
             <div className="page-container">
               {!this.state.user.userName?(
                 <Route path="/"  >
-                  <Login changeLoginData = {(data)=>this.changeLoginData(data)}  loading={this.loading} tips={this.tips} />
+                  <Login changeLoginData = {(data)=>this.changeLoginData(data)} judgeCalendar = {this.judgeCalendar} loading={this.loading} tips={this.tips} />
                 </Route>):
                 (<Route path="/" >
                   <div id = "leftMenu">
@@ -231,7 +246,7 @@ class ContentContainer extends React.Component{
 
                         <Route path="/produceMSF/calendar"  ><WorkCalendar tips={this.tips} /></Route>
 
-                        <Route path="/produceMSF/" exact component={HandleTemplate} ></Route>
+                        <Route path="/produceMSF/Way" exact ></Route>
                         <Route path="/produceMSF/"  component={NotFound} ></Route>
 
                     </Switch>
@@ -246,7 +261,7 @@ class ContentContainer extends React.Component{
             }}
             message={<span id="message-id" >{this.state.tipInfo}</span>}  />
 
-            <Confirm open = {this.state.confirmOpen} ifAutoClose ={()=>{}} title = {this.state.confirmTitle} content={this.state.confirmContent}  closeFun = {this.closeFun} sureFun = {this.state.sureFun} ifInfo={true}/>
+            <Confirm open = {this.state.confirmOpen} ifAutoClose ={()=>{}} title = {this.state.confirmTitle} content={this.state.confirmContent} sureText={sureText} cancelText={cancelText}  closeFun = {this.closeFun} sureFun = {this.state.sureFun} ifInfo={true}/>
 
             {loading?(<div className = "backdrop" >
               <div className="absoluteCenter text-blue" >

@@ -163,7 +163,18 @@ class EnhancedTableToolbar extends React.Component{
   state = {
     open: false,
     dateRange:[{text: "全部"},{text: "最近一周"},{text: "最近一月"},{text: "最近三月"},{text: "最近一年"},{text: "一年以前"}],
-    typeQuery:[{text: "全部",code: 0},{text: "加急",code: 1},{text: "新品",code: 2},{text: "外协",code: 3}]
+    typeQuery:[
+      {text: "全部",code: 0},
+      {text: "加急",code: 1},
+      {text: "新品",code: 2},
+      //{text: "外协",code: 3}
+    ],
+    sitQuery:[
+      {text: "全部",code: 'all'},
+      {text: "未开始",code: 0},
+      {text: "进行中",code: 1},
+      {text: "已完成",code: 2}
+    ]
   }
 
   handleClose = () => {
@@ -211,7 +222,7 @@ class EnhancedTableToolbar extends React.Component{
             // nextFunction();
           }
 
-          this.tips(<span>本次共上传<span class="text-blue">{data.results.total}</span>条数据，<span class="text-red">{data.results.fail}</span>条失败，<span class="text-blue">{data.results.success}</span>条成功</span>, 'stay');this.props.initLoadData();
+          this.tips(<span>本次共上传<span className="text-blue">{data.results.total}</span>条数据，<span className="text-red">{data.results.fail}</span>条失败，<span className="text-blue">{data.results.success}</span>条成功</span>, 'stay');this.props.initLoadData();
           this.setState({ open: false });window.loading(false);
 
        }).catch(error=>{
@@ -292,7 +303,7 @@ class EnhancedTableToolbar extends React.Component{
           </Grid>
           <Grid item xs={8}>
            <span className=""><small> 请选择一个excel文件上传,
-          文件列名依次为:erp号、货号、货物名称、计划生产数量、计划完工日期、 预计上线日期、制单日期、优先级、新品、备注、模板选择。<a className="text-blue" href={config.templete.indentUrl} download="订单模板">点击由此下载模板</a>。</small></span>
+          文件列名依次为:计划完成日期、 预计上线日期、订单编号、货号、货物名称、备注、生产数量、模板编号，是否加急，是否新品。<a className="text-blue" href={config.templete.indentUrl} download="订单模板">点击由此下载模板</a>。</small></span>
           </Grid>
 
 
@@ -311,7 +322,7 @@ class EnhancedTableToolbar extends React.Component{
 
   render(){
     var classes = '';
-    var {dateRange, typeQuery} = this.state;
+    var {dateRange, typeQuery, sitQuery} = this.state;
     return (
      <div>
         <Toolbar >
@@ -327,11 +338,15 @@ class EnhancedTableToolbar extends React.Component{
           <Grid item xs={6} align="left">
             <Grid item xs={12} className="filterTool small">
                   <span className="blod">时间</span>
-                  {dateRange.map((date,index)=>(<span key = {index} className={"btn "+(index==0?'text-blue':'')} onClick={(e)=>this.props.queryIndentByDate(e, date, index)}> {date.text}</span>))}
+                  {dateRange.map((date,index)=>(<span key = {index} className={"btn-sm "+(index==0?'bg-primary':'')} onClick={(e)=>this.props.queryIndentByDate(e, date, index)}> {date.text}</span>))}
             </Grid>
             <Grid item xs={12} align="left" className="filterTool small" style = {{margin: '1rem 0'}}>
                 <span className="blod">类型</span>
-                {typeQuery.map((data,index)=>(<span key = {index} className={"btn "+(index==0?'text-blue':'')} onClick={(e)=>this.props.queryIndentByType(e, data, index)}> {data.text}</span>))}
+                {typeQuery.map((data,index)=>(<span key = {index} className={"btn-sm "+(index==0?'bg-primary':'')} onClick={(e)=>this.props.queryIndentByType(e, data, index)}> {data.text}</span>))}
+            </Grid>
+            <Grid item xs={12} align="left" className="filterTool small" style = {{margin: '1rem 0'}}>
+                <span className="blod">状态</span>
+                {sitQuery.map((data,index)=>(<span key = {index} className={"type-sit btn-sm "+(index==0?'bg-primary':'')} onClick={(e)=>this.props.queryIndentBySit(e, data, index)}> {data.text}</span>))}
             </Grid>
           </Grid>
 
@@ -392,6 +407,10 @@ class HandleIndent extends React.Component {
     // 组件初次加载数据申请
     // console.log(this.props);
     this.initLoadData();
+  }
+
+  componentDidMount(){
+    setTimeout(()=>{document.querySelectorAll('.filterTool .type-sit')[2].click();}, 100);//默认展示进行中订单
   }
 
   initLoadData = () => {
@@ -458,6 +477,7 @@ class HandleIndent extends React.Component {
         this.tips('计划生产数量不能为非数字');return;
     }
 
+    window.loading(true);
     fetch(config.server.updateIndentInfo,{method:"POST",
       headers:{
           'Content-Type': 'application/json',
@@ -466,9 +486,9 @@ class HandleIndent extends React.Component {
     }).then(res=>res.json()).then(data=>{
       // console.log(data);
       if(data.code!=200){
-          this.tips(data.msg);return;
+          this.tips(data.msg);window.loading(false);return;
       }
-      this.tips('订单信息更新成功');
+      this.tips('订单信息更新成功');window.loading(false);
 
       if(!selectedDataBak.actualFinish){
         // selectedDataBak.actualFinish = new Date().format('yyyy.MM.dd');
@@ -480,7 +500,7 @@ class HandleIndent extends React.Component {
 
       this.changeIndentData('', 2);
       this.setState({open: false});
-    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
+    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试');window.loading(false);});
   }
 
   changeIndentData = (data, type) =>{
@@ -547,11 +567,11 @@ class HandleIndent extends React.Component {
     var { queryStart, queryEnd } = this.state;
     e.persist();
     // 切换显示高亮
-    var doms = document.querySelectorAll('.filterTool .text-blue');
+    var doms = document.querySelectorAll('.filterTool .bg-primary');
     for(var i of doms){
-      i.className = i.className.replace('text-blue','');
+      i.className = i.className.replace('bg-primary','');
     }
-    e.target.className += ' text-blue';
+    e.target.className += ' bg-primary';
 
     queryEnd = new Date().format('yyyy-MM-dd');
 
@@ -586,24 +606,62 @@ class HandleIndent extends React.Component {
     e.persist();
     // 切换显示高亮
     for(var i of e.target.parentElement.children){
-      i.className = i.className.replace('text-blue','');
+      i.className = i.className.replace('bg-primary','');
     }
-    e.target.className += ' text-blue';
+    e.target.className += ' bg-primary';
 
     if(!this.state.dataBak){
       this.state.dataBak = this.state.data;
     }
 
     if(data.code == 0){
-      this.state.data = this.state.dataBak;
+      this.setState({priority: undefined, ifNew: undefined}, this.queryDataWithPro);
     }else if(data.code == 1){
-      this.state.data = this.state.dataBak.filter((item)=>{ return item.priority==1;});
+      this.setState({priority: 1, ifNew: undefined},this.queryDataWithPro);
     }else if(data.code == 2){
-      // return item.ifNew==1;
-      this.state.data = this.state.dataBak.filter((item)=>{ return item.ifNew==1;});
+      this.setState({priority: undefined, ifNew: 1}, this.queryDataWithPro);
+    }
+
+    // this.setState({data: this.state.data });
+  }
+
+  // 根据订单状态筛选值
+  queryIndentBySit = (e, data, index) => {
+    e.persist();
+    // 切换显示高亮
+    for(var i of e.target.parentElement.children){
+      i.className = i.className.replace('bg-primary','');
+    }
+    e.target.className += ' bg-primary';
+
+    if(!this.state.dataBak){
+      this.state.dataBak = this.state.data;
+    }
+    if(data.code == 'all'){
+      this.setState({status: undefined}, this.queryDataWithPro);
+    }else{
+      this.setState({status: data.code}, this.queryDataWithPro);
+    }
+  }
+
+  queryDataWithPro = () => {
+    var { priority, ifNew, status } = this.state;
+    if(status!=undefined && priority){
+      this.state.data = this.state.dataBak.filter((item)=>{ return item.status==status && item.priority==priority});
+    }else if(status!=undefined && ifNew){
+      this.state.data = this.state.dataBak.filter((item)=>{ return item.status==status && item.ifNew==ifNew});
+    }else if(priority){
+      this.state.data = this.state.dataBak.filter((item)=>{ return item.priority==priority});
+    }else if(ifNew){
+      this.state.data = this.state.dataBak.filter((item)=>{ return item.ifNew==ifNew});
+    }else if(status!=undefined){
+      this.state.data = this.state.dataBak.filter((item)=>{ return item.status==status});
+    }else{
+      this.state.data = this.state.dataBak;
     }
 
     this.setState({data: this.state.data });
+
   }
 
   // 设置开始订单
@@ -724,22 +782,34 @@ class HandleIndent extends React.Component {
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">计划上线时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ planOnline?new Date(planOnline):'' } onChange={(date)=>{selectedData.planOnline = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+            <DateFormatInput  className="date-picker inline-block" name='date-input' value={ planOnline?new Date(planOnline):'' } onChange={(date)=>{selectedData.planOnline = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+            <div className="date-clear btn inline-block">
+              <CloseIcon onClick={()=>{selectedData.planOnline='';this.setState({selectedData:selectedData})} } />
+            </div>
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">计划完成时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ planFinishDate?new Date(planFinishDate):'' } onChange={(date)=>{selectedData.planFinishDate = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+            <DateFormatInput  className="date-picker inline-block" name='date-input' value={ planFinishDate?new Date(planFinishDate):'' } onChange={(date)=>{selectedData.planFinishDate = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+            <div className="date-clear btn inline-block">
+              <CloseIcon onClick={()=>{selectedData.planFinishDate='';this.setState({selectedData:selectedData})}} />
+            </div>
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">实际开始时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ actualStart?new Date(actualStart):'' } onChange={(date)=>{selectedData.actualStart = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+            <DateFormatInput  className="date-picker inline-block" name='date-input' value={ actualStart?new Date(actualStart):'' } onChange={(date)=>{selectedData.actualStart = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+            <div className="date-clear btn inline-block">
+              <CloseIcon onClick={()=>{selectedData.actualStart='';this.setState({selectedData:selectedData})}} />
+            </div>
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">实际完成时间</FormLabel>
-            <DateFormatInput  className="inline-block" name='date-input' value={ actualFinish?new Date(actualFinish):'' } onChange={(date)=>{selectedData.actualFinish = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+            <DateFormatInput  className="date-picker inline-block" name='date-input' value={ actualFinish?new Date(actualFinish):'' } onChange={(date)=>{selectedData.actualFinish = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+            <div className="date-clear btn inline-block">
+              <CloseIcon onClick={()=>{selectedData.actualFinish='';this.setState({selectedData:selectedData})}} />
+            </div>
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
@@ -801,7 +871,7 @@ class HandleIndent extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar  tips = {this.tips} initLoadData = { this.initLoadData } queryByKeyword = {this.queryByKeyword} queryIndentByDate = {this.queryIndentByDate} queryIndentByType = {this.queryIndentByType} />
+        <EnhancedTableToolbar  tips = {this.tips} initLoadData = { this.initLoadData } queryByKeyword = {this.queryByKeyword} queryIndentByDate = {this.queryIndentByDate} queryIndentByType = {this.queryIndentByType} queryIndentBySit = {this.queryIndentBySit} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table+' nowrap'} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -821,28 +891,28 @@ class HandleIndent extends React.Component {
                       aria-checked={isSelected}
                       tabIndex={-1}
                       key={index}
-                      selected={isSelected}
+                      selected={isSelected} className = {n.priority?'bg-red':(n.ifNew?'bg-blue':'')}
                     >
                       <TableCell align="center">{ page * rowsPerPage+index+1 }</TableCell>
                       <TableCell align="center">{n.erp}</TableCell>
                       <TableCell align="center">{n.materialCode}</TableCell>
                       <TableCell align="center">{n.materialName}</TableCell>
                       <TableCell align="center">{n.planNum}</TableCell>
-                      <TableCell align="center">{n.planFinishDate ? new Date(n.planFinishDate).format('yyyy-MM-dd'):false}</TableCell>
-                      <TableCell align="center">{n.planOnline ? new Date(n.planOnline).format('yyyy-MM-dd'):false}</TableCell>
-                      <TableCell align="center">{n.actualStart ? new Date(n.actualStart).format('yyyy-MM-dd'):false}</TableCell>
-                      <TableCell align="center">{n.actualFinish ? new Date(n.actualFinish).format('yyyy-MM-dd'):false}</TableCell>
-                      <TableCell align="center" className = {n.priority?'text-blue':''}>{n.priority?"是":"否"}</TableCell>
-                      <TableCell align="center" className = {n.ifNew?'text-blue':''}>{n.ifNew?"是":"否"}</TableCell>
+                      <TableCell align="center">{n.planFinishDate ? (new Date(n.planFinishDate).getDate()?new Date(n.planFinishDate).format('yyyy-MM-dd'):false):false}</TableCell>
+                      <TableCell align="center">{n.planOnline ? (new Date(n.planOnline).getDate()?new Date(n.planOnline).format('yyyy-MM-dd'):false):false}</TableCell>
+                      <TableCell align="center">{n.actualStart ? (new Date(n.actualStart).getDate()?new Date(n.actualStart).format('yyyy-MM-dd'):false):false}</TableCell>
+                      <TableCell align="center">{n.actualFinish ? (new Date(n.actualFinish).getDate()?new Date(n.actualFinish).format('yyyy-MM-dd'):false):false}</TableCell>
+                      <TableCell align="center" >{n.priority?"是":"否"}</TableCell>
+                      <TableCell align="center">{n.ifNew?"是":"否"}</TableCell>
                       <TableCell align="center">{n.remark}</TableCell>
                       <TableCell align="center">{n.feedback}</TableCell>
                       <TableCell align="center">{n.templateID}</TableCell>
                       <TableCell align="center" className = {n.status==2?"text-success":(n.status==1?"text-blue":"")}>{n.status==2?"完成":(n.status==1?"进行中":"未开始")}</TableCell>
                       <TableCell align="center">
-                        {n.status==1?<span className="pointer btn text-success"   onClick={()=>this.finishIndent(n, index)}>设为完成</span>:''}
-                        {n.status==0?<span className="pointer btn text-blue"   onClick={()=>this.startIndent(n, index)}>开始订单</span>:''}
-                        <span className="pointer btn text-blue"   onClick={()=>this.updateIndent(n, index)}>修改</span>
-                        <span className="pointer btn text-red" onClick={()=>this.deleteIndent(n, index)}>删除</span>
+                        {n.status==1?<span className="pointer btn text-success"   onClick={()=>this.finishIndent(n, page * rowsPerPage+index)}>设为完成</span>:''}
+                        {n.status==0?<span className="pointer btn text-blue"   onClick={()=>this.startIndent(n, page * rowsPerPage+index)}>开始订单</span>:''}
+                        <span className="pointer btn text-blue"   onClick={()=>this.updateIndent(n, page * rowsPerPage+index)}>修改</span>
+                        <span className="pointer btn text-red" onClick={()=>this.deleteIndent(n, page * rowsPerPage+index)}>删除</span>
                       </TableCell>
                     </TableRow>
                   )
