@@ -37,7 +37,7 @@ const DialogTitle = withStyles(theme => ({
     right: theme.spacing.unit,
     top: theme.spacing.unit,
     color: theme.palette.grey[500],
-  },
+  }
 }))(props => {
   const { children, classes, onClose } = props;
   return (
@@ -177,10 +177,14 @@ class MessageBar extends React.Component{
         headers:{
           'Content-Type': 'application/json',
         },
-        body:JSON.stringify({id: data.id})
-      }).then(res=>res.json()).then(data=>{
-        if(data.code!=200){
-          this.props.tips(data.msg);return;
+        body:JSON.stringify({id: data=="all"?data:data.id})
+      }).then(res=>res.json()).then(data_res=>{
+        if(data_res.code!=200){
+          this.props.tips(data_res.msg);return;
+        }
+        if(data=="all"){
+          this.queryMessage();
+          return;
         }
         this.state.mailMessage.splice(index,1);
         this.setState({mailMessage: this.state.mailMessage});
@@ -188,32 +192,58 @@ class MessageBar extends React.Component{
     }
 
     mailDialog(){
-      return (<Dialog
-        onClose={this.handleClose}
-        aria-labelledby="customized-dialog-title"
-        open={this.state.open} style={{marginTop:'.5rem'}} className = "mailDialog childScroll"
-      >
-        <DialogTitle id="customized-dialog-title" onClose={this.handleClose}>
-          未读消息
-        </DialogTitle>
-        <DialogContent style={{width: "090vw",height: "90vh",overflowY:"auto"}}>
-          <ul style={{paddingRight:"2rem"}}>
-          {this.state.mailMessage.map((mail, index)=>(
-            <li style={{padding:".2rem 0",position: 'relative'}} className="mail-message" key={'mailLi'+index}>
-              <span>{index+1}. </span>
-              <span className="text-blue btn" title={mail.from}>{mail.fromName}</span>
-              <span>{'发来消息: '+mail.content.split('//%//')[0]} {(mail.content.split('//%//')[1]?(<i className="small text-blue">{mail.content.split('//%//')[1]}</i>):'')} </span>
-              <small style={{paddingLeft: '1rem'}}>{mail.time?new Date(mail.time).format('yyyy-MM-dd hh:mm:ss'):''}</small>
-              <span className="text-red pointer" style={{marginLeft:'1rem',textAlign: "right"}} onClick={()=>{this.markMessage(mail, index)}}>已读 </span>
-           </li>))}</ul>
-           { this.state.mailMessage.length==0?<ul><li className="mail-message text-blue">暂无消息</li></ul>:false}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={()=>this.handleClose(1)} color="primary">
-            我知道了
-          </Button>
-        </DialogActions>
-      </Dialog>     )
+        const styles = {
+          containerUl: {
+            paddingRight: "2rem",
+            marginTop: 0
+          },
+          tipLi: {
+            padding: "0.35rem 0"
+          },
+          mailDialogContent: {
+            width: "090vw",
+            height: "90vh",
+            overflowY:"auto",
+            fontSize: "24px"
+          },
+          fontSize: {
+            fontSize: "24px",
+            marginLeft: "2rem"
+          }
+        }
+
+        return (<Dialog
+          onClose={this.handleClose}
+          aria-labelledby="customized-dialog-title"
+          open={this.state.open} style={{marginTop:'.5rem'}} className = "mailDialog childScroll"
+        >
+          <DialogTitle id="customized-dialog-title" onClose={this.handleClose}>
+            <span style={{fontWeight: "bold"}}>未读消息</span> &nbsp;&nbsp;<small>共{this.state.mailMessage.length}条</small>
+          </DialogTitle>
+          <DialogContent style={styles.mailDialogContent}>
+            <ul style={styles.containerUl}>
+            {this.state.mailMessage.map((mail, index)=>(
+              <li style={styles.tipLi} className={"mail-message"} key={'mailLi'+index}>
+                <span>{index+1}. </span>
+                <span className="text-blue btn" title={mail.from}>{mail.fromName}</span>
+                <span>{'发来消息: '+mail.content.split('//%//')[0]} {(mail.content.split('//%//')[1]?(<i className="small text-blue">{mail.content.split('//%//')[1]}</i>):'')} </span>
+                <small style={{paddingLeft: '1rem'}}>{mail.time?new Date(mail.time).format('yyyy-MM-dd hh:mm:ss'):''}</small>
+                <span className="text-red pointer" style={{marginLeft:'1rem',textAlign: "right"}} onClick={()=>{this.markMessage(mail, index)}}>已读 </span>
+             </li>))}</ul>
+             { this.state.mailMessage.length==0?<ul><li className="mail-message text-blue">暂无消息</li></ul>:false}
+          </DialogContent>
+          <DialogActions>
+            {
+              this.state.mailMessage.length!=0?<Button onClick={()=>this.markMessage('all')} color="secondary" style={styles.fontSize} >
+              全部标为已读
+              </Button>:null
+            }
+            <Button onClick={()=>this.handleClose(1)} color="primary" style={styles.fontSize} >
+              我知道了
+            </Button>
+          </DialogActions>
+        </Dialog>)
+
     }
 
     render() {
@@ -231,7 +261,7 @@ class MessageBar extends React.Component{
                 欢迎你，<span  className="text-blue" style={{padding:"0 .2rem"}}>{userName}</span>{user.type==1?('[ 主管 ]'):(user.type==2?('[ 领班 ]'):user.type==3?('[ 组长 ]'):'[ 员工 ]')}
                 {/*<span color="primary"onClick={this.loginClick}>登陆</span>*/}
                 <span color="const" style={{display:(userName?'ff':'none'), padding: '0 2rem 0 1.2rem'}} id="logout" className={"btn text-red "} onClick={this.logoutClick}>注销</span>
-                <IconButton fontSize="large" color="inherit"style = {{marginTop: '-3px'}} onClick={this.mailClick}>
+                <IconButton fontSize="large" color="inherit" style = {{marginTop: '-3px'}} onClick={this.mailClick}>
                   <Badge badgeContent={mailMessage.length} color="secondary">
                     <MailIcon  />
                   </Badge>
@@ -243,7 +273,7 @@ class MessageBar extends React.Component{
               </IconButton>
               {this.mailDialog()}
             </div>):false}
-              <Confirm open = {this.state.logOut} title = {this.state.title} content={this.state.content}   closeFun = {this.logoutClickClose} sureFun = {this.logoutSureFun}/>
+              <Confirm open = {this.state.logOut} title = {this.state.title} content={this.state.content} ifInfo={true}  closeFun = {this.logoutClickClose} sureFun = {this.logoutSureFun}/>
             </div>
           </header>
         )

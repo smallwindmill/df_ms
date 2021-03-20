@@ -1,3 +1,4 @@
+// 流程管理页面
 import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
@@ -28,6 +29,7 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 
 import Snackbar from '@material-ui/core/Snackbar';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Confirm from '../main/Confirm';
 import config from '../config';
@@ -146,7 +148,7 @@ class EnhancedTableToolbar extends React.Component{
           {value:1, text:'已完成'},
           {value:2, text:'进行中'},
         ],
-    dateRange:[{text: "全部"},{text: "最近一周"},{text: "最近一月"},{text: "最近三月"},{text: "最近一年"},{text: "一年以前"}],
+    dateRange:[{text: "全部", value: 0},{text: "最近一周", value: 1},{text: "最近一月", value: 2},{text: "最近三月", value: 3},{text: "最近一年", value: 4},{text: "一年以前", value: 5}],
     typeQuery:[
       {text: "全部",code: 0},
       {text: "加急",code: 1},
@@ -203,7 +205,7 @@ class EnhancedTableToolbar extends React.Component{
             <Grid item align="left" xs={6}>
               <Grid item xs={12} className="filterTool small">
                   <span className="blod">时间</span>
-                  {dateRange.map((date,index)=>(<span key = {index} className={"btn-sm "+(index===0?'bg-primary':'')} onClick={(e)=>this.props.queryIndentStatusByDate(e, date, index)}> {date.text}</span>))}
+                  {dateRange.map((date,index)=>(<span key = {index} className={"btn-sm "+(index===2?'bg-primary':'')} onClick={(e)=>this.props.queryIndentStatusByDate(e, date)}> {date.text}</span>))}
               </Grid>
               <Grid item xs={12} className="filterTool small" style = {{margin: '1rem 0'}}>
                   <span className="blod">类型</span>
@@ -243,6 +245,9 @@ const styles = theme => ({
   table: {
     minWidth: 1020,
   },
+  tablAllCon: {
+    position: "relative",
+  },
   tableCon: {
     overflowX: 'auto',
     overflowY: 'hidden'
@@ -278,11 +283,11 @@ class QueryIndentStatus extends React.Component {
 
   componentWillMount() {
     // 组件初次加载数据申请
-
-    var queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
+    var queryStart = new Date(new Date()-1000*60*60*24*30).format('yyyy-MM-dd');//一月
+    // var queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
     var queryEnd = new Date().format('yyyy-MM-dd');
-    // fetch(config.server.listAllIndentStatusByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
-    fetch(config.server.listAllIndentStatusByDate).then(res=>res.json()).then(data=>{
+    fetch(config.server.listAllIndentStatusByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
+    // fetch(config.server.listAllIndentStatusByDate).then(res=>res.json()).then(data=>{
       if(data.code !== 200){
         this.tips(data.msg);return;
       }
@@ -301,6 +306,9 @@ class QueryIndentStatus extends React.Component {
     }, 1000);//默认展示进行中订单
   }
 
+  hideInner (hide) {
+    this.setState({loading: hide});
+  }
 
   handleChangePage = (event, page) => {
     this.setState({ page });
@@ -337,7 +345,7 @@ class QueryIndentStatus extends React.Component {
   }
 
   // 根据日期筛选值
-  queryIndentStatusByDate=(e, data, index)=>{
+  queryIndentStatusByDate=(e, data)=>{
     var { queryStart, queryEnd } = this.state;
     e.persist();
     // 切换显示高亮
@@ -349,8 +357,9 @@ class QueryIndentStatus extends React.Component {
 
     queryEnd = new Date().format('yyyy-MM-dd');
 
+    let index = data.value;
     if(index==0){
-      queryStart = '';//一周
+      queryStart = '';//所有
       queryEnd = '';
     }else if(index==1){
       queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
@@ -480,7 +489,7 @@ class QueryIndentStatus extends React.Component {
       this.setState({data: data});
     }
     this.state.dataBak = this.state.data;
-
+    this.hideInner(true);
   }
 
   tips = (msg) => {
@@ -496,93 +505,100 @@ class QueryIndentStatus extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { data, order, orderBy, selected, rowsPerPage, page } = this.state;
+    const { loading, data, order, orderBy, selected, rowsPerPage, page } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
         <EnhancedTableToolbar tips = {this.tips} queryByKeyword = {this.queryByKeyword} queryIndentStatusByDate = {this.queryIndentStatusByDate} queryIndentStatusByType = {this.queryIndentStatusByType} queryIndentStatusBySit = {this.queryIndentStatusBySit}/>
-        <div className={classes.tableCon}>
-          {/*表头*/}
-          <Table className={classes.table+" indentStatusTable"} aria-labelledby="tableTitle">
-            <EnhancedTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              rowCount={data.length}
+        <div class={classes.tablAllCon}>
+            {!loading?(<div className = "backdrop div-inner" >
+              <div className="relativeCenter text-blue" >
+                <CircularProgress size = {50} />
+              </div>
+            </div>):''}
+            <div className={classes.tableCon}>
+              {/*表头*/}
+              <Table className={classes.table+" indentStatusTable"} aria-labelledby="tableTitle">
+                <EnhancedTableHead
+                  numSelected={selected.length}
+                  order={order}
+                  orderBy={orderBy}
+                  rowCount={data.length}
+                />
+              </Table>
+              <div className={classes.tableWrapper}>
+                <Table className={classes.table+" indentStatusTable"} aria-labelledby="tableTitle">
+                  {/*<EnhancedTableHead
+                                  numSelected={selected.length}
+                                  order={order}
+                                  orderBy={orderBy}
+                                  rowCount={data.length}
+                                />*/}
+                  <TableBody>
+                    {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((n,index) => {
+                        const isSelected = this.isSelected(n.id);
+                        return (
+                          <TableRow
+                            hover
+                            role="checkbox"
+                            aria-checked={isSelected}
+                            tabIndex={-1}
+                            key={index}
+                            selected={isSelected}  className = {n.priority?'bg-red2':(n.ifNew?'bg-blue2':'')}
+                          >
+                            <TableCell align="center">{page * rowsPerPage+(index+1)}</TableCell>
+                            <TableCell align="center">{n.erp}</TableCell>
+                            <TableCell align="center">{n.materialCode}</TableCell>
+                            <TableCell align="center" className={classes.markTd} title={n.materialName}>{n.materialName}</TableCell>
+                            <TableCell align="center">{n.planNum}</TableCell>
+                            <TableCell align="center" component="th" scope="row" title="流程名称" padding="none">
+                              {n.name}
+                            </TableCell>
+                            <TableCell align="center" component="th" scope="row" padding="none">
+                              {n.duty}
+                            </TableCell>
+                            <TableCell align="center" component="th" scope="row" padding="none" className = {n.status?'text-blue':''}>
+                              {n.status==2?"完成":(n.status==1?"进行中":"未开始")}
+                            </TableCell>
+                            <TableCell align="center">
+                              {n.status ==0?<span className="pointer btn text-blue" onClick = {()=>this.setProcedureRestart(n, false)}>开始</span>:''}
+                              {n.status !=0?<span className="pointer btn text-blue" onClick = {()=>this.infoTarget(n)}>{n.status==2?'详情':'查看'}</span>:''}
+                              {n.status ==2?<span className="pointer btn text-notice" onClick = {()=>this.setProcedureRestart(n, true)}>重新开始</span>:null}
+                              {/*<span className="pointer btn text-blue">{1==1?'':'修改'}</span>
+                              <span className="pointer btn text-red" onClick={this.deleteUser}>删除</span>*/}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    {/*{emptyRows > 0 && (
+                                    <TableRow style={{ height: 49 * emptyRows }}>
+                                      <TableCell colSpan={8} />
+                                    </TableRow>
+                                  )}*/}
+                  </TableBody>
+                </Table>
+                {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
+              </div>
+            </div>
+            <TablePagination
+              className="TablePagination"
+              rowsPerPageOptions={[10, 20, 30]}
+              component="div"
+              count={data.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              backIconButtonProps={{
+                'aria-label': '上一页',
+              }}
+              nextIconButtonProps={{
+                'aria-label': '下一页',
+              }}
+              onChangePage={this.handleChangePage}
+              onChangeRowsPerPage={this.handleChangeRowsPerPage}
             />
-          </Table>
-          <div className={classes.tableWrapper}>
-            <Table className={classes.table+" indentStatusTable"} aria-labelledby="tableTitle">
-              {/*<EnhancedTableHead
-                              numSelected={selected.length}
-                              order={order}
-                              orderBy={orderBy}
-                              rowCount={data.length}
-                            />*/}
-              <TableBody>
-                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((n,index) => {
-                    const isSelected = this.isSelected(n.id);
-                    return (
-                      <TableRow
-                        hover
-                        role="checkbox"
-                        aria-checked={isSelected}
-                        tabIndex={-1}
-                        key={index}
-                        selected={isSelected}  className = {n.priority?'bg-red2':(n.ifNew?'bg-blue2':'')}
-                      >
-                        <TableCell align="center">{page * rowsPerPage+(index+1)}</TableCell>
-                        <TableCell align="center">{n.erp}</TableCell>
-                        <TableCell align="center">{n.materialCode}</TableCell>
-                        <TableCell align="center" className={classes.markTd} title={n.materialName}>{n.materialName}</TableCell>
-                        <TableCell align="center">{n.planNum}</TableCell>
-                        <TableCell align="center" component="th" scope="row" title="流程名称" padding="none">
-                          {n.name}
-                        </TableCell>
-                        <TableCell align="center" component="th" scope="row" padding="none">
-                          {n.duty}
-                        </TableCell>
-                        <TableCell align="center" component="th" scope="row" padding="none" className = {n.status?'text-blue':''}>
-                          {n.status==2?"完成":(n.status==1?"进行中":"未开始")}
-                        </TableCell>
-                        <TableCell align="center">
-                          {n.status ==0?<span className="pointer btn text-blue" onClick = {()=>this.setProcedureRestart(n, false)}>开始</span>:''}
-                          {n.status !=0?<span className="pointer btn text-blue" onClick = {()=>this.infoTarget(n)}>{n.status==2?'详情':'查看'}</span>:''}
-                          {n.status ==2?<span className="pointer btn text-notice" onClick = {()=>this.setProcedureRestart(n, true)}>重新开始</span>:null}
-                          {/*<span className="pointer btn text-blue">{1==1?'':'修改'}</span>
-                          <span className="pointer btn text-red" onClick={this.deleteUser}>删除</span>*/}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                {/*{emptyRows > 0 && (
-                                <TableRow style={{ height: 49 * emptyRows }}>
-                                  <TableCell colSpan={8} />
-                                </TableRow>
-                              )}*/}
-              </TableBody>
-            </Table>
-            {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
-          </div>
         </div>
-        <TablePagination
-          className="TablePagination"
-          rowsPerPageOptions={[10, 20, 30]}
-          component="div"
-          count={data.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          backIconButtonProps={{
-            'aria-label': '上一页',
-          }}
-          nextIconButtonProps={{
-            'aria-label': '下一页',
-          }}
-          onChangePage={this.handleChangePage}
-          onChangeRowsPerPage={this.handleChangeRowsPerPage}
-        />
         <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} sureFun={this.state.sureFun} ifInfo={this.state.ifInfo} />
         <Snackbar style={{marginTop:'70px'}}
         anchorOrigin={{horizontal:"center",vertical:"top"}}

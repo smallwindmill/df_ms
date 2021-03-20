@@ -193,7 +193,13 @@ code {
 .bg-default:active{
   background: rgba(50,50,50,.7)!important;
 }
-
+.eq-time-name{
+  max-width: 400px;
+  text-overflow: ellipsis;
+  display: inline-block;
+  padding-right: 10px;
+  overflow: hidden;
+}
 #templateUserModal>div{
   margin-bottom: -1rem;
 }
@@ -219,14 +225,15 @@ code {
 
 /* @media (-webkit-max-device-pixel-ratio: 1) */
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
 }
 /* @media (-webkit-max-device-pixel-ratio: 1) */
 ::-webkit-scrollbar-thumb {
     background-color: #c2c2c2;
     background-clip: padding-box;
     min-height: 28px;
+    cursor: pointer;
 }
 /* @media (-webkit-max-device-pixel-ratio: 1) */
 ::-webkit-scrollbar-track-piece {

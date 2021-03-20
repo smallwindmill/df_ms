@@ -1,3 +1,4 @@
+// 工作日历页面
 import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
@@ -100,7 +101,7 @@ class WorkCalendar extends React.Component {
       var date = e.target.parentNode.className.split('dateClass')[1].split(' ')[0];
 
       // if(date < new Date().format('yyyy-MM-dd')){
-      if(new Date().getTime() < new Date().getTime()){
+      if(new Date(date).getTime() < new Date().getTime()){
        this.tips('无法修改过去时期的工时');return;
       }
 
@@ -183,6 +184,7 @@ class WorkCalendar extends React.Component {
 
   uploadWorkCalendar = () => {
     // 保存修改
+    // 只更新当前日期之后的设置，当前日期之前的不再随全局更新
     var { workDate,changeDate } = this.state;
     var upload_date = {};
     var cur_time = new Date(new Date().format("yyyy-MM-dd")).getTime();
@@ -302,7 +304,7 @@ class WorkCalendar extends React.Component {
          添加工作日历
        </div>
        <form noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem"}}>
-          <label style={{height:'25px',padding:'2px 1rem'}} for="">{this.state.dayDate}</label>
+          <label style={{height:'25px',padding:'2px 1rem'}} for="">{this.state.dayDate+"的工作时长"}</label>
           <input type="text" autofocus='true' style={{height:'25px',border:'1px solid rgb(102, 102, 102)',borderRadius:'3px',overflow:'hidden',padding:'2px 8px'}} placeholder="请输入工作小时数" value={this.state.dayWork} onChange={(e)=>this.setState({dayWork: e.target.value})} />
          </form>
          <div style={{textAlign: 'center',padding: '2rem'}}>

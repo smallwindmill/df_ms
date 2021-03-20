@@ -41,7 +41,11 @@ class Confirm extends React.Component {
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            {ifInfo?<Info fontSize = "large"  color = "primary" style={{marginBottom:"-9px",marginRight:'3px'}}></Info>:<HelpOutline style={{marginBottom:"-9px",marginRight:'3px'}} fontSize = "large" color="error"></HelpOutline>}
+            {ifInfo?
+              <Info fontSize = "large"  color = "primary" style={{marginBottom:"-9px",marginRight:'3px'}}></Info>
+              :
+              <HelpOutline style={{marginBottom:"-9px",marginRight:'3px'}} fontSize = "large" color="error"></HelpOutline>
+            }
             {title}</DialogTitle>
           <DialogContent style = {{minWidth: '300px'}}>
             <DialogContentText id="alert-dialog-description"  dangerouslySetInnerHTML={{__html: content}}>

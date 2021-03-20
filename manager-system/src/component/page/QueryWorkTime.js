@@ -1,3 +1,4 @@
+// 订单工时查询页面
 import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
@@ -28,6 +29,7 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 
 import Snackbar from '@material-ui/core/Snackbar';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Confirm from '../main/Confirm';
 import config from '../config';
@@ -75,6 +77,7 @@ const rows = [
   { id: 'protein', numeric: true, disablePadding: false, label: '总人数' },
   // { id: 'protein', numeric: true, disablePadding: false, label: '总小时' }
   // { id: 'protein', numeric: true, disablePadding: false, label: '操作' }
+  { id: 'action', numeric: true, disablePadding: false, label: '操作' }
 ];
 
 const procedure_rows = [
@@ -89,7 +92,6 @@ const procedure_rows = [
   { id: 'protein', numeric: true, disablePadding: false, label: '工时费' },
   { id: 'protein', numeric: true, disablePadding: false, label: '总人数' },
   // { id: 'protein', numeric: true, disablePadding: false, label: '总小时' }
-  // { id: 'protein', numeric: true, disablePadding: false, label: '操作' }
 ];
 
 class EnhancedTableHead extends React.Component {
@@ -224,15 +226,41 @@ class EnhancedTableToolbar extends React.Component{
         <Grid container align="left"  style={{margin:'1rem 0 1rem',padding: '0 1.2rem'}}>
 
           <Grid item xs={6} align="left">
-
+            <div style={{textAlign:"right", paddingRight: "0rem"}}>筛选:</div>
           </Grid>
 
-          <Grid item align="right" xs={6}>
+          <Grid item align="right" xs={2}>
             <TextField style={{marginTop:0,marginLeft:'1rem'}}
-            placeholder="请输入订单号或货号查询"
+            placeholder="订单号或货号"
             className={classes.textField}
             type="text"
-            onChange = {(e)=>this.props.queryByKeyword(e)}
+            onChange = {(e)=>this.props.queryByKeyword(e, 1)}
+            margin="normal"
+            InputLabelProps={{
+              shrink: true,
+            }}></TextField>
+          </Grid>
+
+
+          <Grid item align="right" xs={2}>
+            <TextField style={{marginTop:0,marginLeft:'1rem'}}
+            placeholder="请输入生产数量"
+            className={classes.textField}
+            type="text"
+            onChange = {(e)=>this.props.queryByKeyword(e, 2)}
+            margin="normal"
+            InputLabelProps={{
+              shrink: true,
+            }}></TextField>
+          </Grid>
+
+
+          <Grid item align="right" xs={2}>
+            <TextField style={{marginTop:0,marginLeft:'1rem'}}
+            placeholder="请输入人数"
+            className={classes.textField}
+            type="text"
+            onChange = {(e)=>this.props.queryByKeyword(e, 3)}
             margin="normal"
             InputLabelProps={{
               shrink: true,
@@ -262,6 +290,9 @@ const styles = theme => ({
   tableWrapper: {
     overflowX: 'auto',
   },
+  tableAllCon: {
+    position: "relative",
+  }
 });
 
 
@@ -278,7 +309,8 @@ class QueryWorkTime extends React.Component {
     open: true,
     deleteOpen: false,
     title: "确认",
-    content: "确定删除该订单吗？"
+    content: "确定删除该订单吗？",
+    selectedData: {}
   }
 
   componentWillMount() {
@@ -305,6 +337,10 @@ class QueryWorkTime extends React.Component {
       this.props.changeWorktimeData(data.results || []);
     }).catch(e=>this.tips('网络出错了，请稍候再试'));*/
 
+  }
+
+  hideInner (hide) {
+    this.setState({loading: hide});
   }
 
 
@@ -343,18 +379,29 @@ class QueryWorkTime extends React.Component {
 
   isSelected = id => this.state.selected.indexOf(id) !== -1;
 
-  queryByKeyword = (e) =>{
+  queryByKeyword = (e, type) =>{
     e.persist();
+
+    if(type === 1){
+      this.filter_id = e.target.value.toUpperCase();
+    }else if(type === 2){
+      this.filter_count = e.target.value;
+    }else if(type === 3){
+      this.filter_num = e.target.value;
+    }
+
+    this.filter_id = this.filter_id || "";
+    this.filter_count = this.filter_count || "";
+    this.filter_num = this.filter_num || "";
 
     if(!this.state.dataBak){
       this.state.dataBak = this.state.data;
     }
 
     this.state.data = this.state.dataBak.filter((item)=>{
-      return (item.erp.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1 || item.materialCode.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1 );
+      return ((item.erp.toUpperCase().match(this.filter_id) || item.materialCode.toUpperCase().match(this.filter_id) || item.materialName.toUpperCase().match(this.filter_id)) && (this.filter_count == "" || item.planNum == this.filter_count) && (this.filter_num == "" || item.countWorker == this.filter_num) );
     });
     this.setState({data: this.state.data });
-
   }
 
   // 删除用户弹窗
@@ -383,7 +430,119 @@ class QueryWorkTime extends React.Component {
     }else{
       this.setState({data: data});
     }
+    this.hideInner(true);
+  }
 
+
+  timeInProgramModal = ()=>{
+
+    const DialogTitle = withStyles(theme => ({
+      root: {
+        margin: 0,
+        padding: 18,
+      },
+      titlep: {
+        fontSize: 20
+      }
+    }))(props => {
+      const { children, classes, onClose } = props;
+      return (
+        <MuiDialogTitle disableTypography className={classes.root}>
+          <Typography variant="" className={classes.titlep}>{children}</Typography>
+        </MuiDialogTitle>
+      );
+    });
+
+    var { selectedData,showProgram } = this.state;
+    const ModalContent = withStyles(theme => ({
+      container: {
+        minWidth: "40vw",
+        minHeight: "10vh",
+        maxHeight: "40vh",
+        overflowY: "scroll"
+      },
+      li: {
+        padding: "4px 0",
+        textAlign: "left"
+      },
+      li_half1: {
+        display: "inline-block",
+        width: "100%"
+      },
+      li_half2: {
+        display: "none",
+        boxSizing: "border-box",
+        width: "0%"
+      },
+      rightBadge: {
+        top: "-8px",
+        right: 0,
+        position: "relative",
+        background: "rgb(234 69 69 / 41%)",
+        color:" #ffffff!important",
+        borderRradius: "3px",
+        padding: "2px 3px"
+      }
+    }))(props => {
+      const { children, classes, onClose } = props;
+      return (<Dialog
+        aria-labelledby="customized-dialog-title" className="modal lg"
+        open={this.state.timeModal} style={{marginTop:'-10rem'}}
+        onClose={()=>this.setState({timeModal: false})}
+      >
+      <DialogTitle id="customized-dialog-title" >
+        订单<span className="text-blue">{selectedData.erp}</span>参与设备<small style={{paddingLeft: "1rem"}}>共计{showProgram?showProgram.length:''}</small>
+      </DialogTitle>
+      <div className={classes.container} noValidate autoComplete="off" style={{margin:".5rem 2rem 2rem",padding: "1rem"}}>
+        <Grid container spacing={24}>
+          <Grid item xs={12} style={{paddingTop:0}}>
+              <table style={{paddingLeft: 0,marginTop:0,listStyle: "none",width:"100%"}}>
+                <thead>
+                 <tr className={classes.li} style={{fontSize:"18px"}}>
+                     <th>序号</th>
+                     <th>流程</th>
+                     <th>物料</th>
+                     <th>设备</th>
+                     <th>工时</th>
+                 </tr>
+                </thead>
+                <tbody>
+                {!showProgram?'':showProgram.map((n,index)=>{
+                  return <tr className={classes.li}>
+                              <td><i style={{ paddingRight2:".8rem",fontSize: "smaller" }}>{(index+1)+".  "}</i></td>
+                              <td>
+                              <span className="text-blue2 eq-time-name" title={"流程名称:"+n.name}>{n.name}
+                                 <small className={classes.rightBadge}>{n.pro_status==0?'未完成':''}</small>
+                                </span>
+                              </td>
+                              <td><span className="text-blue2 eq-time-name" title={"物料名称"+n.materialName}>{n.materialName}</span></td>
+                              <td><span className="text-blue2 eq-time-name" title={"设备名称:"+n.worker}>{n.worker}</span></td>
+                              <td><span title="工时">{ n.worktime?n.worktime.toFixed(3):0 }</span></td>
+                          </tr>
+                })}
+                </tbody>
+              </table>
+          </Grid>
+
+        </Grid>
+
+        </div>
+    </Dialog>)})
+
+
+    return <ModalContent></ModalContent>;
+  }
+
+  showEqWorkTimeMoal = (indent) => {
+    // indent.id
+    // console.log('ff===', indent);
+    fetch(config.server.queryEqWorkTimeWithIndentID+'?id='+indent.indentID).then(res=>res.json()).then(data=>{
+      // console.log(data);
+      if(data.code!=200){
+        this.tips(data.msg);return;
+      }
+      this.setState({timeModal: true, selectedData: data, showProgram: data.results});
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
   }
 
 
@@ -401,7 +560,7 @@ class QueryWorkTime extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { data, order, orderBy, selected, rowsPerPage, page, ifProcedure } = this.state;
+    const { loading, data, order, orderBy, selected, rowsPerPage, page, ifProcedure } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
     this.state.date_in =[new Date(), new Date()];
@@ -418,6 +577,11 @@ class QueryWorkTime extends React.Component {
                 orderBy={orderBy}
                 rowCount={data.length}
               />
+              {!loading?(<div className = "backdrop div-inner" >
+                <div className="relativeCenter text-blue" >
+                  <CircularProgress size = {50} />
+                </div>
+              </div>):''}
               <TableBody>
                 {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((n, index) => {
@@ -456,24 +620,24 @@ class QueryWorkTime extends React.Component {
                 )}
               </TableBody>
             </Table>
-            {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
           </div>
-          <TablePagination
-            className="TablePagination"
-            rowsPerPageOptions={[10, 20, 30]}
-            component="div"
-            count={data.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            backIconButtonProps={{
-              'aria-label': '上一页',
-            }}
-            nextIconButtonProps={{
-              'aria-label': '下一页',
-            }}
-            onChangePage={this.handleChangePage}
-            onChangeRowsPerPage={this.handleChangeRowsPerPage}
-          />
+              {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
+              <TablePagination
+                className="TablePagination"
+                rowsPerPageOptions={[10, 20, 30]}
+                component="div"
+                count={data.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                backIconButtonProps={{
+                  'aria-label': '上一页',
+                }}
+                nextIconButtonProps={{
+                  'aria-label': '下一页',
+                }}
+                onChangePage={this.handleChangePage}
+                onChangeRowsPerPage={this.handleChangeRowsPerPage}
+              />
           <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
           <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
           anchorOrigin={{horizontal:"center",vertical:"top"}}
@@ -496,6 +660,11 @@ class QueryWorkTime extends React.Component {
                 orderBy={orderBy}
                 rowCount={data.length}
               />
+              {!loading?(<div className = "backdrop div-inner" >
+                <div className="relativeCenter text-blue" >
+                  <CircularProgress size = {50} />
+                </div>
+              </div>):''}
               <TableBody>
                 {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((n, index) => {
@@ -519,7 +688,7 @@ class QueryWorkTime extends React.Component {
                         <TableCell align="center">{n.cost}</TableCell>
                         <TableCell align="center">{n.countWorkers}</TableCell>
                         {/*<TableCell align="center">{n.counthour}</TableCell>*/}
-                        {/*<TableCell align="center" className = "btn text-blue" onClick={()=>{this.setState({ifProcedure: true});this.queryProcedureWorkHour(n)}}>查看流程工时</TableCell>*/}
+                        <TableCell align="center" className = "btn text-blue" onClick={()=>{this.showEqWorkTimeMoal(n)}}>参与设备</TableCell>
                         {/*<TableCell align="center" className = "btn text-blue" >——</TableCell>*/}
                         {/*<TableCell align="left">{n.remark}</TableCell>
                           <TableCell align="left">{n.feedback}</TableCell>*/}
@@ -533,32 +702,35 @@ class QueryWorkTime extends React.Component {
                 )}
               </TableBody>
             </Table>
-            {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
-            <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
+              {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
+              <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
+            <TablePagination
+              className="TablePagination"
+              rowsPerPageOptions={[10, 20, 30]}
+              component="div"
+              count={data.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              backIconButtonProps={{
+                'aria-label': '上一页',
+              }}
+              nextIconButtonProps={{
+                'aria-label': '下一页',
+              }}
+              onChangePage={this.handleChangePage}
+              onChangeRowsPerPage={this.handleChangeRowsPerPage}
+            />
           </div>
-          <TablePagination
-            className="TablePagination"
-            rowsPerPageOptions={[10, 20, 30]}
-            component="div"
-            count={data.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            backIconButtonProps={{
-              'aria-label': '上一页',
-            }}
-            nextIconButtonProps={{
-              'aria-label': '下一页',
-            }}
-            onChangePage={this.handleChangePage}
-            onChangeRowsPerPage={this.handleChangeRowsPerPage}
+          <Snackbar style={{marginTop:'70px'}}
+                    key = {new Date().getTime()+Math.random()}
+                    anchorOrigin={{horizontal:"center",vertical:"top"}}
+                    open={this.state.tipsOpen}
+                    ContentProps={{
+                      'className':'info'
+                    }}
+                    message={<span id="message-id" >{this.state.tipInfo?this.state.tipInfo:''}</span>}
           />
-          <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
-          anchorOrigin={{horizontal:"center",vertical:"top"}}
-          open={this.state.tipsOpen}
-          ContentProps={{
-            'className':'info'
-          }}
-          message={<span id="message-id" >{this.state.tipInfo?this.state.tipInfo:''}</span>} />
+          {this.timeInProgramModal()}
         </Paper>
       );
     }

@@ -16,7 +16,7 @@ class mysqlConnection{
     this.update();
   }
 
-  update(){
+  update (){
     // var connection = this.connection;
     var that = this;
 
@@ -25,14 +25,14 @@ class mysqlConnection{
     that.connection.connect(function(err){
       if(err){
         setTimeout(function(){that.connection.end();that.update()},2000);
-        console.log('出错了:',err);
+        console.log(moment().format('YYYYMMDD-HHmmss'), '出错了:',err);
         console.log('\r\n'+moment().format('YYYYMMDD-HHmmss')+'-请求重新连接\r\n');
       }else{
         console.log('\r\n'+moment().format('YYYYMMDD-HHmmss')+'-重新连接成功\r\n');
       }
     })
     that.connection.on('error', function(err) {
-        console.log('db error', err);
+        console.log(moment().format('YYYYMMDD-HHmmss'), 'db error', err);
         if(err.code === 'PROTOCOL_CONNECTION_LOST') {
           if(err) {
               console.log('db error执行重连:'+err.message);
@@ -47,8 +47,20 @@ class mysqlConnection{
     })
   }
 
-  lastest(){
+  latest (){
     return this.connection;
+  }
+
+  log (...arg){
+    console.log(moment().format('YYYYMMDD HHmmss     '), ...arg);
+  }
+
+  print (...arg){
+    console.log(moment().format('YYYYMMDD HHmmss     '), ...arg);
+  }
+
+  redlog (...arg){
+    console.log(moment().format('YYYYMMDD HHmmss     '), "error===", ...arg);
   }
 
 

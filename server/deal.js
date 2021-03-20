@@ -8,6 +8,7 @@ var path= require('path');
 var multiparty = require('connect-multiparty');
 var fs= require('fs');
 var compression = require('compression');
+// var nets = require('nets');
 
 var xlsx = require('node-xlsx');
 
@@ -32,7 +33,7 @@ var countFactor = (date)=>{
   var sqlQuest = 'start transaction;select * from factor where year = ? and month = ?';
   // var sqlParam = [parse.status, parse.remark, finishTime, data.id];
   var sqlParam = [year, month];
-  connection.lastest().query(sqlQuest,sqlParam,function(error,res1){
+  connection.latest().query(sqlQuest,sqlParam,function(error,res1){
       if(error){
           console.log(error);
       }else{
@@ -41,16 +42,16 @@ var countFactor = (date)=>{
             var sqlQuest = 'insert into factor(year, month, factor) values(?, ?, ?);commit;';
             // var sqlParam = [parse.status, parse.remark, finishTime, data.id];
             var sqlParam = [year, month, defaultFactor];
-            connection.lastest().query(sqlQuest,sqlParam,function(error,res2){
+            connection.latest().query(sqlQuest,sqlParam,function(error,res2){
                 if(error){
                   console.log(error);
-                  connection.lastest().query('commit;');
+                  connection.latest().query('commit;');
                 }else{
                   console.log(year, month, defaultFactor+'权重创建完成');
                 }
             })
         }else{
-           connection.lastest().query('commit;');
+           connection.latest().query('commit;');
            console.log(year, month, defaultFactor+'权重已存在');
         }
       }
@@ -63,7 +64,7 @@ var countIndentWorkTime = (indentID) => {
   // 该流程所用的时间（五位小数）
   var sqlQuest = 'select actualFinish as actualStart from indent where id=?';
   var sqlParam = [indentID];
-  connection.lastest().query(sqlQuest,sqlParam,function(error,res1){
+  connection.latest().query(sqlQuest,sqlParam,function(error,res1){
       if(error){
           console.log(error);
       }else{
@@ -76,14 +77,14 @@ var countIndentWorkTime = (indentID) => {
         countFactor(res1[0].actualStart);
         var sqlQuest2 = 'update workhour set factor = (select id from factor where year = ? and month = ? limit 1) where indentID = ?;select distinct a.factor from factor a,workhour b where a.id = b.factor and b.indentID = ?';
         var sqlParam2 = [year, month, indentID, indentID, indentID];
-        connection.lastest().query(sqlQuest2,sqlParam2,function(error2,res2){
+        connection.latest().query(sqlQuest2,sqlParam2,function(error2,res2){
             if(error2){
                 console.log(error2);
             }else{
                 var sqlQuest3 = 'update workhour set singleHour = countHour/planNum,cost = ?*singleHour where indentID = ?';
                 var sqlParam3 = [res2[1][0].factor, indentID];
                 console.log(sqlQuest3, sqlParam3, res2[1][0].factor);
-                connection.lastest().query(sqlQuest3,sqlParam3,function(error3,res3){
+                connection.latest().query(sqlQuest3,sqlParam3,function(error3,res3){
                     if(error3){
                         console.log(error3);
                     }else{
@@ -95,15 +96,13 @@ var countIndentWorkTime = (indentID) => {
          // console.log('id为'+pid+'的订单已完成，工时统计也完成');
       }
   })
-
-
 }
 
 // 从数据库获取为空的数据（因为权重因子重复的问题）
 var getDealData = () => {
   return new Promise((reslove, reject)=>{
     var sqlQuest = 'select indentID,indent.erp from workhour left join indent on indent.id = workhour.indentId  where singleHour is NULL order by indentId asc';
-    connection.lastest().query(sqlQuest,function(error,res1){
+    connection.latest().query(sqlQuest,function(error,res1){
       if(error){
         console.log("error==", error);
         console.log(error);
@@ -119,7 +118,7 @@ function DealLostIndentWorkhour(){
   getDealData().then((indentArray)=>{
     for(let i in indentArray){
       // console.log(indentArray[i].indentID);
-      // connection.lastest().query("delete from workhour where indentID = "+indentArray[i].indentID, (error, data)=>{
+      // connection.latest().query("delete from workhour where indentID = "+indentArray[i].indentID, (error, data)=>{
         // if(error) return;
         countIndentWorkTime(indentArray[i].indentID);
       // })
@@ -135,8 +134,8 @@ function DealLostIndentWorkhour(){
 // 处理读取日历数据重复，导致计算工时变长的问题  2020.2.28
 function dealWorkHourByCalendar(){
   var sqlQuest = `select *,DATE_FORMAT(startTime,'%Y-%m-%d %H:%i:%s') as startTime,DATE_FORMAT(finishTime,'%Y-%m-%d %H:%i:%s') as finishTime from procedureDetail where startTime > "2020-02-27" or hourcount>9`;
-// finishTime
-  connection.lastest().query(sqlQuest,function(error,res1){
+  // finishTime
+  connection.latest().query(sqlQuest,function(error,res1){
     if(error){
       console.log("error==", error);
       console.log(error);
@@ -150,7 +149,7 @@ function dealWorkHourByCalendar(){
   });
 }
 
-
+// 流程详情
 function countCorrectHourForDetail(data){
     var stime = data.startTime;
     var etime = data.finishTime;
@@ -161,7 +160,7 @@ function countCorrectHourForDetail(data){
     let sqlQuest1 = "select distinct DATE_FORMAT(date,'%Y-%m-%d %H:%i:%s') as date,hour from workCalendar where date >= ? and date <= ?";
     let sqlParam = [stime.split(' ')[0], etime.split(' ')[0]];
     //查询当前详情跨过的工作日
-    connection.lastest().query(sqlQuest1,sqlParam,function(error2,res2){
+    connection.latest().query(sqlQuest1,sqlParam,function(error2,res2){
         if(error2){
             console.log(error2);
             console.log(JSON.stringify({code:500,'msg':'更新出错'}));
@@ -216,7 +215,7 @@ function countCorrectHourForDetail(data){
 
 
               // 将计算完成的工时总数存储进详情表
-              connection.lastest().query(sqlQuest6,[countTime.toFixed(5), data.id],function(error6,res6){
+              connection.latest().query(sqlQuest6,[countTime.toFixed(5), data.id],function(error6,res6){
                   if(error2){
                       console.log(error2);console.log('计算流程详情'+data.id+'工时出错');
                       console.log(JSON.stringify({code:500,'msg':'更新出错'}));
@@ -230,11 +229,11 @@ function countCorrectHourForDetail(data){
     })
 }
 
-
+// 流程
 function countProcedureWorkTime(id) {
     var sqlQuest = 'update `procedure` a,(select sum(hourcount) as ithour,sum(workercount) as itworker, pid from procedureDetail where pid = ? and type!=1) b set countWorker = b.itworker, countHour = b.ithour where a.id = b.pid';
 
-    connection.lastest().query(sqlQuest,[id],function(error,res1){
+    connection.latest().query(sqlQuest,[id],function(error,res1){
         if(error){
             console.log(error);
         }else{
@@ -244,26 +243,26 @@ function countProcedureWorkTime(id) {
 
 }
 
-
+// 订单
 function countIndentWorkTime0228(id){
   var sqlQuest0 = 'select indentId from `procedure` where id='+id;
 
-   connection.lastest().query(sqlQuest0,function(error,res){
+   connection.latest().query(sqlQuest0,function(error,res){
       if(error){
           console.log(error);
       }else{
           var indentId = res[0].indentId;
           console.log('indentId====', indentId);
           var sqlQuest = 'update workhour aa,(select distinct indentID,countHour,countWorker from indent INNER JOIN  (select indentID,sum(countHour) as countHour,sum(countWorker) as countWorker from `procedure` group by indentID ) a on  indent.id = a.indentID where id = ?) cc set aa.countHour = cc.countHour,aa.countWorkers=cc.countWorker where aa.indentId=cc.indentID;select actualFinish as actualStart from indent where id=?';
-          connection.lastest().query(sqlQuest,[indentId, indentId],function(error,res1){
+          connection.latest().query(sqlQuest,[indentId, indentId],function(error,res1){
               if(error){
                   console.log(error);
               }else{
                  // console.log('id为'+id+'的流程已完成，工时统计也完成');
                  var sqlQuest3 = 'update workhour set singleHour = countHour/planNum,cost = ?*singleHour where indentID = ?';
                  var sqlParam3 = [41, indentId];
-                 console.log(sqlQuest3, sqlParam3, res2[1][0].factor);
-                 connection.lastest().query(sqlQuest3,sqlParam3,function(error3,res3){
+                 console.log(sqlQuest3, sqlParam3, res1[1][0].factor);
+                 connection.latest().query(sqlQuest3,sqlParam3,function(error3,res3){
                      if(error3){
                          console.log(error3);
                      }else{
@@ -276,13 +275,90 @@ function countIndentWorkTime0228(id){
    })
 }
 
+// dealWorkHourByCalendar();
 
-dealWorkHourByCalendar();
+// 工作日历填写出错，导致工时统计为空，重新计算 2020.04.23
+let countWorkhourAgin = ()=>{
+  // insert into workcalendar(date,hour) values('2020-04-18',8);
+    var sqlQuest = `select *,DATE_FORMAT(startTime,'%Y-%m-%d %H:%i:%s') as startTime,DATE_FORMAT(finishTime,'%Y-%m-%d %H:%i:%s') as finishTime from procedureDetail where finishTime like "2020-04-18%"`;
+  // finishTime
+    connection.latest().query(sqlQuest,function(error,res1){
+      if(error){
+        console.log("error==", error);
+        console.log(error);
+      }
+      // console.log("res1====", res1);
+      for(let i in res1){
+        countCorrectHourForDetail(res1[i]);
+        // countProcedureWorkTime(res1[i].pid);
+        // countIndentWorkTime0228(res1[i].pid);
+      }
+    });
+}
+
+// countWorkhourAgin();
 
 
+// 数据库不稳定，导致工时点击完成失败(数据回滚)，过后时间延长..（2020.06.22）
+let finishMoreInfo = ()=>{
+  let arr = arr_detail = [
+    {id:30325, time: "2020-07-06 17:24:37"}, //dip 8993
+  ];
+
+  /*let arr = arr_procedure = [
+    {id:26224}, //dip 8993
+  ];
+
+  let arr = arr_indent = [
+    {id:26224}, //dip 8993
+  ];*/
 
 
+  // let url = "http://47.101.39.165:2030/produceMS/updateIndentInfo";//更新订单
+  // let url = "http://47.101.39.165:2030/produceMS/updateDutyProcedureStatus";//更新流程
+  let url = "http://47.101.39.165:2030/produceMS/updateDutyProcedureDetailStatus";//更新流程详情
+  // ?id=28636&status=1&finishTime=new Date('2020-06-19 17:30:00')
+  /*let getParams = (url, data) => {
+    return url+ "?id="+data.id+"status=1&finishTime="+new Date(data.time).getTime();
+  };*/
 
+  for(let i in arr){
+    fetch(url, {
+          method:"POST",
+          headers:{
+              'Content-Type': 'application/json',
+          },
+          body:JSON.stringify({id: arr[i].id, status: 1,finishTime: new Date(arr[i].time).getTime()})
+    }).then(data=>{
+      console.log('data==', data);
+    }).catch(error=>{
+      console.log("error==", error);
+    })
+  }
+}
+
+// finishMoreInfo();
+
+
+// 延长每日工时至十小时，修改时未考虑到||的问题，导致判断始终为false，工时统计出错 2020.11.16
+function dealWorkHourByCaptain(){
+  var sqlQuest = `select *,DATE_FORMAT(startTime,'%Y-%m-%d %H:%i:%s') as startTime,DATE_FORMAT(finishTime,'%Y-%m-%d %H:%i:%s') as finishTime from procedureDetail where startTime > "2020-11-16" and  finishTime is not null`;
+  // finishTime
+  connection.latest().query(sqlQuest,function(error,res1){
+    if(error){
+      console.log("error==", error);
+      console.log(error);
+    }
+    // console.log("res1====", res1);
+    for(let i in res1){
+      //countCorrectHourForDetail(res1[i]);
+      // countProcedureWorkTime(res1[i].pid);
+      countIndentWorkTime0228(res1[i].pid);
+    }
+  });
+}
+
+dealWorkHourByCaptain();
 
 
 

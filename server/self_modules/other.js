@@ -1,7 +1,7 @@
 
  //数据库导入员工
  var user_arr2 = [];
-  var user_arr = [
+ var user_arr = [
      [  1 , '00006', 198820, '张崇超'],
      [  2 , '00175', 123456, '朝清'],
      [  3 , '00011', 123456, '袁芳'],
@@ -126,6 +126,7 @@
               connection.query(sqlQuest3, sqlParam3,function(error,res2){
                   if(error){
                       console.log(error);
+                      console.log('roll back!!!!!!!!!');
                       connection.query('rollback;commit');
                       console.log(JSON.stringify({code:500,'msg':'新增用户失败', results:''}));
                   }else{

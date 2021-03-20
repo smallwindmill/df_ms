@@ -50,6 +50,9 @@ header>div:nth-child(2){
 .backdrop{
     position: fixed;top: 0;left: 0;bottom: 0;right: 0;background: rgba(150,150,150,.5);z-index: 1000000;
 }
+.backdrop.div-inner{
+    position: absolute;top: 57px;left: 0;bottom: 0;right: 0;background: rgba(150,150,150,.5);z-index: 50;
+}
 .absoluteCenter{
     position: absolute;top: 50%;left: 50%;
     -webkit-transform: translate(-50%, -90%);
@@ -58,6 +61,14 @@ header>div:nth-child(2){
          -o-transform: translate(-50%, -90%);
             transform: translate(-50%, -90%);
 }
+
+.relativeCenter{
+    position: absolute;
+    top: 50%;
+    left: 45vw;
+    transform: translate(-50%, -90%);
+}
+
 .init-loading{
     width: 3rem;
     height: 3rem;
@@ -162,7 +173,7 @@ div[class*='MuiFormLabel-root'] {
 }
 
 .modal.lg>div>div{
-    max-width: 55%;
+    max-width: 75%;
 }
 .date-picker.inline-block>div>div>div:first-child{
   min-width: 90px!important;
@@ -187,9 +198,7 @@ div[class*='MuiFormLabel-root'] {
 #rightContent .showPage *,#rightContent .showPage table tr td, #rightContent .showPage table tr th{
     font-size: 20px!important;
 }
-.mailDialog *{
-    font-size: 24px!important;
-}
+
 
 .showPage td{padding: 1rem 0!important;}
 #rightContent>div.work-calendar{width: 80%; height:90%; margin: .5rem auto 0;overflow-y: hidden;}

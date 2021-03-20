@@ -1,3 +1,4 @@
+// 语音播报页面
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -73,7 +74,7 @@ class ProduceShowPage extends React.Component {
       var secret = config.baiduAudioAPI.secret;
       var tokenidURL = 'https://openapi.baidu.com/oauth/2.0/token?grant_type=client_credentials&client_id='+id+'&client_secret='+secret;
       fetch(config.server.queryAudioTokenID).then(data=>data.json()).then(res=>{
-        if(res.code!=200){
+        if(res.code !== 200){
           this.tips('语音功能开启失败，请稍后重试');
           setTimeout(()=>this.initBaiduAPI(), 4000);
           return;
@@ -93,7 +94,7 @@ class ProduceShowPage extends React.Component {
 
       fetch(config.server.listShowPageData).then(res=>res.json()).then(data=>{
         // console.log(data);
-        if(data.code!=200){
+        if(data.code !== 200){
           this.tips(data.msg);return;
         }
         if(this.state.pstatus){

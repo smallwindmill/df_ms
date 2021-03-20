@@ -153,10 +153,10 @@ class Menu extends React.Component{
             children:[{
                 name: "模板",
                 route: "recycle/template"
-            },{
+            }/*,{
                 name: "设备",
                 route: "recycle/equipment"
-            },{
+            }*/,{
                 name: "订单",
                 route: "recycle/indent"
             }]

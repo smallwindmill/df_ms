@@ -1,3 +1,4 @@
+// 总页面，配置路由
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -5,6 +6,7 @@ import * as serviceWorker from '../serviceWorker';
 
 import {BrowserRouter as Router, Match, Route, Switch } from 'react-router-dom';
 // import AccountCircle from '@material-ui/icons/AccountCircle';
+
 
 import MessageBar from './main/Messagebar';
 import Menu from './main/Menu';

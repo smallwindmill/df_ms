@@ -1,3 +1,4 @@
+// 用户工时查询页面
 import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
@@ -366,7 +367,7 @@ class QueryWorkTimeForUser extends React.Component {
         onClose={()=>this.setState({timeModal: false})}
       >
       <DialogTitle id="customized-dialog-title" >
-        员工<span className="text-blue">{selectedData.userName}</span>参与项目<small style={{paddingLeft: "1rem"}}>共计{showProgram?showProgram.length:''}</small>
+        <span className="text-blue">{selectedData.userName}</span>参与项目<small style={{paddingLeft: "1rem"}}>共计{showProgram?showProgram.length:''}</small>
       </DialogTitle>
       <div className={classes.container} noValidate autoComplete="off" style={{margin:".5rem 2rem 2rem",padding: "1rem"}}>
         <Grid container spacing={24}>
@@ -376,7 +377,7 @@ class QueryWorkTimeForUser extends React.Component {
               {!showProgram?'':showProgram.map((n,index)=>{
                 return <li className={classes.li}>
                           <span className={classes.li_half1}>
-                            <i style={{paddingRight:".8rem"}}>{(index+1)+".  "}</i>
+                            <i style={{paddingRight:".8rem", fontSize: "smaller"}}>{(index+1)+".  "}</i>
                             <span className="text-primary" style={{paddingRight:".8rem"}} title="erp">{n.erp}</span>
                             <span className="text-blue2" style={{paddingRight:"1.2rem"}} title="物料名称">{n.materialName}</span>
                             <span style={{paddingLeft:".08rem"}} title="流程">{n.name}</span>

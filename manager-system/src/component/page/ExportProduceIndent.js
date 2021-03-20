@@ -1,3 +1,4 @@
+// 导出表单页面
 import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
@@ -31,7 +32,7 @@ import Snackbar from '@material-ui/core/Snackbar';
 
 import config from '../config';
 
-import { exportExcel } from 'xlsx-oc';
+// import { exportExcel } from 'xlsx-oc';
 
 
 let counter = 0;
@@ -204,7 +205,10 @@ class ExportProduceIndent extends React.Component {
         { k: 'status', v: '状态' }
     ];
 
-    var fileName = '订单表'+new Date(startDate).format('yyyy-MM-dd').replace(/-/g,'')+'-'+new Date(endDate).format('yyyy-MM-dd').replace(/-/g,'')+'.xlsx';
+    var fileName = '订单表'+new Date(startDate).format('yyyy-MM-dd').replace(/-/g,'')+'-'+new Date(endDate).format('yyyy-MM-dd').replace(/-/g,'')+'';
+
+    this.openWebWorker(`${config.server.exportTimeIndentServer}?startDate=${startDate.format('yyyy-MM-dd')}&endDate=${endDate.format('yyyy-MM-dd')}&name=${fileName}`, _headers, fileName);
+    return;
 
     fetch(config.server.exportTimeIndentServer +'?startDate='+startDate.format('yyyy-MM-dd')+'&endDate='+endDate.format('yyyy-MM-dd')).then(res=>res.json()).then(data=>{
       if(data.results.length){
@@ -221,7 +225,7 @@ class ExportProduceIndent extends React.Component {
     for(var i in dataSource){
       dataSource[i].key = i + 1;
     }
-    exportExcel(_headers, dataSource, fileName);
+    // exportExcel(_headers, dataSource, fileName);
   }
 
 
@@ -242,7 +246,9 @@ class ExportProduceIndent extends React.Component {
         { k: 'templateID', v: '模板编号' },
         { k: 'status', v: '状态' }
     ];
-    var fileName = '全部订单详细表.xlsx';
+    var fileName = '全部订单详细表';
+    this.openWebWorker(`${config.server.exportTimeIndentServer}?name=${fileName}`, _headers, fileName);
+    return;
 
     fetch(config.server.exportTimeIndentServer).then(res=>res.json()).then(data=>{
       if(data.results.length){
@@ -262,7 +268,10 @@ class ExportProduceIndent extends React.Component {
           { k: 'procedure', v: '详细流程' },
           { k: 'duty', v: '流程对应负责人' }
       ];
-      var fileName = '订单及对应流程表.xlsx';
+      var fileName = '订单及对应流程表';
+
+      this.openWebWorker(`${config.server.exportIndentMatchTemplete}?name=${fileName}`, _headers, fileName);
+      return;
 
       fetch(config.server.exportIndentMatchTemplete).then(res=>res.json()).then(data=>{
         if(data.results.length){
@@ -297,15 +306,31 @@ class ExportProduceIndent extends React.Component {
         { k: 'status', v: '状态' }
     ];
 
+    if(type==0){
+      var fileName = '订单详细表-优先';
+      this.openWebWorker(`${config.server.exportTimeIndentServer}?priority=1&name=${fileName}`, _headers, fileName);
+      return;
+    }else if(type==1){
+      var fileName = '订单详细表-新品';
+      this.openWebWorker(`${config.server.exportTimeIndentServer}?ifNew=1&name=${fileName}`, _headers, fileName);
+      return;
+    }
+
     fetch(config.server.exportTimeIndentServer).then(res=>res.json()).then(data=>{
       if(data.results.length){
         if(type==0){
-          var fileName = '订单详细表-优先.xlsx';
+          var fileName = '订单详细表-优先';
+          this.openWebWorker(`${config.server.exportIndentMatchTemplete}?priority = 1&name=${fileName}`, _headers, fileName);
+          return;
+
           this.dlExcel(_headers, data.results.filter(function(index) {
             return index.priority == 1;
           }), fileName);
         }else if(type==1){
-          var fileName = '订单详细表-新品.xlsx';
+          var fileName = '订单详细表-新品';
+          this.openWebWorker(`${config.server.exportIndentMatchTemplete}?ifNew= 1&name=${fileName}`, _headers, fileName);
+          return;
+
           this.dlExcel(_headers, data.results.filter(function(index) {
             return index.ifNew == 1;
           }), fileName);
@@ -329,9 +354,11 @@ class ExportProduceIndent extends React.Component {
           { k: 'countWorkers', v: '总人数' },
           { k: 'cost', v: '工时费' }
       ];
-      var fileName = '订单工时表.xlsx';
+      var fileName = '订单工时表';
+      this.openWebWorker(`${config.server.exportWorkHourByDate}?name=${fileName}`, _headers, fileName);
+      return;
 
-      fetch(config.server.queryWorkHourByDate).then(res=>res.json()).then(data=>{
+      fetch(config.server.exportWorkHourByDate).then(res=>res.json()).then(data=>{
         if(data.results.length){
           this.dlExcel(_headers, data.results, fileName);
         }else{
@@ -353,9 +380,12 @@ class ExportProduceIndent extends React.Component {
           { k: 'countWorker', v: '总人数' },
           { k: 'cost', v: '工时费' }
       ];
-      var fileName = '流程工时表.xlsx';
+      var fileName = '流程工时表';
 
-      fetch(config.server.queryProcedureWorkTime).then(res=>res.json()).then(data=>{
+      this.openWebWorker(`${config.server.exportProcedureWorkTime}?name=${1}`, _headers, fileName);
+      return;
+
+      fetch(config.server.exportProcedureWorkTime).then(res=>res.json()).then(data=>{
         if(data.results.length){
           for(var n of data.results){
             n.singleHour = ((n.countHour/(n.countWorker||1)) || 0).toFixed(5);
@@ -399,6 +429,69 @@ class ExportProduceIndent extends React.Component {
     setTimeout(()=>{
       this.setState({tipsOpen: false});
     },4000);
+  }
+
+  toArrayBuffer(e) {
+      for (var t = new ArrayBuffer(e.length), r = new Uint8Array(t), n = 0; n != e.length; ++n) r[n] = 255 & e.charCodeAt(n);
+      return t
+  }
+
+  openWebWorker (url, _headers, name) {
+    var w;
+    let that = this;
+    console.log("url===", url);
+    function startWorker(){
+      if(typeof(Worker)!=="undefined"){
+        if(typeof(w)=="undefined"){
+          // w=new Worker("/excel-worker.js");
+          w=new Worker("/worker.js");
+        }
+        w.postMessage(JSON.stringify({url: url, _headers: _headers, fileName: name}));
+        w.onmessage = function (event) {
+          // document.getElementById("result").innerHTML=event.data;
+          console.log(event.data);
+          let params = event.data;
+          if(params.msg) that.tips(params.msg);
+          if(params.type == 'data') {
+            let name = params.name;
+            let content = params.content;
+              /*var o = File(name);
+              return o.open("w"), o.encoding = "binary", Array.isArray(content) && (content = Blob(content)), o.write(content), o.close();*/
+              var a = new Blob([that.toArrayBuffer(content)], {
+                  type: "application/octet-stream"
+              });
+              // if ("undefined" !== typeof navigator && navigator.msSaveBlob) return navigator.msSaveBlob(content, name);
+              // if ("undefined" !== typeof saveAs) return saveAs(a, name);
+              if ("undefined" !== typeof URL && "undefined" !== typeof document && document.createElement && URL.createObjectURL) {
+                  var s = URL.createObjectURL(a);
+                 /* if ("function" == typeof({}).download) return URL.revokeObjectURL && "undefined" !== typeof setTimeout && setTimeout(function() {
+                      URL.revokeObjectURL(s)
+                  }, 6e4), chrome.downloads.download({
+                      url: s,
+                      filename: name,
+                      saveAs: !0
+                  });*/
+                  var i = document.createElement("a");
+                  if (null != i.download) return i.download = name, i.href = s, document.body.appendChild(i), i.click(), document.body.removeChild(i), URL.revokeObjectURL && "undefined" !== typeof setTimeout && setTimeout(function() {
+                      URL.revokeObjectURL(s)
+                  }, 6e4)
+              }
+          };
+        };
+      }else{
+        console.log("Sorry, your browser does not support Web Workers...");
+      }
+    }
+
+    // startWorker();
+    function stopWorker(){
+      w.terminate();
+    }
+
+    let i = document.createElement("a");
+    i.href = url+'&name=1&token='+(new Date().getTime()*400+111111111111111);
+    i.target = "_blank";
+    i.click();
   }
 
 

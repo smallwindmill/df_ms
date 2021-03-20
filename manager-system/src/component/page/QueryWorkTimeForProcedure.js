@@ -1,3 +1,4 @@
+// 流程工时查询页面
 import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
@@ -175,20 +176,48 @@ class EnhancedTableToolbar extends React.Component{
         </Toolbar>
         <Grid container align="left"  style={{margin:'1rem 0 1rem',padding: '0 1.2rem'}}>
           <Grid item xs={6} align="left">
-
+            <div style={{textAlign:"right", paddingRight: "0rem"}}>筛选:</div>
           </Grid>
 
-          <Grid item align="right" xs={6}>
+          <Grid item align="right" xs={2}>
             <TextField style={{marginTop:0,marginLeft:'1rem'}}
-            placeholder="请输入订单号或货号查询"
+            placeholder="请输入订单号或货号"
             className={classes.textField}
             type="text"
-            onChange = {(e)=>this.props.queryByKeyword(e)}
+            onChange = {(e)=>this.props.queryByKeyword(e, 1)}
             margin="normal"
             InputLabelProps={{
               shrink: true,
             }}></TextField>
           </Grid>
+
+          <Grid item align="right" xs={2}>
+            <TextField style={{marginTop:0,marginLeft:'1rem'}}
+            placeholder="请输入生产数量"
+            className={classes.textField}
+            type="text"
+            onChange = {(e)=>this.props.queryByKeyword(e, 2)}
+            margin="normal"
+            InputLabelProps={{
+              shrink: true,
+            }}></TextField>
+          </Grid>
+
+
+          <Grid item align="right" xs={2}>
+            <TextField style={{marginTop:0,marginLeft:'1rem'}}
+            placeholder="请输入人数"
+            className={classes.textField}
+            type="text"
+            onChange = {(e)=>this.props.queryByKeyword(e, 3)}
+            margin="normal"
+            InputLabelProps={{
+              shrink: true,
+            }}></TextField>
+          </Grid>
+
+
+
         </Grid>
           </div>
       )
@@ -265,15 +294,26 @@ class QueryWorkTimeForProcedure extends React.Component {
 
   isSelected = id => this.state.selected.indexOf(id) !== -1;
 
-  queryByKeyword = (e) =>{
+  queryByKeyword = (e, type) =>{
     e.persist();
+
+    if(type === 1){
+      this.filter_id = e.target.value.toUpperCase();
+    }else if(type === 2){
+      this.filter_count = e.target.value;
+    }else if(type === 3){
+      this.filter_num = e.target.value;
+    }
+    this.filter_id = this.filter_id || "";
+    this.filter_count = this.filter_count || "";
+    this.filter_num = this.filter_num || "";
 
     if(!this.state.dataBak){
       this.state.dataBak = this.state.data;
     }
 
     this.state.data = this.state.dataBak.filter((item)=>{
-      return (item.erp.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1 || item.materialCode.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1 || item.materialName.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1|| item.name.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1);
+      return ((item.erp.toUpperCase().match(this.filter_id) || item.materialCode.toUpperCase().match(this.filter_id) || item.materialName.toUpperCase().match(this.filter_id)) && (this.filter_count == "" || item.planNum == this.filter_count) && (this.filter_num == "" || item.countWorker == this.filter_num) );
     });
     this.setState({data: this.state.data });
 

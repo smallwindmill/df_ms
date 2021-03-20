@@ -1,3 +1,4 @@
+// 订单管理页面
 import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
@@ -43,6 +44,8 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 
 import Snackbar from '@material-ui/core/Snackbar';
+import CircularProgress from '@material-ui/core/CircularProgress';
+
 
 import Confirm from '../main/Confirm';
 import config from '../config';
@@ -166,7 +169,7 @@ class EnhancedTableToolbar extends React.Component{
 
   state = {
     open: false,
-    dateRange:[{text: "全部"},{text: "最近一周"},{text: "最近一月"},{text: "最近三月"},{text: "最近一年"},{text: "一年以前"}],
+    dateRange:[{text: "全部", value: 0},{text: "最近一周", value: 1},{text: "最近一月", value: 2},{text: "最近三月", value: 3},{text: "最近一年", value: 4},{text: "一年以前", value: 5}],
     typeQuery:[
       {text: "全部",code: 0},
       {text: "加急",code: 1},
@@ -231,7 +234,7 @@ class EnhancedTableToolbar extends React.Component{
           if(data.code!=200){
             window.loading(false);
             // this.tips(data.msg || '文件上传出错，请稍后再试','2000');return;
-            this.tips(<span>本次共上传<span className="text-blue">{data.results.total}</span>条数据，<span className="text-blue">{data.results.success}</span>条成功，<span className="text-red">{errorMsg}</span>条数据失败</span>, 'stay');
+            this.tips(<span>本次共上传<span className="text-primary">{data.results.total}</span>条数据，<span className="text-blue">{data.results.success}</span>条成功，<span className="text-red">{errorMsg}</span>条数据失败</span>, 'stay');
             // nextFunction();
           }
 
@@ -305,7 +308,11 @@ class EnhancedTableToolbar extends React.Component{
                <Button variant="contained" color="default" className={'oveflow-hidden '+(this.state.fileValue?'hide':'fff')}>
                 请选择文件
               <CloudUploadIcon className={classes.rightIcon} />
-              <input type="file" className="invisible" onChange={(e)=>{e.persist();console.log(e.target);this.setState({ fileValue: e.target.files });}} />
+              <input type="file"
+                     className="invisible"
+                     accept = ".xlsx,.xls"
+                     onChange={(e)=>{e.persist();console.log(e.target);this.setState({ fileValue: e.target.files });}}
+              />
               </Button>
 
               <div className = {'pointer '+(this.state.fileValue?'fff':'hide')} onClick = {()=>document.querySelectorAll('input[type="file"]')[0].click()}>
@@ -352,7 +359,7 @@ class EnhancedTableToolbar extends React.Component{
           <Grid item xs={6} align="left">
             <Grid item xs={12} className="filterTool small">
                   <span className="blod">时间</span>
-                  {dateRange.map((date,index)=>(<span key = {index} className={"btn-sm "+(index==0?'bg-primary':'')} onClick={(e)=>this.props.queryIndentByDate(e, date, index)}> {date.text}</span>))}
+                  {dateRange.map((date,index)=>(<span key = {index} className={"btn-sm "+(index==2?'bg-primary':'')} onClick={(e)=>this.props.queryIndentByDate(e, date)}> {date.text}</span>))}
             </Grid>
             <Grid item xs={12} align="left" className="filterTool small" style = {{margin: '1rem 0'}}>
                 <span className="blod">类型</span>
@@ -392,6 +399,9 @@ const styles = theme => ({
   },
   table: {
     minWidth: 1020,
+  },
+  tableAllCon: {
+    position: "relative",
   },
   tableCon: {
     overflowX: 'auto',
@@ -443,17 +453,19 @@ class HandleIndent extends React.Component {
         document.querySelectorAll('.filterTool .type-sit')[2].click();
     }, 1000);//默认展示进行中订单
     // this.tips(<span>本次共上传<span className="text-blue"></span>条数据，<span className="text-blue"></span>条成功，<span className="text-red"></span>条数据失败</span>, 'stay');
-
   }
 
   initLoadData = () => {
-    fetch(config.server.listAllIndentByDate).then(res=>res.json()).then(data=>{
+    var queryStart = new Date(new Date()-1000*60*60*24*30).format('yyyy-MM-dd');//一月
+    // var queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
+    var queryEnd = new Date().format('yyyy-MM-dd');
+    fetch(config.server.listAllIndentByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
       // console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
       this.changeIndentData(data.results || []);
-    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试');});
   }
 
   handleClose = () => {
@@ -470,6 +482,10 @@ class HandleIndent extends React.Component {
 
     this.setState({ order, orderBy });
   };
+
+  hideInner (hide) {
+    this.setState({loading: hide});
+  }
 
   handleSelectAllClick = event => {
     if (event.target.checked) {
@@ -541,13 +557,40 @@ class HandleIndent extends React.Component {
     if(type==1){
       this.state.data.push(data);
       this.setState({data: this.state.data});
+      // this.data = this.state.data;
+      // this.showDataWithAnimationFrame();
     }else if(type==2){
       this.setState({data: this.state.data});
+      // this.data = this.state.data;
+      // this.showDataWithAnimationFrame();
       // this.state.data[this.state.editNum] = data;
     }else{
       this.setState({data: data});
+      // this.data = data;
+      // this.showDataWithAnimationFrame();
     }
     this.state.dataBak = this.state.data;
+    this.hideInner(true);
+  }
+
+  showDataWithAnimationFrame = () => {
+    // if(this.state.data.length < data.length){
+    this.index = this.index || 0;
+    let data = this.data;
+    let index = this.index;
+    console.log("msg", index, data.length);
+    if(index < data.length - 1){
+      // console.log("data===", data);
+      let data_inner = data.slice(this.index, 500);
+      let data_arr_in = this.state.data.concat(data_inner);
+      this.setState({data: data_arr_in});
+      console.log("data_inner===", data_arr_in);
+      this.index += 500;
+      window.requestAnimationFrame(this.showDataWithAnimationFrame);
+    }else{
+      this.index = 0;
+      this.hideInner(true);
+    }
 
   }
 
@@ -596,7 +639,7 @@ class HandleIndent extends React.Component {
   }
 
   // 根据日期筛选值
-  queryIndentByDate=(e, data, index)=>{
+  queryIndentByDate=(e, data)=>{
     var { queryStart, queryEnd } = this.state;
     e.persist();
     // 切换显示高亮
@@ -608,8 +651,9 @@ class HandleIndent extends React.Component {
 
     queryEnd = new Date().format('yyyy-MM-dd');
 
+    let index = data.value;
     if(index==0){
-      queryStart = '';//一周
+      queryStart = '';//所有
       queryEnd = '';
     }if(index==1){
       queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
@@ -895,6 +939,120 @@ class HandleIndent extends React.Component {
     </Dialog>)
   }
 
+  // 查看设备参与项目
+  timeInProgram =(n)=>{
+    this.setState({selectedData: n});
+    // console.log(n);
+    var { startDate, endDate } = this.state;
+
+    fetch(config.server.queryEquipmentProgram+'?userID='+n.id+'&userName='+n.name+'&startDate='+startDate+'&endDate='+endDate).then(res=>res.json()).then(data=>{
+      // console.log(data);
+      if(data.code!=200){
+        this.tips(data.msg);return;
+      }
+      this.setState({timeModal: true, showProgram: data.results});
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+  }
+
+  timeInProgramModal = ()=>{
+
+    const DialogTitle = withStyles(theme => ({
+      root: {
+        margin: 0,
+        padding: 18,
+      },
+      titlep: {
+        fontSize: 20
+      }
+    }))(props => {
+      const { children, classes, onClose } = props;
+      return (
+        <MuiDialogTitle disableTypography className={classes.root}>
+          <Typography variant="" className={classes.titlep}>{children}</Typography>
+        </MuiDialogTitle>
+      );
+    });
+
+    var { selectedData,showProgram } = this.state;
+    const ModalContent = withStyles(theme => ({
+      container: {
+        minWidth: "30vw",
+        minHeight: "30vh",
+        maxHeight: "40vh",
+        overflowY: "scroll"
+      },
+      li: {
+        padding: "4px 0"
+      },
+      li_half1: {
+        display: "inline-block",
+        width: "100%"
+      },
+      li_half2: {
+        display: "none",
+        boxSizing: "border-box",
+        width: "0%"
+      }
+    }))(props => {
+      const { children, classes, onClose } = props;
+      return (<Dialog
+        aria-labelledby="customized-dialog-title" className="modal lg"
+        open={this.state.timeModal} style={{marginTop:'-10rem'}}
+        onClose={()=>this.setState({timeModal: false})}
+      >
+      <DialogTitle id="customized-dialog-title" >
+        设备<span className="text-blue">{selectedData.name}</span>参与项目<small style={{paddingLeft: "1rem"}}>共计{showProgram?showProgram.length:''}</small>
+      </DialogTitle>
+      <div className={classes.container} noValidate autoComplete="off" style={{margin:".5rem 2rem 2rem",padding: "1rem"}}>
+        <Grid container spacing={24}>
+
+          <Grid item xs={12} style={{paddingTop:0}}>
+            {/*<ul style={{paddingLeft: 0,marginTop:0,listStyle: "none"}}>
+                          {!showProgram?'':showProgram.map((n,index)=>{
+                            return <li className={classes.li}>
+                                      <span className={classes.li_half1}>
+                                        <i style={{ paddingRight:".8rem",fontSize: "smaller" }}>{(index+1)+".  "}</i>
+                                        <span className="text-primary" style={{paddingRight:".8rem"}} title="erp">{n.erp}</span>
+                                        <span className="text-blue2" style={{paddingRight:"1.2rem"}} title="物料名称">{n.materialName}</span>
+                                        <span style={{paddingLeft:".08rem"}} title="流程">{n.name}</span>
+                                        <span style={{paddingLeft:".08rem"}} title="工时">{n.eq_hourtime}</span>
+                                      </span>
+                                      <span style={{paddingRight:"2rem"}} className={classes.li_half2+" text-blue text-right pointer"}></span>
+                                    </li>
+                          })}
+                        </ul>*/}
+              <table style={{paddingLeft: 0,marginTop:0,listStyle: "none"}}>
+                <thead>
+                 <tr className={classes.li} style={{fontSize:"18px"}}>
+                     <th>序号</th>
+                     <th>erp</th>
+                     <th>物料名称</th>
+                     <th>流程</th>
+                     <th>工时</th>
+                 </tr>
+                </thead>
+                <tbody>
+                {!showProgram?'':showProgram.map((n,index)=>{
+                  return <tr className={classes.li}>
+                              <td><i style={{ paddingRight2:".8rem",fontSize: "smaller" }}>{(index+1)+".  "}</i></td>
+                              <td><span className="text-primary" style={{paddingRight2:".8rem"}} title="erp">{n.erp}</span></td>
+                              <td><span className="text-blue2 eq-time-name" title={"物料名称:"+n.materialName}>{n.materialName}</span></td>
+                              <td><span title="流程">{n.name}</span></td>
+                              <td><span title="工时">{ n.eq_hourtime?n.eq_hourtime.toFixed(3):0 }</span></td>
+                          </tr>
+                })}
+                </tbody>
+              </table>
+          </Grid>
+
+        </Grid>
+
+        </div>
+    </Dialog>)})
+
+
+    return <ModalContent></ModalContent>;
+  }
 
   tips = (msg, type) => {
     if(msg){
@@ -914,96 +1072,109 @@ class HandleIndent extends React.Component {
   render() {
     const { classes } = this.props;
 
-    const { filterFun, data, order, orderBy, selected, rowsPerPage, page } = this.state;
+    const { loading, filterFun, data, order, orderBy, selected, rowsPerPage, page } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar  tips = {this.tips} initLoadData = { this.initLoadData } queryByKeyword = {this.queryByKeyword} queryIndentByDate = {this.queryIndentByDate} queryIndentByType = {this.queryIndentByType} queryIndentBySit = {this.queryIndentBySit} />
+        <EnhancedTableToolbar
+          tips = {this.tips}
+          initLoadData = { this.initLoadData }
+          queryByKeyword = {this.queryByKeyword} queryIndentByDate = {this.queryIndentByDate}
+          queryIndentByType = {this.queryIndentByType}
+          queryIndentBySit = {this.queryIndentBySit} />
         {/*表头*/}
-        <div className={classes.tableCon}>
-
-          <Table className={classes.table+' nowrap indentTable'} aria-labelledby="tableTitle">
-            <EnhancedTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy} tips = {this.tips}
-              rowCount={data.length}
-            />
-          </Table>
-          <div className={classes.tableWrapper}>
+        <div class={classes.tableAllCon}>
+          {!loading?(<div className = "backdrop div-inner" >
+            <div className="relativeCenter text-blue" >
+              <CircularProgress size = {50} />
+            </div>
+          </div>):''}
+          <div className={classes.tableCon}>
             <Table className={classes.table+' nowrap indentTable'} aria-labelledby="tableTitle">
-              {/*<EnhancedTableHead
-                              numSelected={selected.length}
-                              order={order}
-                              orderBy={orderBy} tips = {this.tips}
-                              rowCount={data.length}
-                            />*/}
-              <TableBody>
-                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((n, index) => {
-                    const isSelected = this.isSelected(n.id);
-                    return (
-                      <TableRow
-                        hover
-                        role="checkbox"
-                        aria-checked={isSelected}
-                        tabIndex={-1}
-                        key={index}
-                        selected={isSelected} className = {n.priority?'bg-red':(n.ifNew?'bg-blue':'')}
-                      >
-                        <TableCell align="center">{ page * rowsPerPage+index+1 }</TableCell>
-                        <TableCell align="center">{n.erp}</TableCell>
-                        <TableCell align="center">{n.materialCode}</TableCell>
-                        <TableCell align="center" className={classes.markTd} title={n.materialName}>{n.materialName}</TableCell>
-                        <TableCell align="center">{n.planNum}</TableCell>
-                        <TableCell align="center">{n.planFinishDate ? (new Date(n.planFinishDate).getDate()?new Date(n.planFinishDate).format('yyyy-MM-dd'):false):false}</TableCell>
-                        <TableCell align="center">{n.planOnline ? (new Date(n.planOnline).getDate()?new Date(n.planOnline).format('yyyy-MM-dd'):false):false}</TableCell>
-                        <TableCell align="center">{n.actualStart ? (new Date(n.actualStart).getDate()?new Date(n.actualStart).format('yyyy-MM-dd'):false):false}</TableCell>
-                        <TableCell align="center">{n.actualFinish ? (new Date(n.actualFinish).getDate()?new Date(n.actualFinish).format('yyyy-MM-dd'):false):false}</TableCell>
-                        <TableCell align="center" >{n.priority?"是":"否"}</TableCell>
-                        <TableCell align="center">{n.ifNew?"是":"否"}</TableCell>
-                        <TableCell align="center" className={classes.markTd} title={n.remark}>{n.remark}</TableCell>
-                        <TableCell align="center">{n.feedback}</TableCell>
-                        <TableCell align="center">{n.templateID}</TableCell>
-                        <TableCell align="center" className = {n.status==2?"text-success":(n.status==1?"text-blue":"")}>{n.status==2?"完成":(n.status==1?"进行中":"未开始")}</TableCell>
-                        <TableCell align="center">
-                          {n.status==1?<span className="pointer btn text-success"   onClick={()=>this.finishIndent(n, page * rowsPerPage+index)}>设为完成</span>:''}
-                          {n.status==0?<span className="pointer btn text-blue"   onClick={()=>this.startIndent(n, page * rowsPerPage+index)}>开始订单</span>:''}
-                          <span className="pointer btn text-blue"   onClick={()=>this.updateIndent(n, page * rowsPerPage+index)}>修改</span>
-                          <span className="pointer btn text-red" onClick={()=>this.deleteIndent(n, page * rowsPerPage+index)}>删除</span>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  }) }
-
-
-                {/*{emptyRows > 0 && (
-                                <TableRow style={{ height: 49 * emptyRows }}>
-                                  <TableCell colSpan={16} />
-                                </TableRow>)}*/}
-              </TableBody>
+              <EnhancedTableHead
+                numSelected={selected.length}
+                order={order}
+                orderBy={orderBy} tips = {this.tips}
+                rowCount={data.length}
+              />
             </Table>
+            <div className={classes.tableWrapper}>
+              <Table className={classes.table+' nowrap indentTable'} aria-labelledby="tableTitle">
+                {/*<EnhancedTableHead
+                                numSelected={selected.length}
+                                order={order}
+                                orderBy={orderBy} tips = {this.tips}
+                                rowCount={data.length}
+                              />*/}
+                <TableBody>
+                  {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((n, index) => {
+                      const isSelected = this.isSelected(n.id);
+                      return (
+                        <TableRow
+                          hover
+                          role="checkbox"
+                          aria-checked={isSelected}
+                          tabIndex={-1}
+                          key={index}
+                          selected={isSelected} className = {n.priority?'bg-red':(n.ifNew?'bg-blue':'')}
+                        >
+                          <TableCell align="center">{ page * rowsPerPage+index+1 }</TableCell>
+                          <TableCell align="center">{n.erp}</TableCell>
+                          <TableCell align="center">{n.materialCode}</TableCell>
+                          <TableCell align="center" className={classes.markTd} title={n.materialName}>{n.materialName}</TableCell>
+                          <TableCell align="center">{n.planNum}</TableCell>
+                          <TableCell align="center">{n.planFinishDate ? (new Date(n.planFinishDate).getDate()?new Date(n.planFinishDate).format('yyyy-MM-dd'):false):false}</TableCell>
+                          <TableCell align="center">{n.planOnline ? (new Date(n.planOnline).getDate()?new Date(n.planOnline).format('yyyy-MM-dd'):false):false}</TableCell>
+                          <TableCell align="center">{n.actualStart ? (new Date(n.actualStart).getDate()?new Date(n.actualStart).format('yyyy-MM-dd'):false):false}</TableCell>
+                          <TableCell align="center">{n.actualFinish ? (new Date(n.actualFinish).getDate()?new Date(n.actualFinish).format('yyyy-MM-dd'):false):false}</TableCell>
+                          <TableCell align="center" >{n.priority?"是":"否"}</TableCell>
+                          <TableCell align="center">{n.ifNew?"是":"否"}</TableCell>
+                          <TableCell align="center" className={classes.markTd} title={n.remark}>{n.remark}</TableCell>
+                          <TableCell align="center">{n.feedback}</TableCell>
+                          <TableCell align="center">{n.templateID}</TableCell>
+                          <TableCell align="center" className = {n.status==2?"text-primary":(n.status==1?"text-blue":"")}>{n.status==2?"完成":(n.status==1?"进行中":"未开始")}</TableCell>
+                          <TableCell align="center">
+                            {n.status==1?<span className="pointer btn text-primary"   onClick={()=>this.finishIndent(n, page * rowsPerPage+index)}>设为完成</span>:''}
+                            {n.status==0?<span className="pointer btn text-blue"   onClick={()=>this.startIndent(n, page * rowsPerPage+index)}>开始订单</span>:''}
+                            <span className="pointer btn text-blue"   onClick={()=>this.updateIndent(n, page * rowsPerPage+index)}>修改</span>
+                            <span className="pointer btn text-red" onClick={()=>this.deleteIndent(n, page * rowsPerPage+index)}>删除</span>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    }) }
+
+
+                  {/*{emptyRows > 0 && (
+                                  <TableRow style={{ height: 49 * emptyRows }}>
+                                    <TableCell colSpan={16} />
+                                  </TableRow>)}*/}
+                </TableBody>
+              </Table>
+            </div>
+              {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
           </div>
-            {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
+          <TablePagination
+            className="TablePagination"
+            rowsPerPageOptions={[1*config.page, 2*config.page, 3*config.page]}
+            component="div"
+            count={data.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            backIconButtonProps={{
+              'aria-label': '上一页',
+            }}
+            nextIconButtonProps={{
+              'aria-label': '下一页',
+            }}
+            onChangePage={this.handleChangePage}
+            onChangeRowsPerPage={this.handleChangeRowsPerPage}
+          />
         </div>
-        <TablePagination
-          className="TablePagination"
-          rowsPerPageOptions={[1*config.page, 2*config.page, 3*config.page]}
-          component="div"
-          count={data.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          backIconButtonProps={{
-            'aria-label': '上一页',
-          }}
-          nextIconButtonProps={{
-            'aria-label': '下一页',
-          }}
-          onChangePage={this.handleChangePage}
-          onChangeRowsPerPage={this.handleChangeRowsPerPage}
-        />
         {this.updateUserPowerModal()}
+        {this.timeInProgramModal()}
+
         <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.state.sureFun} ifInfo = {this.state.ifInfo} />
 
         <Snackbar style={{marginTop:'70px'}}

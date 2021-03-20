@@ -1,3 +1,4 @@
+// 设备工时查询页面
 import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
@@ -156,10 +157,10 @@ class EnhancedTableToolbar extends React.Component{
   }
 
   componentWillMount() {
-    this.queryWorktimeByUser()
+    this.queryWorktimeByEquipment()
   }
 
-  queryWorktimeByUser=()=>{
+  queryWorktimeByEquipment=()=>{
     var { startDate, endDate } = this.state;
 
     fetch(config.server.queryWorkTimeForEquipment+'?startDate='+startDate.format('yyyy-MM-dd')+'&endDate='+endDate.format('yyyy-MM-dd')).then(res=>res.json()).then(data=>{
@@ -171,10 +172,12 @@ class EnhancedTableToolbar extends React.Component{
 
   onChangeStartDate = date => {
     this.setState({ startDate: date });
+    this.props.changDate({startDate: date});
   };
 
   onChangeEndDate = date => {
     this.setState({ endDate: date });
+    this.props.changDate({endDate: date});
   };
 
 
@@ -199,19 +202,20 @@ class EnhancedTableToolbar extends React.Component{
             按日期查询：
             <DateFormatInput  className="date-picker inline-block" name='date-input' value={this.state.startDate } onChange={this.onChangeStartDate} style={{marginbottom:'2rem'}} />
             <DateFormatInput name='date-input' className="date-picker inline-block"  value={this.state.endDate } onChange={this.onChangeEndDate}/>
-            <span className="btn bg-primary" style={{marginLeft:'1rem'}} onClick={this.queryWorktimeByUser}>查询</span>
+            <span className="btn bg-primary" style={{marginLeft:'1rem'}} onClick={this.queryWorktimeByEquipment}>查询</span>
           </Grid>
 
           <Grid item align="right" xs={6}>
             <TextField style={{marginTop:0,marginLeft:'1rem'}}
-            placeholder="请输入设备名称或ID查询"
+            placeholder="请输入订单号查询设备工时"
             className={classes.textField}
             type="text"
-            onChange = {(e)=>this.props.queryByKeyword(e)}
+            onChange = {(e)=>this.props.queryTimeByKeyId(e, 'value')}
             margin="normal"
             InputLabelProps={{
               shrink: true,
             }}></TextField>
+            <span className="btn bg-primary" style={{marginLeft:'1rem'}} onClick={this.props.queryTimeByKeyId}>查询</span>
           </Grid>
         </Grid>
           </div>
@@ -263,9 +267,9 @@ class QueryWorkTimeForEquipment extends React.Component {
 
     // this.queryWorkHourForUser();
 
-    var queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
-    var queryEnd = new Date().format('yyyy-MM-dd');
-
+    var queryStart = new Date(new Date()-1000*60*60*24*30);//一月
+    var queryEnd = new Date();
+    this.setState({startDate: queryStart, endDate: queryEnd});
   }
 
 
@@ -309,7 +313,9 @@ class QueryWorkTimeForEquipment extends React.Component {
   timeInProgram =(n)=>{
     this.setState({selectedData: n});
     // console.log(n);
-    fetch(config.server.queryEquipmentProgram+'?userID='+n.id+'&userName='+n.name).then(res=>res.json()).then(data=>{
+    var { startDate, endDate } = this.state;
+
+    fetch(config.server.queryEquipmentProgram+'?userID='+n.id+'&userName='+n.name+'&startDate='+startDate+'&endDate='+endDate).then(res=>res.json()).then(data=>{
       // console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
@@ -318,6 +324,123 @@ class QueryWorkTimeForEquipment extends React.Component {
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
   }
 
+  //根据订单id查询参与设备
+  showEqWorkTimeMoal = (e, type) => {
+    if(type == 'value') {this.setState({filter_id: e.target.value});return;}
+    let indent = this.state.filter_id;
+    if(!indent) return;
+    // indent.id
+    // console.log('ff===', indent);
+    fetch(config.server.queryEqWorkTimeWithIndentID+'?id='+indent).then(res=>res.json()).then(data=>{
+      // console.log(data);
+      if(data.code!=200){
+        //this.setState({timeModal: true, showProgram: [{},{},{},{},{}]});
+        this.tips(data.msg);return;
+      }
+      this.setState({timeModalId: true, selectedData: data, showProgram: data.results});
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+  }
+
+  timeInProgramModalById = ()=>{
+
+    const DialogTitle = withStyles(theme => ({
+      root: {
+        margin: 0,
+        padding: 18,
+      },
+      titlep: {
+        fontSize: 20
+      }
+    }))(props => {
+      const { children, classes, onClose } = props;
+      return (
+        <MuiDialogTitle disableTypography className={classes.root}>
+          <Typography variant="" className={classes.titlep}>{children}</Typography>
+        </MuiDialogTitle>
+      );
+    });
+
+    var { selectedData,showProgram } = this.state;
+    const ModalContent = withStyles(theme => ({
+      container: {
+        minWidth: "40vw",
+        minHeight: "10vh",
+        maxHeight: "40vh",
+        overflowY: "scroll"
+      },
+      li: {
+        padding: "4px 0",
+        textAlign: "left"
+      },
+      li_half1: {
+        display: "inline-block",
+        width: "100%"
+      },
+      li_half2: {
+        display: "none",
+        boxSizing: "border-box",
+        width: "0%"
+      },
+      rightBadge: {
+        top: "-8px",
+        right: 0,
+        position: "relative",
+        background: "rgb(234 69 69 / 41%)",
+        color:" #ffffff!important",
+        borderRadius: "3px",
+        padding: "1px 2px",
+        margin: "8px 0",
+        display: "inline-block"
+      }
+    }))(props => {
+      const { children, classes, onClose } = props;
+      return (<Dialog
+        aria-labelledby="customized-dialog-title" className="modal lg"
+        open={this.state.timeModalId} style={{marginTop:'-10rem'}}
+        onClose={()=>this.setState({timeModalId: false})}
+      >
+      <DialogTitle id="customized-dialog-title" >
+        订单<span className="text-blue">{selectedData.erp}</span>参与设备<small style={{paddingLeft: "1rem"}}>共计{showProgram?showProgram.length:''}</small>
+      </DialogTitle>
+      <div className={classes.container} noValidate autoComplete="off" style={{margin:".5rem 2rem 2rem",padding: "1rem"}}>
+        <Grid container spacing={24}>
+          <Grid item xs={12} style={{paddingTop:0}}>
+              <table style={{paddingLeft: 0,marginTop:0,listStyle: "none",width:"100%"}}>
+                <thead>
+                 <tr className={classes.li} style={{fontSize:"18px"}}>
+                     <th>序号</th>
+                     <th>流程</th>
+                     <th>物料</th>
+                     <th>设备</th>
+                     <th>工时</th>
+                 </tr>
+                </thead>
+                <tbody>
+                {!showProgram?'':showProgram.map((n,index)=>{
+                  return <tr className={classes.li}>
+                              <td><i style={{ paddingRight2:".8rem",fontSize: "smaller" }}>{(index+1)+".  "}</i></td>
+                              <td>
+                              <span className="text-blue2 eq-time-name" title={"流程名称:"+n.name}>{n.name}
+                                 {n.pro_status==1?<small className={classes.rightBadge}>未完成</small>:''}
+                                </span>
+                              </td>
+                              <td><span className="text-blue2 eq-time-name" title={"物料名称"+n.materialName}>{n.materialName}</span></td>
+                              <td><span className="text-blue2 eq-time-name" title={"设备名称:"+n.worker}>{n.worker}</span></td>
+                              <td><span title="工时">{ n.worktime?n.worktime.toFixed(3):0 }</span></td>
+                          </tr>
+                })}
+                </tbody>
+              </table>
+          </Grid>
+
+        </Grid>
+
+        </div>
+    </Dialog>)})
+
+
+    return <ModalContent></ModalContent>;
+  }
 
   timeInProgramModal = ()=>{
 
@@ -341,9 +464,9 @@ class QueryWorkTimeForEquipment extends React.Component {
     var { selectedData,showProgram } = this.state;
     const ModalContent = withStyles(theme => ({
       container: {
-        minWidth: "30vw",
+        minWidth: "35vw",
         minHeight: "30vh",
-        maxHeight: "40vh",
+        maxHeight: "50vh",
         overflowY: "scroll"
       },
       li: {
@@ -366,25 +489,49 @@ class QueryWorkTimeForEquipment extends React.Component {
         onClose={()=>this.setState({timeModal: false})}
       >
       <DialogTitle id="customized-dialog-title" >
-        设备<span className="text-blue">{selectedData.userName}</span>参与项目<small style={{paddingLeft: "1rem"}}>共计{showProgram?showProgram.length:''}</small>
+        设备<span className="text-blue">{selectedData.name}</span>参与项目<small style={{paddingLeft: "1rem"}}>共计{showProgram?showProgram.length:''}</small>
       </DialogTitle>
       <div className={classes.container} noValidate autoComplete="off" style={{margin:".5rem 2rem 2rem",padding: "1rem"}}>
         <Grid container spacing={24}>
 
           <Grid item xs={12} style={{paddingTop:0}}>
-            <ul style={{paddingLeft: 0,marginTop:0,listStyle: "none"}}>
-              {!showProgram?'':showProgram.map((n,index)=>{
-                return <li className={classes.li}>
-                          <span className={classes.li_half1}>
-                            <i style={{paddingRight:".8rem"}}>{(index+1)+".  "}</i>
-                            <span className="text-primary" style={{paddingRight:".8rem"}} title="erp">{n.erp}</span>
-                            <span className="text-blue2" style={{paddingRight:"1.2rem"}} title="物料名称">{n.materialName}</span>
-                            <span style={{paddingLeft:".08rem"}} title="流程">{n.name}</span>
-                          </span>
-                          <span style={{paddingRight:"2rem"}} className={classes.li_half2+" text-blue text-right pointer"}></span>
-                        </li>
-              })}
-            </ul>
+            {/*<ul style={{paddingLeft: 0,marginTop:0,listStyle: "none"}}>
+                          {!showProgram?'':showProgram.map((n,index)=>{
+                            return <li className={classes.li}>
+                                      <span className={classes.li_half1}>
+                                        <i style={{ paddingRight:".8rem",fontSize: "smaller" }}>{(index+1)+".  "}</i>
+                                        <span className="text-primary" style={{paddingRight:".8rem"}} title="erp">{n.erp}</span>
+                                        <span className="text-blue2" style={{paddingRight:"1.2rem"}} title="物料名称">{n.materialName}</span>
+                                        <span style={{paddingLeft:".08rem"}} title="流程">{n.name}</span>
+                                        <span style={{paddingLeft:".08rem"}} title="工时">{n.eq_hourtime}</span>
+                                      </span>
+                                      <span style={{paddingRight:"2rem"}} className={classes.li_half2+" text-blue text-right pointer"}></span>
+                                    </li>
+                          })}
+                        </ul>*/}
+              <table style={{paddingLeft: 0,marginTop:0,listStyle: "none"}}>
+                <thead>
+                 <tr className={classes.li} style={{fontSize:"18px"}}>
+                     <th>序号</th>
+                     <th>erp</th>
+                     <th>物料名称</th>
+                     <th>流程</th>
+                     <th>工时</th>
+                 </tr>
+                </thead>
+                <tbody>
+                {!showProgram?'':showProgram.map((n,index)=>{
+                  return <tr className={classes.li}>
+                              <td><i style={{ paddingRight2:".8rem",fontSize: "smaller" }}>{(index+1)+".  "}</i></td>
+                              <td><span className="text-primary" style={{paddingRight2:".8rem", position:'relative'}} title="erp">{n.erp}
+                              </span></td>
+                              <td><span className="text-blue2 eq-time-name" title={"物料名称:"+n.materialName}>{n.materialName}</span></td>
+                              <td><span title="流程">{n.name}</span></td>
+                              <td><span title="工时">{ n.eq_hourtime?n.eq_hourtime.toFixed(3):0 }</span></td>
+                          </tr>
+                })}
+                </tbody>
+              </table>
           </Grid>
 
         </Grid>
@@ -447,7 +594,13 @@ class QueryWorkTimeForEquipment extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar title="设备工时" toIndent = {this.toIndent} ref="toolbar" ifProcedure={true} queryByKeyword = {this.queryByKeyword} changeWorktimeData={this.changeWorktimeData} tips = {this.tips} />
+        <EnhancedTableToolbar title="设备工时"
+            toIndent = {this.toIndent} ref="toolbar"
+            ifProcedure={true}
+            queryTimeByKeyId = {this.showEqWorkTimeMoal}
+            changeWorktimeData={this.changeWorktimeData}
+            changDate={(data)=>this.setState(data)}
+            tips = {this.tips} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -522,6 +675,7 @@ class QueryWorkTimeForEquipment extends React.Component {
         }}
         message={<span id="message-id" >{this.state.tipInfo?this.state.tipInfo:''}</span>} />
         {this.timeInProgramModal()}
+        {this.timeInProgramModalById()}
       </Paper>
     );
 

@@ -1,3 +1,4 @@
+// 流程详情页面，添加删除工作记录
 import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
@@ -419,7 +420,7 @@ class DutyIndentInfo extends React.Component {
       // body:JSON.stringify({pid: pid, productNum:productNum, startTime: selectedDataCopy.startTime + ' '+selectedDataCopy.startDateTime.format('hh:mm:ss'), worker:workder_in.join(' ')})
       body:JSON.stringify({pid: pid,id: selectedInfoData?selectedInfoData.id:'', productNum:productNum, actualNum: actualNum, worker:workder_in.join(' '),remark: infoRemark, type: ifEquipment?1:0})
     }).then(res=>res.json()).then(data=>{
-      if(data.code!=200){
+      if(data.code != 200){
         this.tips(data.msg);window.loading(false);return;
       }
       if(ifAdd){
@@ -708,7 +709,7 @@ class DutyIndentInfo extends React.Component {
         color: theme.palette.grey[500],
       },
     }))(props => {
-      const { autoNext, children, classes, onClose } = props;
+      const { children, classes, onClose } = props;
       return (
         <MuiDialogTitle disableTypography className={classes.root}>
           <Typography variant="h6">{children}</Typography>
@@ -721,7 +722,8 @@ class DutyIndentInfo extends React.Component {
       );
     });
 
-    const { workers, selectedWorkers } = this.state;
+    const { autoNext, workers, selectedWorkers } = this.state;
+
     const styleCon = {
        height: '10rem',
        overflowY : 'auto',
@@ -760,7 +762,7 @@ class DutyIndentInfo extends React.Component {
             <FormControlLabel className="small" style={{marginLeft: '0rem', marginTop:'2rem'}} control={
                   <Checkbox color="primary" size="small" checked={this.state.autoNext}
                     onChange={(event)=>this.setState({autoNext: event.target.checked })}
-                    value="autoNext"/>
+                    value={this.state.autoNext}/>
                 }
               label="是否自动进入下一流程？（如果是重新开始的流程，建议取消勾选。）"
             />
@@ -877,7 +879,10 @@ class DutyIndentInfo extends React.Component {
 
           {ifAdd?<Grid container style={{paddingTop: "1rem"}}>
                       <Grid item xs={6} style={{paddingTop: 0, boxShadow: "17px 0px 16px -17px #666"}}>
-                        <div><span className="bold">待选择{(!ifEquipment?"员工":"设备")+'  '+(workers.length+selectedWorkers.length)+"/"+workers.length}</span>
+                        <div>
+                          <span className="bold">
+                            待选择{(!ifEquipment?"员工":"设备")+'  '+(workers.length+selectedWorkers.length)+"/"+workers.length}
+                          </span>
                           <TextField style={{marginTop:0, padding:'0 .5rem'}}
                             className={classes.textField}
                             margin="normal" value={queryUserWord}
@@ -924,7 +929,7 @@ class DutyIndentInfo extends React.Component {
     const { data, infoData, order, orderBy, selected, rowsPerPage, page, allPower, pageUserType, ifEquipment } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
     rows[rows.length-1].hidden = true;
-
+    // type 0 员工   1 设备
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
         <EnhancedTableToolbar allPower = {this.state.allPower} />
