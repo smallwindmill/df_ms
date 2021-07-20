@@ -327,7 +327,14 @@ class EnhancedTableToolbar extends React.Component{
           </Grid>:false}
 
           <Grid item xs={12} align="center">
-            <Button variant="outlined" onClick={this.addUserSure} style={{marginRight: 1+"rem"}} color="primary" className={classes.button}>提交</Button>
+            <Button variant="outlined"
+                onClick={this.addUserSure}
+                style={{marginRight: 1+"rem"}}
+                color="primary"
+                className={classes.button}
+            >
+              提交
+            </Button>
             <Button variant="outlined" style={{marginRight: 1+"rem"}} color="secondary" className={classes.button}>重置</Button>
           </Grid>
           </Grid>

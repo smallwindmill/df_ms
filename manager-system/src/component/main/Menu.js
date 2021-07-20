@@ -247,17 +247,29 @@ class Menu extends React.Component{
       var that = this;
       var path = window.ReactHistory?window.ReactHistory.location.pathname:'';
       return datas.map((data, index) =>(
-        (data.power==0)?'':(<div key={index}>
-                           <ListItem button className={new RegExp(data.route+'$').test(path)?'bg-secondary':''} onClick={this.handleClick.bind(this, data.children?'open'+index:'')}>
-                                <Link to ={"/produceMSF/"+(data.route?data.route:'/')} className="nav-router">{data.name}</Link>
-                               {data.children ?(that.state["open"+index] || new RegExp(data.route).test(path) ? <ExpandLess /> : <ExpandMore />):""}
-                           </ListItem>
-                              {data.children?(<Collapse in={this.state["open"+index] || new RegExp(data.route).test(path)} timeout="auto" unmountOnExit>
-                              <List component="div" disablePadding className="secondaryList">
-                               {that.managerMenuData(data.children)}
-                              </List>
-                           </Collapse>):''}
-                        </div>)
+        (data.power==0)
+        ?''
+        :(<div key={index}>
+           <ListItem button
+                   className={new RegExp(data.route+'$').test(path)?'bg-secondary':''}
+                   onClick={this.handleClick.bind(this, data.children?'open'+index:'')}>
+                <Link to ={"/produceMSF/"+(data.route?data.route:'/')}
+                      className="nav-router"
+                >
+                  {data.name}
+                </Link>
+               {data.children ?(that.state["open"+index] || new RegExp(data.route).test(path) ? <ExpandLess /> : <ExpandMore />):""}
+           </ListItem>
+              {data.children?(
+                <Collapse in={this.state["open"+index] || new RegExp(data.route).test(path)} timeout="auto" unmountOnExit>
+              <List component="div"
+                    disablePadding
+                    className="secondaryList"
+              >
+                 {that.managerMenuData(data.children)}
+              </List>
+           </Collapse>):''}
+        </div>)
         ))
     }
 

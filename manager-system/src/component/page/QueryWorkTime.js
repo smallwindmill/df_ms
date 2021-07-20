@@ -201,7 +201,9 @@ class EnhancedTableToolbar extends React.Component{
 
     fetch(config.server.queryWorkHourByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
       // console.log(data);
-      this.props.changeWorktimeData(data.results || []);
+      if(data.code == 200){
+        this.setState({data: data.results, total: data.total});
+      }
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
   }
@@ -289,6 +291,7 @@ const styles = theme => ({
   },
   tableWrapper: {
     overflowX: 'auto',
+    maxHeight: '70vh'
   },
   tableAllCon: {
     position: "relative",
@@ -344,33 +347,30 @@ class QueryWorkTime extends React.Component {
   }
 
 
-  queryIndentWorkHour = () => {
-
-    fetch(config.server.queryWorkHourByDate).then(res=>res.json()).then(data=>{
+  queryIndentWorkHour = (pageChange) => {
+    let { page } = this.state;
+    let fromId = (pageChange || 0)*config.pageChangeNum;
+    fetch(config.server.queryWorkHourByDate+`?from=${fromId}&limit=${config.pageChangeNum}`).then(res=>res.json()).then(data=>{
       // console.log(data);
+      this.hideInner(true);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
-      this.changeWorktimeData(data.results || []);
+      this.setState({ page, data: data.results, total: data.total});
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
   }
-
-  queryProcedureWorkHour = (data_in) => {
-    console.log(data_in);
-    fetch(config.server.queryProcedureWorkTime+'?indentID='+data_in.indentID).then(res=>res.json()).then(data=>{
-      // console.log(data);
-      if(data.code!=200){
-        this.tips(data.msg);return;
-      }
-      this.changeWorktimeData(data.results || []);
-    }).catch(e=>this.tips('网络出错了，请稍候再试'));
-
-  }
-
 
   handleChangePage = (event, page) => {
-    this.setState({ page });
+    let from = page*config.pageChangeNum;
+    fetch(config.server.queryWorkHourByDate+`?from=${from}&limit=${config.pageChangeNum}`).then(res=>res.json()).then(data=>{
+      // console.log(data);
+      if(data.code!=200){
+        this.tips(data.msg);return;
+      }
+      this.setState({ page, data: data.results, total: data.total});
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+
   };
 
   handleChangeRowsPerPage = event => {
@@ -380,6 +380,7 @@ class QueryWorkTime extends React.Component {
   isSelected = id => this.state.selected.indexOf(id) !== -1;
 
   queryByKeyword = (e, type) =>{
+    clearTimeout(this.keywordTimer);
     e.persist();
 
     if(type === 1){
@@ -393,15 +394,17 @@ class QueryWorkTime extends React.Component {
     this.filter_id = this.filter_id || "";
     this.filter_count = this.filter_count || "";
     this.filter_num = this.filter_num || "";
-
-    if(!this.state.dataBak){
-      this.state.dataBak = this.state.data;
+    if(!this.filter_id && !this.filter_count && !this.filter_num){
+      return this.queryIndentWorkHour();
     }
-
-    this.state.data = this.state.dataBak.filter((item)=>{
-      return ((item.erp.toUpperCase().match(this.filter_id) || item.materialCode.toUpperCase().match(this.filter_id) || item.materialName.toUpperCase().match(this.filter_id)) && (this.filter_count == "" || item.planNum == this.filter_count) && (this.filter_num == "" || item.countWorker == this.filter_num) );
-    });
-    this.setState({data: this.state.data });
+    this.keywordTimer = setTimeout(()=>{
+        fetch(config.server.queryWorkHourByDate+`?keyword=${[this.filter_id, this.filter_count, this.filter_num]}`).then(res=>res.json()).then(data=>{
+          // console.log(data);
+          if(data.code!=200){
+            this.tips(data.msg);return;
+          }this.setState({ page: 0, data: data.results, total: data.results.length});
+        }).catch(e=>this.tips('网络出错了，请稍候再试'));
+    }, 1000);
   }
 
   // 删除用户弹窗
@@ -430,7 +433,6 @@ class QueryWorkTime extends React.Component {
     }else{
       this.setState({data: data});
     }
-    this.hideInner(true);
   }
 
 
@@ -560,8 +562,9 @@ class QueryWorkTime extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { loading, data, order, orderBy, selected, rowsPerPage, page, ifProcedure } = this.state;
-    const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+    const { loading, data, order, orderBy, selected, total, rowsPerPage, page, ifProcedure } = this.state;
+    // const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+    const emptyRows = rowsPerPage - data.length;
 
     this.state.date_in =[new Date(), new Date()];
 
@@ -583,8 +586,7 @@ class QueryWorkTime extends React.Component {
                 </div>
               </div>):''}
               <TableBody>
-                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((n, index) => {
+                {data.map((n, index) => {
                     const isSelected = this.isSelected(n.id);
                     return (
                       <TableRow
@@ -626,7 +628,7 @@ class QueryWorkTime extends React.Component {
                 className="TablePagination"
                 rowsPerPageOptions={[10, 20, 30]}
                 component="div"
-                count={data.length}
+                count={total}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 backIconButtonProps={{
@@ -666,8 +668,7 @@ class QueryWorkTime extends React.Component {
                 </div>
               </div>):''}
               <TableBody>
-                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((n, index) => {
+                {data.map((n, index) => {
                     const isSelected = this.isSelected(n.id);
                     return (
                       <TableRow
@@ -704,23 +705,23 @@ class QueryWorkTime extends React.Component {
             </Table>
               {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
               <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
-            <TablePagination
-              className="TablePagination"
-              rowsPerPageOptions={[10, 20, 30]}
-              component="div"
-              count={data.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              backIconButtonProps={{
-                'aria-label': '上一页',
-              }}
-              nextIconButtonProps={{
-                'aria-label': '下一页',
-              }}
-              onChangePage={this.handleChangePage}
-              onChangeRowsPerPage={this.handleChangeRowsPerPage}
-            />
           </div>
+          <TablePagination
+            className="TablePagination"
+            rowsPerPageOptions={[10, 20, 30]}
+            component="div"
+            count={total}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            backIconButtonProps={{
+              'aria-label': '上一页',
+            }}
+            nextIconButtonProps={{
+              'aria-label': '下一页',
+            }}
+            onChangePage={this.handleChangePage}
+            onChangeRowsPerPage={this.handleChangeRowsPerPage}
+          />
           <Snackbar style={{marginTop:'70px'}}
                     key = {new Date().getTime()+Math.random()}
                     anchorOrigin={{horizontal:"center",vertical:"top"}}

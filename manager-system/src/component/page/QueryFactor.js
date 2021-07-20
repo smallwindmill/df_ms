@@ -231,7 +231,11 @@ class EnhancedTableToolbar extends React.Component{
       <DialogTitle id="customized-dialog-title" onClose={this.handleClose} >
         {ifAdd?'添加':'编辑'}权数
       </DialogTitle>
-      <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem"}}>
+      <form className={classes.container}
+          noValidate
+          autoComplete="off"
+          style={{padding:"2rem 6rem 3rem"}}
+       >
         <Grid container spacing={24}>
           <Grid item xs={12} style={{paddingTop:0}}>
           <TextField fullWidth style={{marginTop:0}}
@@ -240,7 +244,11 @@ class EnhancedTableToolbar extends React.Component{
             disabled = {this.state.ifAdd?false:true}
             className={classes.textField}
             value = {selectedDataCopy.year==undefined ? new Date().getFullYear():selectedDataCopy.year}
-            onChange={(e)=>{e.persist();selectedDataCopy.year=e.target.value;this.setState({selectedDataCopy:selectedDataCopy})}}
+            onChange={(e)=>{
+              e.persist();
+              selectedDataCopy.year=e.target.value;
+              this.setState({selectedDataCopy:selectedDataCopy})
+            }}
             margin="normal"
             InputLabelProps={{
               shrink: true,
@@ -253,7 +261,11 @@ class EnhancedTableToolbar extends React.Component{
             placeholder="请输入设置月份"
             label="月份"
             value = {selectedDataCopy.month==undefined?(new Date().getMonth()+1):selectedDataCopy.month}
-            onChange={(e)=>{e.persist();selectedDataCopy.month=e.target.value;this.setState({selectedDataCopy:selectedDataCopy})}}
+            onChange={(e)=>{
+              e.persist();
+              selectedDataCopy.month=e.target.value;
+              this.setState({selectedDataCopy:selectedDataCopy})
+            }}
             disabled = {this.state.ifAdd?false:true}
             defaultValue=""
             className={classes.textField}
@@ -448,7 +460,10 @@ class QueryFactor
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar ref="modalMethod" tips = {this.tips}  changeFactorData = {this.changeFactorData} />
+        <EnhancedTableToolbar ref="modalMethod"
+            tips = {this.tips}
+            changeFactorData = {this.changeFactorData}
+      />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -479,7 +494,9 @@ class QueryFactor
                         {n.factor}
                       </TableCell>
                       <TableCell align="center">
-                        <span className="pointer btn text-blue" onClick={()=>this.updateFactor(n, page * rowsPerPage+index)}>修改</span>
+                        <span className="pointer btn text-blue"
+                              onClick={()=>this.updateFactor(n, page * rowsPerPage+index)}
+                          >修改</span>
                       </TableCell>
                     </TableRow>
                   );
@@ -492,7 +509,11 @@ class QueryFactor
             </TableBody>
           </Table>
           {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
-          <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
+          <Confirm open = {this.state.deleteOpen}
+                  title = {this.state.title}
+                  content={this.state.content}
+                  closeFun = {this.deleteModalClose}
+          />
         </div>
         <TablePagination
           className="TablePagination"
@@ -509,7 +530,8 @@ class QueryFactor
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
-        <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
+        <Snackbar style={{marginTop:'70px'}}
+          key = {new Date().getTime()+Math.random()}
           anchorOrigin={{horizontal:"center",vertical:"top"}}
           open={this.state.tipsOpen}
           ContentProps={{

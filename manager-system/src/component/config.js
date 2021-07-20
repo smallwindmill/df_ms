@@ -1,4 +1,5 @@
-var serverIP = "http://"+window.location.hostname+':2030/produceMS';
+var serverIP = "http://"+window.location.hostname+':2070/produceMS';
+// var serverIP = "http://"+window.location.host+'/produceMS';
 // var serverIP = 'http://127.0.0.1:2030/produceMS';
 // var serverIP = 'http://101.200.62.233:2030/produceMS';
 // var serverIP = 'http://47.101.39.165:2030/produceMS';
@@ -92,7 +93,7 @@ var config = {
       return JSON.stringify(data);
   },
   pageChangeNum: window.outerHeight >= 1000 ? 13 : (window.outerHeight < 900 ? 7 : 10),
-  indentPageNum: 100
+  indentPageNum: 50
 }
 
 export default config;

@@ -359,7 +359,7 @@ class EnhancedTableToolbar extends React.Component{
           <Grid item xs={6} align="left">
             <Grid item xs={12} className="filterTool small">
                   <span className="blod">时间</span>
-                  {dateRange.map((date,index)=>(<span key = {index} className={"btn-sm "+(index==2?'bg-primary':'')} onClick={(e)=>this.props.queryIndentByDate(e, date)}> {date.text}</span>))}
+                  {dateRange.map((date,index)=>(<span key = {index} className={"btn-sm "+(index==0?'bg-primary':'')} onClick={(e)=>this.props.queryIndentByDate(e, date)}> {date.text}</span>))}
             </Grid>
             <Grid item xs={12} align="left" className="filterTool small" style = {{margin: '1rem 0'}}>
                 <span className="blod">类型</span>
@@ -367,7 +367,7 @@ class EnhancedTableToolbar extends React.Component{
             </Grid>
             <Grid item xs={12} align="left" className="filterTool small" style = {{margin: '1rem 0'}}>
                 <span className="blod">状态</span>
-                {sitQuery.map((data,index)=>(<span key = {index} className={"type-sit btn-sm "+(index==0?'bg-primary':'')} onClick={(e)=>this.props.queryIndentBySit(e, data, index)}> {data.text}</span>))}
+                {sitQuery.map((data,index)=>(<span key = {index} className={"type-sit btn-sm "+(data.code==this.props.status?'bg-primary':'')} onClick={(e)=>this.props.queryIndentBySit(e, data, index)}> {data.text}</span>))}
             </Grid>
           </Grid>
 
@@ -430,6 +430,7 @@ const styles = theme => ({
 class HandleIndent extends React.Component {
   state = {
     order: 'asc',
+    status: 1,
     orderBy: 'calories',
     selected: [],
     data: [],
@@ -449,22 +450,17 @@ class HandleIndent extends React.Component {
   }
 
   componentDidMount(){
-    setTimeout(()=>{
-        document.querySelectorAll('.filterTool .type-sit')[2].click();
-    }, 1000);//默认展示进行中订单
-    // this.tips(<span>本次共上传<span className="text-blue"></span>条数据，<span className="text-blue"></span>条成功，<span className="text-red"></span>条数据失败</span>, 'stay');
   }
 
   initLoadData = () => {
-    var queryStart = new Date(new Date()-1000*60*60*24*30).format('yyyy-MM-dd');//一月
-    // var queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
-    var queryEnd = new Date().format('yyyy-MM-dd');
-    fetch(config.server.listAllIndentByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
+    var status = this.state.status;
+    fetch(config.server.listAllIndentByDate+`?status=${status}&from=${0}&limit=${config.indentPageNum}`).then(res=>res.json()).then(data=>{
       // console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
-      this.changeIndentData(data.results || []);
+      this.setState({ data: data.results, total: data.total });
+      this.hideInner(true);
     }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试');});
   }
 
@@ -495,8 +491,27 @@ class HandleIndent extends React.Component {
     this.setState({ selected: [] });
   };
 
-  handleChangePage = (event, page) => {
-    this.setState({ page });
+  handleChangePage = (event, pageChange) => {
+    console.log('pageChange== ', pageChange);
+    let { data, page, queryStart, queryEnd, status, priority, ifNew } = this.state;
+       let fromId = pageChange*config.indentPageNum;
+       let baseData = {
+          from: fromId,
+          limit:config.indentPageNum,
+          startDate:queryStart,
+          endDate:queryEnd,
+          status:status,
+          priority:priority,
+          ifNew:ifNew
+       };
+       this.hideInner();
+       fetch(this.getUrlFormat(config.server.listAllIndentStatusByDate, baseData)).then(res=>res.json()).then(data=>{
+         if(data.code !== 200){
+           this.tips(data.msg);return;
+         }
+         this.setState({total: data.total, page: pageChange});
+         this.changeIndentData(data.results || []);
+       }).catch(e=>this.tips('网络出错了，请稍候再试'));
   };
 
   handleChangeRowsPerPage = event => {
@@ -553,6 +568,10 @@ class HandleIndent extends React.Component {
   }
 
   changeIndentData = (data, type) =>{
+    this.setState({data: data});
+    this.hideInner(true);
+
+    return;
     // 默认替换，1为push，2为修改
     if(type==1){
       this.state.data.push(data);
@@ -626,16 +645,20 @@ class HandleIndent extends React.Component {
 
   queryByKeyword = (e) =>{
     e.persist();
-
+    let value = e.target.value;
     if(!this.state.dataBak){
       this.state.dataBak = this.state.data;
     }
 
-    this.state.data = this.state.dataBak.filter((item)=>{
-      return (item.erp.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1 || item.materialCode.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1 || item.materialName.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1);
-    });
-    this.setState({data: this.state.data });
-
+    if(!this.state.dataBak){
+      this.state.dataBak = this.state.data;
+    }
+    fetch(config.server.listAllIndentByDate+`?keyword=${value}`).then(res=>res.json()).then(data=>{
+      if(data.code !== 200){
+        this.tips(data.msg);return;
+      }
+      this.setState({total: data.results.length, page: 0, data: data.results});
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
   }
 
   // 根据日期筛选值
@@ -668,11 +691,14 @@ class HandleIndent extends React.Component {
       queryEnd = new Date(new Date()-1000*60*60*24*365).format('yyyy-MM-dd');
     }
 
+    this.setState({queryStart, queryEnd}, this.queryDataWithPro);
+    return;
+
     fetch(config.server.listAllIndentByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
       if(data.code!=200){
         this.tips(data.msg);return;
       }
-      this.changeIndentData(data.results || []);
+      this.setState({page:1}, ()=>this.changeIndentData(data.results || []));
       // this.tips('查询成功');
     }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
 
@@ -721,23 +747,36 @@ class HandleIndent extends React.Component {
     }
   }
 
-  queryDataWithPro = () => {
-    var { priority, ifNew, status } = this.state;
-    if(status!=undefined && priority){
-      this.state.data = this.state.dataBak.filter((item)=>{ return item.status==status && item.priority==priority});
-    }else if(status!=undefined && ifNew){
-      this.state.data = this.state.dataBak.filter((item)=>{ return item.status==status && item.ifNew==ifNew});
-    }else if(priority){
-      this.state.data = this.state.dataBak.filter((item)=>{ return item.priority==priority});
-    }else if(ifNew){
-      this.state.data = this.state.dataBak.filter((item)=>{ return item.ifNew==ifNew});
-    }else if(status!=undefined){
-      this.state.data = this.state.dataBak.filter((item)=>{ return item.status==status});
-    }else{
-      this.state.data = this.state.dataBak;
-    }
+  getUrlFormat (url, data) {
+      if(data){
+          let params = Object.keys(data)
+                  .filter(item => data[item]!== null && data[item]!== undefined)
+                  .map(item=>`${item}=${data[item]}`)
+                  .join("&");
+          return `${url}?${params}`;
+      }
+      return url;
+  }
 
-    this.setState({data: this.state.data });
+  queryDataWithPro = () => {
+    let { data, page, queryStart, queryEnd, status, priority, ifNew } = this.state;
+    let baseData = {
+        from:0,
+        limit:config.indentPageNum,
+        startDate:queryStart,
+        endDate:queryEnd,
+        status:status,
+        priority:priority,
+        ifNew:ifNew
+    };
+    this.hideInner();
+    fetch(this.getUrlFormat(config.server.listAllIndentByDate, baseData)).then(res=>res.json()).then(data=>{
+      if(data.code !== 200){
+        this.tips(data.msg);return;
+      }
+      this.setState({page: 0, total: data.total});
+      this.changeIndentData(data.results || []);
+    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
 
   }
 
@@ -875,23 +914,51 @@ class HandleIndent extends React.Component {
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">实际开始时间</FormLabel>
-            <DateFormatInput  className="date-picker inline-block" name='date-input' value={ actualStart?new Date(actualStart):'' } onChange={(date)=>{selectedData.actualStart = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+            <DateFormatInput
+                className="date-picker inline-block"
+                name='date-input'
+                value={ actualStart?new Date(actualStart):'' }
+                onChange={(date)=>{selectedData.actualStart = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} }
+                style={{marginbottom:'2rem'}}
+            />
             <div className="date-clear btn inline-block">
-              <CloseIcon onClick={()=>{selectedData.actualStart='';this.setState({selectedData:selectedData})}} />
+              <CloseIcon onClick={()=>{
+                              selectedData.actualStart='';
+                              this.setState({selectedData:selectedData})
+                         }}
+               />
             </div>
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">实际完成时间</FormLabel>
-            <DateFormatInput  className="date-picker inline-block" name='date-input' value={ actualFinish?new Date(actualFinish):'' } onChange={(date)=>{selectedData.actualFinish = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} } style={{marginbottom:'2rem'}} />
+            <DateFormatInput  className="date-picker inline-block"
+                name='date-input'
+                value={ actualFinish?new Date(actualFinish):'' }
+                onChange={(date)=>{selectedData.actualFinish = date.format('yyyy-MM-dd');this.setState({ selectedData: selectedData })} }
+                style={{marginbottom:'2rem'}}
+            />
             <div className="date-clear btn inline-block">
-              <CloseIcon onClick={()=>{selectedData.actualFinish='';this.setState({selectedData:selectedData})}} />
+              <CloseIcon onClick={()=>{
+                              selectedData.actualFinish='';
+                              this.setState({selectedData:selectedData})}
+                          }
+                />
             </div>
           </Grid>
 
           <Grid item xs={6} style={{paddingTop:0}}>
             <FormLabel component="legend">是否加急</FormLabel>
-            <RadioGroup aria-label="是否加急" style={{flexDirection:"row"}} name="priority" value={(priority || 0)+''} onChange={(e)=>{e.persist();selectedData.priority=(e.target.value=='0'?0:1);this.setState({selectedData:selectedData})}}          >
+            <RadioGroup aria-label="是否加急"
+                        style={{flexDirection:"row"}}
+                        name="priority"
+                        value={(priority || 0)+''}
+                        onChange={(e)=>{
+                            e.persist();
+                            selectedData.priority=(e.target.value=='0'?0:1);
+                            this.setState({selectedData:selectedData})}
+                        }
+            >
                <FormControlLabel value="0" control={<Radio color="default" />} label="否" />
                <FormControlLabel value="1" control={<Radio color="default" />} label="是" />
             </RadioGroup>
@@ -899,7 +966,15 @@ class HandleIndent extends React.Component {
 
           <Grid item xs={6} style={{paddingTop:0}}>
               <FormLabel component="legend">是否新品</FormLabel>
-              <RadioGroup aria-label="是否新品" style={{flexDirection:"row"}} name="ifNew" value={(ifNew|| 0)+'' } onChange={(e)=>{e.persist();selectedData.ifNew=(e.target.value=='0'?0:1);this.setState({selectedData:selectedData})}}          >
+              <RadioGroup aria-label="是否新品"
+                      style={{flexDirection:"row"}}
+                      name="ifNew" value={(ifNew|| 0)+'' }
+                      onChange={(e)=>{
+                          e.persist();
+                          selectedData.ifNew=(e.target.value=='0'?0:1);
+                          this.setState({selectedData:selectedData})}
+                      }
+              >
                  <FormControlLabel value="0" control={<Radio color="default" />} label="否" />
                  <FormControlLabel value="1" control={<Radio color="default" />} label="是" />
               </RadioGroup>
@@ -911,7 +986,10 @@ class HandleIndent extends React.Component {
               placeholder="请输入订单备注"
               className={classes.textField}
               value = {remark}
-              onChange={(e)=>{selectedData.remark=e.target.value;this.setState({selectedData: selectedData})}}
+              onChange={(e)=>{
+                  selectedData.remark=e.target.value;
+                  this.setState({selectedData: selectedData})}
+              }
               margin="normal"
               InputLabelProps={{
                 shrink: true,
@@ -930,8 +1008,21 @@ class HandleIndent extends React.Component {
 
 
           <Grid item xs={12} align="center">
-            <Button variant="outlined" onClick={this.setIndentSure} style={{marginRight: 1+"rem"}} color="primary" className={classes.button}>保存</Button>
-            <Button variant="outlined" style={{marginRight: 1+"rem"}} color="secondary" className={classes.button}>重置</Button>
+            <Button variant="outlined"
+                onClick={this.setIndentSure}
+                style={{marginRight: 1+"rem"}}
+                color="primary"
+                className={classes.button}
+            >
+                保存
+            </Button>
+            <Button variant="outlined"
+                 style={{marginRight: 1+"rem"}}
+                 color="secondary"
+                 className={classes.button}
+            >
+               重置
+            </Button>
           </Grid>
           </Grid>
 
@@ -1072,9 +1163,8 @@ class HandleIndent extends React.Component {
   render() {
     const { classes } = this.props;
 
-    const { loading, filterFun, data, order, orderBy, selected, rowsPerPage, page } = this.state;
+    const { loading, status, filterFun, data, order, orderBy, total, selected, rowsPerPage, page } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
-
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
         <EnhancedTableToolbar
@@ -1082,7 +1172,9 @@ class HandleIndent extends React.Component {
           initLoadData = { this.initLoadData }
           queryByKeyword = {this.queryByKeyword} queryIndentByDate = {this.queryIndentByDate}
           queryIndentByType = {this.queryIndentByType}
-          queryIndentBySit = {this.queryIndentBySit} />
+          queryIndentBySit = {this.queryIndentBySit}
+          status={status}
+        />
         {/*表头*/}
         <div class={classes.tableAllCon}>
           {!loading?(<div className = "backdrop div-inner" >
@@ -1108,8 +1200,7 @@ class HandleIndent extends React.Component {
                                 rowCount={data.length}
                               />*/}
                 <TableBody>
-                  {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((n, index) => {
+                  {data.map((n, index) => {
                       const isSelected = this.isSelected(n.id);
                       return (
                         <TableRow
@@ -1159,7 +1250,7 @@ class HandleIndent extends React.Component {
             className="TablePagination"
             rowsPerPageOptions={[1*config.page, 2*config.page, 3*config.page]}
             component="div"
-            count={data.length}
+            count={total}
             rowsPerPage={rowsPerPage}
             page={page}
             backIconButtonProps={{

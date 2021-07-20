@@ -274,7 +274,16 @@ class ContentContainer extends React.Component{
             }}
             message={<span id="message-id" >{this.state.tipInfo}</span>}  />
 
-            <Confirm open = {this.state.confirmOpen} ifAutoClose ={()=>{}} title = {this.state.confirmTitle} content={this.state.confirmContent} sureText={sureText} cancelText={cancelText}  closeFun = {this.closeFun} sureFun = {this.state.sureFun} ifInfo={true}/>
+            <Confirm open = {this.state.confirmOpen}
+                      ifAutoClose ={()=>{}}
+                      title = {this.state.confirmTitle}
+                      content={this.state.confirmContent}
+                      sureText={sureText}
+                      cancelText={cancelText}
+                      closeFun = {this.closeFun}
+                      sureFun = {this.state.sureFun}
+                      ifInfo={true}
+             />
 
             {loading?(<div className = "backdrop" >
               <div className="absoluteCenter text-blue" >

@@ -380,7 +380,11 @@ class QueryProduceIndent extends React.Component {
             onChangeRowsPerPage={this.handleChangeRowsPerPage}
           />
           </Table>}
-          <Confirm open = {this.state.deleteOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} />
+          <Confirm open = {this.state.deleteOpen}
+              title = {this.state.title}
+              content={this.state.content}
+              closeFun = {this.deleteModalClose}
+           />
         </div>
       </Paper>
     );

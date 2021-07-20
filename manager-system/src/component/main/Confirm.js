@@ -42,20 +42,34 @@ class Confirm extends React.Component {
         >
           <DialogTitle id="alert-dialog-title">
             {ifInfo?
-              <Info fontSize = "large"  color = "primary" style={{marginBottom:"-9px",marginRight:'3px'}}></Info>
+              <Info fontSize = "large"
+                    color = "primary"
+                    style={{marginBottom:"-9px",marginRight:'3px'}}>
+               </Info>
               :
-              <HelpOutline style={{marginBottom:"-9px",marginRight:'3px'}} fontSize = "large" color="error"></HelpOutline>
+              <HelpOutline style={{marginBottom:"-9px",marginRight:'3px'}}
+                  fontSize = "large"
+                  color="error">
+              </HelpOutline>
             }
-            {title}</DialogTitle>
+            {title}
+          </DialogTitle>
           <DialogContent style = {{minWidth: '300px'}}>
-            <DialogContentText id="alert-dialog-description"  dangerouslySetInnerHTML={{__html: content}}>
+            <DialogContentText id="alert-dialog-description"
+                    dangerouslySetInnerHTML={{
+                      __html: content
+                    }}
+            >
             </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={closeFun} color="primary">
               {cancelText || '取消'}
             </Button>
-            <Button onClick={()=>{closeFun();if(sureFun)sureFun()}} color="primary" autoFocus>
+            <Button onClick={()=>{closeFun();if(sureFun)sureFun()}}
+                    color="primary"
+                    autoFocus
+              >
               {sureText || '确定'}
             </Button>
           </DialogActions>

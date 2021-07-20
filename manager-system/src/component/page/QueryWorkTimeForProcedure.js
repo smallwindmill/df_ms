@@ -236,6 +236,7 @@ const styles = theme => ({
   },
   tableWrapper: {
     overflowX: 'auto',
+    maxHeight: '70vh'
   },
 });
 
@@ -273,19 +274,28 @@ class QueryWorkTimeForProcedure extends React.Component {
 
 
   queryProcedureWorkHour = () => {
-    fetch(config.server.queryProcedureWorkTime+'?indentID=').then(res=>res.json()).then(data=>{
+    let { page } = this.state;
+    let fromId = (page || 0)*config.pageChangeNum;
+    fetch(config.server.queryProcedureWorkTime+`?from=${fromId}&limit=${config.pageChangeNum}`).then(res=>res.json()).then(data=>{
       // console.log(data);
       if(data.code!=200){
         this.tips(data.msg);return;
       }
-      this.changeWorktimeData(data.results || []);
+      this.changeWorktimeData(data);
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
   }
 
 
   handleChangePage = (event, page) => {
-    this.setState({ page });
+      let from = page*config.pageChangeNum;
+      fetch(config.server.queryProcedureWorkTime+`?from=${from}&limit=${config.pageChangeNum}`).then(res=>res.json()).then(data=>{
+        // console.log(data);
+        if(data.code!=200){
+          this.tips(data.msg);return;
+        }
+        this.setState({ page, data: data.results, total: data.total});
+      }).catch(e=>this.tips('网络出错了，请稍候再试'));
   };
 
   handleChangeRowsPerPage = event => {
@@ -308,15 +318,19 @@ class QueryWorkTimeForProcedure extends React.Component {
     this.filter_count = this.filter_count || "";
     this.filter_num = this.filter_num || "";
 
-    if(!this.state.dataBak){
-      this.state.dataBak = this.state.data;
+    clearTimeout(this.keywordTimer);
+    if(!this.filter_id && !this.filter_count && !this.filter_num){
+      return this.queryProcedureWorkHour();
     }
+    this.keywordTimer = setTimeout(()=>{
 
-    this.state.data = this.state.dataBak.filter((item)=>{
-      return ((item.erp.toUpperCase().match(this.filter_id) || item.materialCode.toUpperCase().match(this.filter_id) || item.materialName.toUpperCase().match(this.filter_id)) && (this.filter_count == "" || item.planNum == this.filter_count) && (this.filter_num == "" || item.countWorker == this.filter_num) );
-    });
-    this.setState({data: this.state.data });
-
+        fetch(config.server.queryProcedureWorkTime+`?keyword=${[this.filter_id, this.filter_count, this.filter_num]}`).then(res=>res.json()).then(data=>{
+          // console.log(data);
+          if(data.code!=200){
+            this.tips(data.msg);return;
+          }this.setState({ page: 0, data: data.results, total: data.results.length});
+        }).catch(e=>this.tips('网络出错了，请稍候再试'));
+    }, 1000);
   }
 
   // 删除用户弹窗
@@ -336,6 +350,8 @@ class QueryWorkTimeForProcedure extends React.Component {
 
   changeWorktimeData = (data, type) =>{
     // 默认替换，1为push，2为修改
+    return this.setState({data: data.results || data, total: data.total || data.length});
+
     if(type==1){
       this.state.data.push(data);
       this.setState({data: this.state.data});
@@ -363,8 +379,9 @@ class QueryWorkTimeForProcedure extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { data, order, orderBy, selected, rowsPerPage, page, ifProcedure } = this.state;
-    const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+    const { data, order, orderBy, selected, total, rowsPerPage, page, ifProcedure } = this.state;
+    //const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+    const emptyRows = rowsPerPage - data.length;
 
     this.state.date_in =[new Date(), new Date()];
 
@@ -380,8 +397,7 @@ class QueryWorkTimeForProcedure extends React.Component {
               rowCount={data.length}
             />
             <TableBody>
-              {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((n, index) => {
+              {data.map((n, index) => {
                   const isSelected = this.isSelected(n.id);
                   return (
                     <TableRow
@@ -423,7 +439,7 @@ class QueryWorkTimeForProcedure extends React.Component {
           className="TablePagination"
           rowsPerPageOptions={[10, 20, 30]}
           component="div"
-          count={data.length}
+          count={total}
           rowsPerPage={rowsPerPage}
           page={page}
           backIconButtonProps={{

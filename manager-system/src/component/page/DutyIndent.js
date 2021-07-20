@@ -170,7 +170,9 @@ class EnhancedTableToolbar extends React.Component{
                   负责的订单操作
                 </Typography>
           </Toolbar>
-          <Grid container align="right" style={{margin:'-1rem 0 1rem',padding: '0 1.2rem'}}>
+          <Grid container align="right"
+                style={{margin:'-1rem 0 1rem',padding: '0 1.2rem'}}
+          >
             <Grid item xs={12}>
                 <TextField style={{marginTop:0, padding:'0 .5rem'}}
                   select label="状态选择:"
@@ -219,10 +221,8 @@ const styles = theme => ({
   },
 });
 
-
-
-
 class DutyIndent extends React.Component {
+  userID = config.changeToJson(localStorage.user).userID;
   state = {
     order: 'asc',
     orderBy: 'calories',
@@ -236,19 +236,23 @@ class DutyIndent extends React.Component {
     content: "确定删除该订单吗？"
   }
 
-  componentWillMount() {
+  componentDidMount() {
     // 组件初次加载数据申请
     var userID = config.changeToJson(localStorage.user).userID;
     var pwd = config.changeToJson(localStorage.user).pwd;
+    let fromId = 0;
 
-    fetch(config.server.queryDutyProcedureByStatus+'?userID='+userID).then(res=>res.json()).then(data=>{
+    fetch(config.server.queryDutyProcedureByStatus+`?userID=${userID}&limit=${config.indentPageNum}&status=${1}`).then(res=>res.json()).then(data=>{
       // console.log(data);
       if(data.code!=200){
-          this.tips(data.msg);return;
+        setTimeout(()=>{
+           this.tips(data.msg);
+         }, 500);
+        return;
       }
+      this.setState({page: 0, total: data.total});
       this.changeDutyIndentData(data.results || []);
       // 默认加载进行中订单
-      this.queryDutyIndentByType({target:{value: 1}})
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
   }
 
@@ -276,7 +280,7 @@ class DutyIndent extends React.Component {
 
 
   handleChangePage = (event, page) => {
-    this.setState({ page });
+    this.updatePageData(page);
   };
 
   handleChangeRowsPerPage = event => {
@@ -328,49 +332,37 @@ class DutyIndent extends React.Component {
 
   queryDutyIndentByType = (e) =>{
     var value = e.target.value;
+    var status = value=='all'?'':value;
+    this.setState({status: status, page: 0}, this.updatePageData);
+  }
 
-    if(!this.state.dataBak){
-      this.state.dataBak = this.state.data;
-    }
+  updatePageData = (pageChange) => {
+    let {status, page} = this.state;
+    let fromId = (pageChange || page)*config.indentPageNum;
 
-    /*if(value==0){
-      this.state.data = this.state.dataBak.filter((item)=>{
-        // return item.ifNew==1;
-        return item.status == 0;
-      })
-    }else if(value==1){
-      this.state.data = this.state.dataBak.filter((item)=>{
-        // return item.ifNew==1;
-        return item.status == 1;
-      })
-    }else if(value=='all'){
-      this.state.data = this.state.dataBak;
-    }*/
-    if(value=='all'){
-      this.state.data = this.state.dataBak;
-    }else{
-      this.state.data = this.state.dataBak.filter((item)=>{
-          // return item.ifNew==1;
-          return item.status == value;
-      })
-    }
-
-    this.setState({data: this.state.data });
-
+    fetch(config.server.queryDutyProcedureByStatus+`?userID=${this.userID}&limit=${config.indentPageNum}&from=${fromId}&status=${status}`).then(res=>res.json()).then(data=>{
+      // console.log(data);
+      if(data.code!=200){
+          this.tips(data.msg);return;
+      }
+      this.setState({total: data.total});
+      this.changeDutyIndentData(data.results || []);
+      // 默认加载进行中订单
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
   }
 
 
   queryByKeyword = (e) =>{
     e.persist();
-
-    if(!this.state.dataBak){
-      this.state.dataBak = this.state.data;
-    }
-
-    this.state.data = this.state.dataBak.filter((item)=>{
-      return (item.erp.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1 || item.materialCode.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1 || item.materialName.toUpperCase().indexOf(e.target.value.toUpperCase())!=-1);
-    });
-    this.setState({data: this.state.data });
+    fetch(config.server.queryDutyProcedureByStatus+`?userID=${this.userID}&keyword=${e.target.value}`).then(res=>res.json()).then(data=>{
+      // console.log(data);
+      if(data.code!=200){
+          this.tips(data.msg);return;
+      }
+      this.setState({page: 0, total: data.results.length});
+      this.changeDutyIndentData(data.results || []);
+      // 默认加载进行中订单
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
   }
 
@@ -386,25 +378,26 @@ class DutyIndent extends React.Component {
   }
 
   tips = (msg, time) => {
-    if(msg){
-      this.setState({tipInfo:msg});
-    }
-    this.setState({tipsOpen: true});
+    this.setState({tipsOpen: true, tipInfo:msg});
 
     setTimeout(()=>{
       this.setState({tipsOpen: false});
-    },time||4000);
+    }, time || 4000);
   }
 
   render() {
     const { classes } = this.props;
 
-    const { data, order, orderBy, selected, rowsPerPage, page } = this.state;
+    const { data, order, orderBy, selected, total, rowsPerPage, page } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar changeDutyIndentData = {this.changeDutyIndentData} queryByKeyword = {this.queryByKeyword} queryDutyIndentByType = {this.queryDutyIndentByType }  tips = {this.tips}/>
+        <EnhancedTableToolbar changeDutyIndentData = {this.changeDutyIndentData}
+                              queryByKeyword = {this.queryByKeyword}
+                              queryDutyIndentByType = {this.queryDutyIndentByType }
+                              tips = {this.tips}
+          />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -441,9 +434,27 @@ class DutyIndent extends React.Component {
                         {n.status==2?"完成":(n.status==1?"进行中":"未开始")}
                       </TableCell>
                       <TableCell align="center">
-                            {n.status==0?<span className={"pointer btn "+(n.status?"text-blue":"text-blue")} onClick={()=>this.startProcedure(n, "上一流程未完成，确定开始该流程吗？", true)}>开始流程</span>:n.status==2?
-                            <span className={"pointer btn "+(n.status?"text-success":"text-success")} onClick={()=>this.startProcedure(n, "确定重新开始该流程吗？")}>重新开始流程</span>:''}
-                            <span className={"pointer btn text-blue"} onClick={()=>{if(n.status==0){this.tips('当前流程还未开始');return;};this.props.history.push('/produceMSF/dutyIndent/info'+n.id)}}>{(n.status==2)?'详情':(n.status==1?'查看':'')}</span>
+                            {n.status==0?
+                              <span className={"pointer btn "+(n.status?"text-blue":"text-blue")}     onClick={()=>this.startProcedure(n, "上一流程未完成，确定开始该流程吗？", true)}>
+                              开始流程
+                              </span>
+                              :n.status==2?
+                                  <span className={"pointer btn "+(n.status?"text-success":"text-success")}
+                                        onClick={()=>this.startProcedure(n, "确定重新开始该流程吗？")}>
+                                        重新开始流程
+                                        </span>
+                                    :''
+                            }
+                            <span className={"pointer btn text-blue"}
+                                  onClick={()=>{
+                                    if(n.status==0){
+                                      this.tips('当前流程还未开始');return;
+                                    };
+                                    this.props.history.push('/produceMSF/dutyIndent/info'+n.id)
+                                  }}
+                            >
+                                  {n.status==2?'详情':(n.status==1?'查看':'')}
+                            </span>
                           </TableCell>
                     </TableRow>
                   );
@@ -455,13 +466,17 @@ class DutyIndent extends React.Component {
               )}
             </TableBody>
           </Table>
-          {data.length?'': <div className="emptyShow" align="center" style={{display: 'block', padding:'2rem'}}>暂无数据 </div>}
+          {data.length?'':
+          <div className="emptyShow"
+                align="center"
+                style={{display: 'block', padding:'2rem'}}
+          >暂无数据 </div>}
         </div>
         <TablePagination
           className="TablePagination"
           rowsPerPageOptions={[10, 20, 30]}
           component="div"
-          count={data.length}
+          count={total}
           rowsPerPage={rowsPerPage}
           page={page}
           backIconButtonProps={{
@@ -473,14 +488,24 @@ class DutyIndent extends React.Component {
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
-        <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.state.sureFun} ifInfo = {this.state.ifInfo} />
-        <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
-        anchorOrigin={{horizontal:"center",vertical:"top"}}
-        open={this.state.tipsOpen}
-        ContentProps={{
-          'className':'info'
-        }}
-        message={<span id="message-id" >{this.state.tipInfo?this.state.tipInfo:''}</span>}/>
+        <Confirm open = {this.state.confirmOpen}
+                  title = {this.state.title}
+                  content={this.state.content}
+                  closeFun = {this.confirmClose}
+                  sureFun = {this.state.sureFun}
+                  ifInfo = {this.state.ifInfo}
+           />
+        <Snackbar style={{marginTop:'70px'}}
+                  key = {new Date().getTime()+Math.random()}
+                  anchorOrigin={{horizontal:"center",vertical:"top"}}
+                  open={this.state.tipsOpen}
+                  ContentProps={{
+                    'className':'info'
+                  }}
+                  message={<span id="message-id" >
+                              {this.state.tipInfo?this.state.tipInfo:''}
+                          </span>}
+             />
       </Paper>
     );
   }

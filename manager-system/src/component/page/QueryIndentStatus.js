@@ -172,7 +172,7 @@ class EnhancedTableToolbar extends React.Component{
     this.setState({ open: true });
   }
 
-  queryKeyword = (e) =>{
+  queryByKeyword = (e) =>{
     e.persist();
     delete sessionStorage.indentStatusKeywordSure;
     sessionStorage.indentStatusKeyword = e.target.value;
@@ -187,13 +187,12 @@ class EnhancedTableToolbar extends React.Component{
         this.tips('请选择文件后再上传');
       }
   }
-
   tips = this.props.tips;
 
 
   render(){
     var classes = '';
-    var {dateRange, typeQuery, sitQuery, keyword} = this.state;
+    var {dateRange, typeQuery, sitQuery, status, keyword} = this.state;
     return (
        <div className={classes.title}>
             <Toolbar >
@@ -205,29 +204,48 @@ class EnhancedTableToolbar extends React.Component{
             <Grid item align="left" xs={6}>
               <Grid item xs={12} className="filterTool small">
                   <span className="blod">时间</span>
-                  {dateRange.map((date,index)=>(<span key = {index} className={"btn-sm "+(index===2?'bg-primary':'')} onClick={(e)=>this.props.queryIndentStatusByDate(e, date)}> {date.text}</span>))}
+                  {dateRange.map((date,index)=>(<span key = {index}
+                          className={"btn-sm "+(index===0?'bg-primary':'')}
+                          onClick={(e)=>this.props.queryIndentStatusByDate(e, date)}>
+                          {date.text}
+                          </span>)
+                  )}
               </Grid>
               <Grid item xs={12} className="filterTool small" style = {{margin: '1rem 0'}}>
                   <span className="blod">类型</span>
-                  {typeQuery.map((data,index)=>(<span key = {index} className={"btn-sm "+(index===0?'bg-primary':'')} onClick={(e)=>this.props.queryIndentStatusByType(e, data, index)}> {data.text}</span>))}
+                  {typeQuery.map((data,index)=>(<span key = {index}
+                          className={"btn-sm "+(index===0?'bg-primary':'')}
+                          onClick={(e)=>this.props.queryIndentStatusByType(e, data, index)}>
+                          {data.text}</span>))
+                  }
               </Grid>
-              <Grid item xs={12} align="left" className="filterTool small" style = {{margin: '1rem 0'}}>
+              <Grid item xs={12}
+                    align="left"
+                    className="filterTool small"
+                    style = {{margin: '1rem 0'}}
+               >
                 <span className="blod">状态</span>
-                {sitQuery.map((data,index)=>(<span key = {index} className={"type-sit btn-sm "+(index==0?'bg-primary':'')} onClick={(e)=>this.props.queryIndentStatusBySit(e, data, index)}> {data.text}</span>))}
+                {sitQuery.map((data,index)=>(<span key = {index}
+                    className={"type-sit btn-sm "+(data.code==this.props.status?'bg-primary':'')}
+                    onClick={(e)=>this.props.queryIndentStatusBySit(e, data, index)}>
+                      {data.text}
+                    </span>))
+                }
               </Grid>
             </Grid>
 
             <Grid item align="right" xs={6}>
               <TextField style={{marginTop:0,marginLeft:'1rem'}}
-              placeholder="请输入订单号或货号查询"
-              className={classes.textField}
-              type="text"
-              value={keyword}
-              onChange = {(e)=>this.queryKeyword(e)}
-              margin="normal"
-              InputLabelProps={{
-                shrink: true,
-              }}></TextField>
+                placeholder="请输入订单号或货号查询"
+                className={classes.textField}
+                type="text"
+                value={keyword}
+                onChange = {(e)=>this.queryByKeyword(e)}
+                margin="normal"
+                InputLabelProps={{
+                  shrink: true,
+                }}>
+              </TextField>
             </Grid>
           </Grid>
         </div>
@@ -267,6 +285,7 @@ const styles = theme => ({
 
 class QueryIndentStatus extends React.Component {
   state = {
+    status: 1,
     order: 'asc',
     orderBy: 'calories',
     selected: [],
@@ -279,18 +298,15 @@ class QueryIndentStatus extends React.Component {
     content: "确定删除该订单吗？"
   }
 
-
-
   componentWillMount() {
     // 组件初次加载数据申请
-    var queryStart = new Date(new Date()-1000*60*60*24*30).format('yyyy-MM-dd');//一月
-    // var queryStart = new Date(new Date()-1000*60*60*24*7).format('yyyy-MM-dd');//一周
-    var queryEnd = new Date().format('yyyy-MM-dd');
-    fetch(config.server.listAllIndentStatusByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
-    // fetch(config.server.listAllIndentStatusByDate).then(res=>res.json()).then(data=>{
+    var formId = 0;
+    var status = this.state.status;
+    fetch(config.server.listAllIndentStatusByDate+`?status=${status}&from=${formId}&limit=${config.indentPageNum}`).then(res=>res.json()).then(data=>{
       if(data.code !== 200){
         this.tips(data.msg);return;
       }
+      this.setState({total: data.total});
       this.changeIndentStatusData(data.results || []);
     }).catch(e=>this.tips('网络出错了，请稍候再试'));
 
@@ -298,7 +314,7 @@ class QueryIndentStatus extends React.Component {
 
   componentDidMount(){
     setTimeout(()=>{
-      document.querySelectorAll('.filterTool .type-sit')[2].click();
+      // document.querySelectorAll('.filterTool .type-sit')[2].click();
       if(sessionStorage.indentStatusKeywordSure && sessionStorage.indentStatusKeyword){
         delete sessionStorage.indentStatusKeywordSure;
         this.queryByKeyword(sessionStorage.indentStatusKeyword);
@@ -310,9 +326,30 @@ class QueryIndentStatus extends React.Component {
     this.setState({loading: hide});
   }
 
-  handleChangePage = (event, page) => {
-    this.setState({ page });
+  handleChangePage = (event, pageChange) => {
+    let { data, page, queryStart, queryEnd, status, priority, ifNew } = this.state;
+    let fromId = pageChange*config.indentPageNum;
+    let baseData = {
+       from: fromId,
+       limit:config.indentPageNum,
+       startDate:queryStart,
+       endDate:queryEnd,
+       status:status,
+       priority:priority,
+       ifNew:ifNew
+    };
+    this.hideInner();
+    fetch(this.getUrlFormat(config.server.listAllIndentStatusByDate, baseData)).then(res=>res.json()).then(data=>{
+      if(data.code !== 200){
+        this.tips(data.msg);return;
+      }
+      this.setState({total: data.total, page: pageChange});
+      this.changeIndentStatusData(data.results || []);
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+    // this.setState({ page });
   }
+
+
 
   handleChangeRowsPerPage = event => {
     this.setState({ rowsPerPage: event.target.value });
@@ -335,13 +372,14 @@ class QueryIndentStatus extends React.Component {
     if(!this.state.dataBak){
       this.state.dataBak = this.state.data;
     }
-    this.state.data = this.state.dataBak.filter((item)=>{
-      // return item.ifNew==1;
-      return (item.erp.toUpperCase().indexOf(value.toUpperCase())!==-1 || item.materialCode.toUpperCase().indexOf(value.toUpperCase())!==-1 || item.materialName.toUpperCase().indexOf(value.toUpperCase())!==-1);
-    });
-
-    this.setState({data: this.state.data });
-
+    fetch(config.server.listAllIndentStatusByDate+`?keyword=${value}`).then(res=>res.json()).then(data=>{
+      if(data.code !== 200){
+        this.tips(data.msg);return;
+      }
+      this.setState({total: data.results.length, page: 0, data: data.results});
+      // this.changeIndentStatusData(data.results || []);
+    }).catch(e=>this.tips('网络出错了，请稍候再试'));
+    //this.setState({data: this.state.data });
   }
 
   // 根据日期筛选值
@@ -374,14 +412,7 @@ class QueryIndentStatus extends React.Component {
       queryEnd = new Date(new Date()-1000*60*60*24*365).format('yyyy-MM-dd');
     }
 
-    fetch(config.server.listAllIndentStatusByDate+'?startDate='+queryStart+'&endDate='+queryEnd).then(res=>res.json()).then(data=>{
-      if(data.code!==200){
-        this.tips(data.msg);return;
-      }
-      this.changeIndentStatusData(data.results || []);
-      // this.tips('查询成功');
-    }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
-
+    this.setState({queryStart, queryEnd, page: 0}, this.queryDataWithPro);
   }
 
   // 根据类型筛选值
@@ -398,11 +429,11 @@ class QueryIndentStatus extends React.Component {
     }
 
     if(data.code == 0){
-      this.setState({priority: undefined, ifNew: undefined}, this.queryDataWithPro);
+      this.setState({priority: null, ifNew: null}, this.queryDataWithPro);
     }else if(data.code == 1){
-      this.setState({priority: 1, ifNew: undefined},this.queryDataWithPro);
+      this.setState({priority: 1, ifNew: null},this.queryDataWithPro);
     }else if(data.code == 2){
-      this.setState({priority: undefined, ifNew: 1}, this.queryDataWithPro);
+      this.setState({priority: null, ifNew: 1}, this.queryDataWithPro);
     }
 
     // this.setState({data: this.state.data });
@@ -421,30 +452,42 @@ class QueryIndentStatus extends React.Component {
       this.state.dataBak = this.state.data;
     }
     if(data.code == 'all'){
-      this.setState({status: undefined}, this.queryDataWithPro);
+      this.setState({status: null}, this.queryDataWithPro);
     }else{
       this.setState({status: data.code}, this.queryDataWithPro);
     }
   }
 
+  getUrlFormat (url, data) {
+      if(data){
+          let params = Object.keys(data)
+                  .filter(item => data[item]!== null && data[item]!== undefined)
+                  .map(item=>`${item}=${data[item]}`)
+                  .join("&");
+          return `${url}?${params}`;
+      }
+      return url;
+  }
+
   queryDataWithPro = () => {
-    var { priority, ifNew, status } = this.state;
-    if(status!=undefined && priority){
-      this.state.data = this.state.dataBak.filter((item)=>{ return item.status==status && item.priority==priority});
-    }else if(status!=undefined && ifNew){
-      this.state.data = this.state.dataBak.filter((item)=>{ return item.status==status && item.ifNew==ifNew});
-    }else if(priority){
-      this.state.data = this.state.dataBak.filter((item)=>{ return item.priority==priority});
-    }else if(ifNew){
-      this.state.data = this.state.dataBak.filter((item)=>{ return item.ifNew==ifNew});
-    }else if(status!=undefined){
-      this.state.data = this.state.dataBak.filter((item)=>{ return item.status==status});
-    }else{
-      this.state.data = this.state.dataBak;
-    }
-
-    this.setState({data: this.state.data });
-
+     let { data, page, queryStart, queryEnd, status, priority, ifNew } = this.state;
+     let baseData = {
+         from:0,
+         limit:config.indentPageNum,
+         startDate:queryStart,
+         endDate:queryEnd,
+         status:status,
+         priority:priority,
+         ifNew:ifNew
+     };
+     this.hideInner();
+     fetch(this.getUrlFormat(config.server.listAllIndentStatusByDate, baseData)).then(res=>res.json()).then(data=>{
+       if(data.code !== 200){
+         this.tips(data.msg);return;
+       }
+       this.setState({total: data.total});
+       this.changeIndentStatusData(data.results || []);
+     }).catch(e=>{console.log(e);this.tips('网络出错了，请稍候再试')});
   }
 
   infoTarget = (n)=>{
@@ -476,9 +519,12 @@ class QueryIndentStatus extends React.Component {
   }
 
 
-
   changeIndentStatusData = (data, type) =>{
     // 默认替换，1为push，2为修改
+    this.setState({data: data});
+    this.hideInner(true);
+    return;
+
     if(type==1){
       this.state.data.push(data);
       this.setState({data: this.state.data});
@@ -489,7 +535,6 @@ class QueryIndentStatus extends React.Component {
       this.setState({data: data});
     }
     this.state.dataBak = this.state.data;
-    this.hideInner(true);
   }
 
   tips = (msg) => {
@@ -505,12 +550,18 @@ class QueryIndentStatus extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { loading, data, order, orderBy, selected, rowsPerPage, page } = this.state;
+    const { loading, status, data, order, orderBy, total, selected, rowsPerPage, page } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar tips = {this.tips} queryByKeyword = {this.queryByKeyword} queryIndentStatusByDate = {this.queryIndentStatusByDate} queryIndentStatusByType = {this.queryIndentStatusByType} queryIndentStatusBySit = {this.queryIndentStatusBySit}/>
+        <EnhancedTableToolbar tips = {this.tips}
+          queryByKeyword = {this.queryByKeyword}
+          queryIndentStatusByDate = {this.queryIndentStatusByDate}
+          queryIndentStatusByType = {this.queryIndentStatusByType}
+          queryIndentStatusBySit = {this.queryIndentStatusBySit}
+          status={status}
+        />
         <div class={classes.tablAllCon}>
             {!loading?(<div className = "backdrop div-inner" >
               <div className="relativeCenter text-blue" >
@@ -536,8 +587,8 @@ class QueryIndentStatus extends React.Component {
                                   rowCount={data.length}
                                 />*/}
                   <TableBody>
-                    {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                      .map((n,index) => {
+                    {/*data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)*/}
+                    {data.map((n,index) => {
                         const isSelected = this.isSelected(n.id);
                         return (
                           <TableRow
@@ -586,7 +637,7 @@ class QueryIndentStatus extends React.Component {
               className="TablePagination"
               rowsPerPageOptions={[10, 20, 30]}
               component="div"
-              count={data.length}
+              count={total}
               rowsPerPage={rowsPerPage}
               page={page}
               backIconButtonProps={{
@@ -599,14 +650,21 @@ class QueryIndentStatus extends React.Component {
               onChangeRowsPerPage={this.handleChangeRowsPerPage}
             />
         </div>
-        <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.deleteModalClose} sureFun={this.state.sureFun} ifInfo={this.state.ifInfo} />
+        <Confirm open = {this.state.confirmOpen}
+            title = {this.state.title}
+            content={this.state.content}
+            closeFun = {this.deleteModalClose}
+            sureFun={this.state.sureFun}
+            ifInfo={this.state.ifInfo}
+         />
         <Snackbar style={{marginTop:'70px'}}
-        anchorOrigin={{horizontal:"center",vertical:"top"}}
-        open={this.state.tipsOpen}
-        ContentProps={{
-          'className':'info'
-        }}
-        message={<span id="message-id" >{this.state.tipInfo}</span>}  />
+            anchorOrigin={{horizontal:"center",vertical:"top"}}
+            open={this.state.tipsOpen}
+            ContentProps={{
+              'className':'info'
+            }}
+            message={<span id="message-id" >{this.state.tipInfo}</span>}
+        />
       </Paper>
     );
   }

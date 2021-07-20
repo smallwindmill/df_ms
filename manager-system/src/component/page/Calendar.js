@@ -298,17 +298,38 @@ class WorkCalendar extends React.Component {
 
      return (<Dialog
        aria-labelledby="customized-dialog-title"
-       open={this.state.modalClose?false:true} style={{marginTop:'-10rem'}} onClose={()=>this.setState({modalClose: true})}
+       open={this.state.modalClose?false:true}
+       style={{marginTop:'-10rem'}}
+       onClose={()=>this.setState({modalClose: true})}
      >
-       <div id="customized-dialog-title" style={{padding: '1rem 2rem', fontWeight: 'bold'}}>
+       <div id="customized-dialog-title"
+             style={{padding: '1rem 2rem', fontWeight: 'bold'}}
+        >
          添加工作日历
        </div>
-       <form noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem"}}>
-          <label style={{height:'25px',padding:'2px 1rem'}} for="">{this.state.dayDate+"的工作时长"}</label>
-          <input type="text" autofocus='true' style={{height:'25px',border:'1px solid rgb(102, 102, 102)',borderRadius:'3px',overflow:'hidden',padding:'2px 8px'}} placeholder="请输入工作小时数" value={this.state.dayWork} onChange={(e)=>this.setState({dayWork: e.target.value})} />
+       <form noValidate
+             autoComplete="off"
+             style={{padding:"2rem 6rem 3rem"}}
+          >
+          <label style={{height:'25px',padding:'2px 1rem'}}
+                  for="">
+              {this.state.dayDate+"的工作时长"}
+          </label>
+          <input type="text"
+                  autofocus='true'
+                  style={{height:'25px',border:'1px solid rgb(102, 102, 102)',borderRadius:'3px',overflow:'hidden',padding:'2px 8px'}}
+                  placeholder="请输入工作小时数"
+                  value={this.state.dayWork}
+                  onChange={(e)=>this.setState({dayWork: e.target.value})}
+          />
          </form>
          <div style={{textAlign: 'center',padding: '2rem'}}>
-            <Button id="getWorkData" variant="outlined" style={{marginRight: 1+"rem"}} color="primary">确定</Button>
+            <Button id="getWorkData"
+            variant="outlined"
+            style={{marginRight: 1+"rem"}}
+            color="primary">
+              确定
+         </Button>
          </div>
      </Dialog>)
    }
@@ -334,8 +355,17 @@ class WorkCalendar extends React.Component {
     var { workArr } = this.state;
 
     return (
-      <div className="work-calendar" onWheel={e=>this.changePage(e)}>
-        <div style={{textAlign: 'right',paddingRight:'.5rem'}}><span style={{display: 'inline-block',marginBottom:'-55px',position:'relative',zIndex: 3}} className="btn bg-primary-fill text-white" onClick = {this.uploadWorkCalendar} >保存</span></div>
+      <div className="work-calendar"
+           onWheel={e=>this.changePage(e)}
+       >
+        <div style={{textAlign: 'right',paddingRight:'.5rem'}}>
+          <span style={{display: 'inline-block',marginBottom:'-55px',position:'relative',zIndex: 3}}
+                className="btn bg-primary-fill text-white"
+                onClick = {this.uploadWorkCalendar}
+        >
+          保存
+          </span>
+        </div>
         <FullCalendar defaultView="dayGridMonth"  weekends={true}
           events={ workArr }
           today= {["今天"]}

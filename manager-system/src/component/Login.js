@@ -144,8 +144,13 @@ class Login extends React.Component {
         </Grid>
 
         <Grid item xs={12}>
-          <Button variant="contained"  aria-label="Add" style={{marginRight: 1+"rem",borderRadius: "3px",overFlow:"hidden"}} color="primary" className={classes.button} onClick = {this.loginClick}>
-          登录
+          <Button variant="contained"
+              aria-label="Add"
+              style={{marginRight: 1+"rem",borderRadius: "3px",overFlow:"hidden"}}
+              color="primary"
+              className={classes.button}
+              onClick = {this.loginClick}>
+             登录
           </Button>
         </Grid>
         </Grid>

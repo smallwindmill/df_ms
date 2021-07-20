@@ -331,7 +331,10 @@ class EnhancedTableToolbar extends React.Component{
       <DialogTitle id="customized-dialog-title"  onClose={this.handleClose}>
         {ifAdd?'添加模板':'编辑模板'}
       </DialogTitle>
-      <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem"}}>
+      <form className={classes.container}
+            noValidate
+            autoComplete="off"
+            style={{padding:"2rem 6rem 3rem"}}>
           <Grid container >
           {ifAdd?(<Grid item xs={12} style={{paddingTop:'.5rem'}}>
                     <TextField fullWidth style={{marginTop:0}}
@@ -394,27 +397,48 @@ class EnhancedTableToolbar extends React.Component{
           </Grid>
 
           <Grid item xs={12} align="center" style={{marginTop:'1rem'}}>
-            <Button variant="outlined" onClick={this.addTempleteSure} style={{marginRight: 1+"rem"}} color="primary" className={classes.button}>
+            <Button variant="outlined"
+                onClick={this.addTempleteSure}
+                style={{marginRight: 1+"rem"}}
+                color="primary"
+                className={classes.button}
+            >
             提交</Button>
-            <Button variant="outlined" style={{marginRight: 1+"rem"}} color="secondary" className={classes.button}>重置</Button>
+            <Button variant="outlined"
+              style={{marginRight: 1+"rem"}}
+              color="secondary"
+              className={classes.button}>
+              重置
+            </Button>
           </Grid>
           </Grid>
 
         </form>
     </Dialog>
           {/*人员选择模态框*/}
-          <Dialog
-          aria-labelledby="customized-dialog-title" id = "dutyModal"
-          open={this.state.dutyModal} style={{marginTop:'18rem', oveflow: "hidden"}} onClose = {()=>this.setState({dutyModal: false})}
-        >
-          <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem",width: '408px'}}>
+          <Dialog aria-labelledby="customized-dialog-title"
+              id = "dutyModal"
+              open={this.state.dutyModal}
+              style={{marginTop:'18rem', oveflow: "hidden"}}
+              onClose = {()=>this.setState({dutyModal: false})}
+          >
+          <form className={classes.container}
+                noValidate
+                autoComplete="off"
+                style={{padding:"2rem 6rem 3rem",width: '408px'}}
+            >
               <Grid container >
-
               <Grid item xs={12} style={{paddingTop:'.5rem'}}>
                 <Grid item xs={12} style={{paddingTop: 0, boxShadow: ""}}>
                   <div className="bold">待选择组长人员</div>
                   <div className='plane waitingChoose' style = {styleCon}>
-                  {workers.map((worker,index)=><Chip key = {index} label={worker.name}  style = {styleChip} className={'dutyChip '+classes.chip} onClick={(e)=>this.selectToDuty(e, worker, index)}/>)}
+                  {workers.map((worker,index)=><Chip key = {index}
+                        label={worker.name}
+                        style = {styleChip}
+                        className={'dutyChip '+classes.chip}
+                        onClick={(e)=>this.selectToDuty(e, worker, index)}
+                      />)
+                  }
                   </div>
                 </Grid>
               </Grid>
@@ -438,7 +462,12 @@ class EnhancedTableToolbar extends React.Component{
         </Toolbar>
           <Grid container>
                 <Grid xs = {12} item align="right">
-                  <span className="btn text-blue"  onClick={()=>this.addTemplate(0)} style={{display: 'inline-block', margin: "1rem 12rem 2rem"}}>添加模板</span>
+                  <span className="btn text-blue"
+                      onClick={()=>this.addTemplate(0)}
+                      style={{display: 'inline-block', margin: "1rem 12rem 2rem"}}
+                    >
+                    添加模板
+                  </span>
                 </Grid>
               </Grid>
           <div className={classes.spacer} />{this.addTemplateModal()}
@@ -620,9 +649,15 @@ class HandleTemplete extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar changeTemplateData = {this.changeTemplateData} ref="modalMethod" initQueryData={this.initQueryData} tips={this.tips} />
+        <EnhancedTableToolbar changeTemplateData = {this.changeTemplateData}
+            ref="modalMethod"
+            initQueryData={this.initQueryData}
+            tips={this.tips}
+          />
         <div className={classes.tableWrapper}>
-          <Table className={classes.table} aria-labelledby="tableTitle">
+          <Table className={classes.table}
+                 aria-labelledby="tableTitle"
+           >
             <EnhancedTableHead
               numSelected={selected.length}
               order={order}
@@ -653,8 +688,16 @@ class HandleTemplete extends React.Component {
                         {n.duty}
                       </TableCell>
                       <TableCell align="center">
-                        <span className="pointer btn text-blue" onClick={()=>this.updateTemplate(n, page * rowsPerPage+index)}>修改</span>
-                        <span className="pointer btn text-red" onClick={()=>this.deleteTemplate(n, page * rowsPerPage+index)}>删除</span>
+                        <span className="pointer btn text-blue"
+                              onClick={()=>this.updateTemplate(n, page * rowsPerPage+index)}
+                           >
+                          修改
+                        </span>
+                        <span className="pointer btn text-red"
+                              onClick={()=>this.deleteTemplate(n, page * rowsPerPage+index)}
+                           >
+                          删除
+                        </span>
                       </TableCell>
                     </TableRow>
                   );
@@ -684,14 +727,21 @@ class HandleTemplete extends React.Component {
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
-         <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.confirmSure} />
-         <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
-          anchorOrigin={{horizontal:"center",vertical:"top"}}
-          open={this.state.tipsOpen}
-          ContentProps={{
-            'className':'info'
-          }}
-          message={<span id="message-id" >{this.state.tipInfo}</span>}  />
+         <Confirm open = {this.state.confirmOpen}
+                 title = {this.state.title}
+                 content={this.state.content}
+                 closeFun = {this.confirmClose}
+                 sureFun = {this.confirmSure}
+            />
+         <Snackbar style={{marginTop:'70px'}}
+                   key = {new Date().getTime()+Math.random()}
+                  anchorOrigin={{horizontal:"center",vertical:"top"}}
+                  open={this.state.tipsOpen}
+                  ContentProps={{
+                    'className':'info'
+                  }}
+                  message={<span id="message-id" >{this.state.tipInfo}</span>}
+           />
       </Paper>
     );
   }

@@ -205,7 +205,12 @@ class EnhancedTableToolbar extends React.Component{
                   </Typography>
                 </Grid>
                 <Grid item xs={6} align="right">
-                  <span className="text-blue pointer" title="返回上级" onClick={()=>window.ReactHistory.goBack()}>返回</span>
+                  <span className="text-blue pointer"
+                    title="返回上级"
+                    onClick={()=>window.ReactHistory.goBack()}
+                  >
+                    返回
+                  </span>
                 </Grid>
               </Grid>
         </Toolbar>
@@ -418,7 +423,15 @@ class DutyIndentInfo extends React.Component {
         'Content-Type': 'application/json',
       },
       // body:JSON.stringify({pid: pid, productNum:productNum, startTime: selectedDataCopy.startTime + ' '+selectedDataCopy.startDateTime.format('hh:mm:ss'), worker:workder_in.join(' ')})
-      body:JSON.stringify({pid: pid,id: selectedInfoData?selectedInfoData.id:'', productNum:productNum, actualNum: actualNum, worker:workder_in.join(' '),remark: infoRemark, type: ifEquipment?1:0})
+      body:JSON.stringify({
+        pid: pid,
+        id: selectedInfoData?selectedInfoData.id:'',
+        productNum:productNum,
+        actualNum: actualNum,
+        worker:workder_in.join(' '),
+        remark: infoRemark,
+        type: ifEquipment?1:0
+      })
     }).then(res=>res.json()).then(data=>{
       if(data.code != 200){
         this.tips(data.msg);window.loading(false);return;
@@ -639,7 +652,10 @@ class DutyIndentInfo extends React.Component {
         <MuiDialogTitle disableTypography className={classes.root}>
           <Typography variant="h6">{children}</Typography>
           {onClose ? (
-            <IconButton aria-label="Close" className={classes.closeButton} onClick={onClose}>
+            <IconButton aria-label="Close"
+                className={classes.closeButton}
+                onClick={onClose}
+            >
               <CloseIcon />
             </IconButton>
           ) : null}
@@ -663,10 +679,17 @@ class DutyIndentInfo extends React.Component {
       <DialogTitle id="customized-dialog-title" onClose={this.modalClose}>
         流程报废设置
       </DialogTitle>
-      <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem"}}>
+      <form className={classes.container}
+          noValidate
+          autoComplete="off"
+          style={{padding:"2rem 6rem 3rem"}}
+      >
         <Grid container spacing={24}>
           <Grid item xs={12} style={{margin: "1.5rem 0 1rem",lineHeight:'35px'}}>
-            <Info fontSize = "large" color = "secondary" style={{marginBottom:'-11px'}}></Info>
+            <Info fontSize = "large"
+                color = "secondary"
+                style={{marginBottom:'-11px'}}>
+            </Info>
               设置当前流程的状态为<span className="text-red">报废</span>后，当前流程细节将不可修改，请确认操作。
           </Grid>
           <Grid item xs={12} style={{paddingTop:0}}>
@@ -683,9 +706,22 @@ class DutyIndentInfo extends React.Component {
           </Grid>
 
           <Grid item xs={12} align="right">
-            <Button variant="outlined" onClick={this.setScrap} style={{marginRight: 1+"rem"}} color="primary" className={classes.button}>
-            确定</Button>
-            <Button variant="outlined" onClick={this.modalClose} style={{marginRight: 1+"rem"}} color="secondary" className={classes.button}>取消</Button>
+            <Button variant="outlined"
+                onClick={this.setScrap}
+                style={{marginRight: 1+"rem"}}
+                color="primary"
+                className={classes.button}
+            >
+              确定
+            </Button>
+            <Button variant="outlined"
+                onClick={this.modalClose}
+                style={{marginRight: 1+"rem"}}
+                color="secondary"
+                className={classes.button}
+            >
+                取消
+            </Button>
           </Grid>
           </Grid>
 
@@ -739,11 +775,20 @@ class DutyIndentInfo extends React.Component {
       <DialogTitle id="customized-dialog-title" onClose={this.modalClose}>
         流程完成设置
       </DialogTitle>
-      <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem"}}>
+      <form className={classes.container}
+            noValidate
+            autoComplete="off"
+            style={{padding:"2rem 6rem 3rem"}}
+      >
         <Grid container spacing={24}>
           <Grid item xs={12} style={{margin: "1.5rem 0 1rem",lineHeight:'35px'}}>
-            <Info fontSize = "large" color = "primary" style={{marginBottom:'-11px'}}></Info>
-              设置当前流程的状态为<span className="text-blue">完成</span>后，当前流程将不可修改，请确认操作。
+            <Info fontSize = "large"
+                color = "primary"
+                style={{marginBottom:'-11px'}}>
+            </Info>
+              设置当前流程的状态为
+              <span className="text-blue">完成</span>
+              后，当前流程将不可修改，请确认操作。
           </Grid>
           <Grid item xs={12} style={{paddingTop:0}}>
             <TextField fullWidth style={{marginTop:0}}
@@ -760,18 +805,34 @@ class DutyIndentInfo extends React.Component {
 
           <Grid item xs={12} align="right">
             <FormControlLabel className="small" style={{marginLeft: '0rem', marginTop:'2rem'}} control={
-                  <Checkbox color="primary" size="small" checked={this.state.autoNext}
+                  <Checkbox color="primary"
+                    size="small"
+                    checked={this.state.autoNext}
                     onChange={(event)=>this.setState({autoNext: event.target.checked })}
-                    value={this.state.autoNext}/>
+                    value={this.state.autoNext}
+                  />
                 }
               label="是否自动进入下一流程？（如果是重新开始的流程，建议取消勾选。）"
             />
           </Grid>
 
           <Grid item xs={12} align="right">
-            <Button variant="outlined" onClick={this.setFinishSure} style={{marginRight: 1+"rem"}} color="primary" className={classes.button}>
-            确定</Button>
-            <Button variant="outlined" onClick={this.modalClose} style={{marginRight: 1+"rem"}} color="secondary" className={classes.button}>取消</Button>
+            <Button variant="outlined"
+                    onClick={this.setFinishSure}
+                    style={{marginRight: 1+"rem"}}
+                    color="primary"
+                    className={classes.button}
+            >
+              确定
+            </Button>
+            <Button variant="outlined"
+                onClick={this.modalClose}
+                style={{marginRight: 1+"rem"}}
+                color="secondary"
+                className={classes.button}
+            >
+                取消
+            </Button>
           </Grid>
           </Grid>
 
@@ -802,7 +863,10 @@ class DutyIndentInfo extends React.Component {
         <MuiDialogTitle disableTypography className={classes.root}>
           <Typography variant="h6">{children}</Typography>
           {onClose ? (
-            <IconButton aria-label="Close" className={classes.closeButton} onClick={onClose}>
+            <IconButton aria-label="Close"
+                        className={classes.closeButton}
+                        onClick={onClose}
+            >
               <CloseIcon />
             </IconButton>
           ) : null}
@@ -826,7 +890,11 @@ class DutyIndentInfo extends React.Component {
       <DialogTitle id="customized-dialog-title"  onClose={this.modalClose}>
         {ifAdd?'添加':'编辑'}{!ifEquipment?"人员":"设备"}流程详情
       </DialogTitle>
-      <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 3rem 3rem"}}>
+      <form className={classes.container}
+            noValidate
+            autoComplete="off"
+            style={{padding:"2rem 3rem 3rem"}}
+      >
         <Grid container spacing={24}>
           <Grid item xs={6} style={{paddingTop:0}}>
             <div className="bold">计划生产数量</div>
@@ -872,8 +940,23 @@ class DutyIndentInfo extends React.Component {
               >
               </TextField>
             {/*<FormLabel component="legend">开始生产时间</FormLabel>
-                        <DateFormatInput  className="inline-block" name='date-input' value={ new Date(selectedDataCopy.startTime) } onChange={(date)=>{selectedDataCopy.planFinishDate = date.format('yyyy-MM-dd');this.setState({ selectedDataCopy: selectedDataCopy })} } style={{marginbottom:'2rem'}} />
-                        <TimeFormatInput name='time-input' value={selectedDataCopy.startDateTime?new Date(selectedDataCopy.startDateTime):new Date() } onChange={(date)=>{console.log(date);selectedDataCopy.startDateTime = date;this.setState({ selectedDataCopy: selectedDataCopy })} }/>*/}
+                        <DateFormatInput  className="inline-block"
+                            name='date-input'
+                            value={ new Date(selectedDataCopy.startTime) }
+                            onChange={(date)=>{
+                              selectedDataCopy.planFinishDate = date.format('yyyy-MM-dd');
+                              this.setState({ selectedDataCopy: selectedDataCopy })}
+                            }
+                            style={{marginbottom:'2rem'}}
+                        />
+                        <TimeFormatInput name='time-input'
+                                value={selectedDataCopy.startDateTime?new Date(selectedDataCopy.startDateTime):new Date() }
+                              onChange={(date)=>{
+                                console.log(date);
+                                selectedDataCopy.startDateTime = date;
+                                this.setState({ selectedDataCopy: selectedDataCopy })}
+                              }
+                        />*/}
           </Grid>
           {!ifAdd?<div style={{margin: '2rem 0'}}></div>:''}
 
@@ -887,13 +970,30 @@ class DutyIndentInfo extends React.Component {
                             className={classes.textField}
                             margin="normal" value={queryUserWord}
                             placeholder = {ifEquipment?"查询设备名称":"查询员工ID或姓名"}
-                            onChange = {(e)=>{e.persist();this.setState({queryUserWord: e.target.value});this.queryUserByName(e)}}
+                            onChange = {(e)=>{
+                              e.persist();
+                              this.setState({queryUserWord: e.target.value});
+                              this.queryUserByName(e)}
+                            }
                           ></TextField>
                         </div>
                         <div className='plane waitingChoose' style = {styleCon}>
                         {
-                          !ifEquipment?workers.map((worker,index)=><Chip key = {index} label={worker.userName}  style = {styleChip} className={classes.chip} title={worker.userID} onClick={()=>this.selectToRight(worker, index)}/>):
-                          workers.map((worker,index)=><Chip key = {index} label={worker.name}  style = {styleChip} className={classes.chip} title={worker.remark} onClick={()=>this.selectToRight(worker, index)}/>)
+                          !ifEquipment?
+                          workers.map((worker,index)=><Chip key = {index}
+                                label={worker.userName}
+                                style = {styleChip}
+                                className={classes.chip}
+                                title={worker.userID}
+                                onClick={()=>this.selectToRight(worker, index)}/>
+                                  ):
+                          workers.map((worker,index)=><Chip key = {index}
+                                label={worker.name}
+                                style = {styleChip}
+                                className={classes.chip}
+                                title={worker.remark}
+                                onClick={()=>this.selectToRight(worker, index)}/>
+                          )
                         }
                         </div>
                       </Grid>
@@ -975,12 +1075,24 @@ class DutyIndentInfo extends React.Component {
         <Toolbar >
             <Grid container>
               <Grid item xs={12}>
-                  <Typography variant="h6" id="tableTitle" align="center" style={{padding:'3rem 2rem 1rem 0',fontWeight: 'bold'}}>
+                  <Typography variant="h6"
+                        id="tableTitle"
+                        align="center"
+                        style={{padding:'3rem 2rem 1rem 0',fontWeight: 'bold'}}
+                   >
                     详细生产情况
                   </Typography>
                   <p className="text-right" style={{margin: "0 0 2rem"}}>
-                  <span className={(ifEquipment?"bg-default":"bg-primary")+" btn-default text-blue"} onClick={()=>this.setState({ifEquipment: false})}>员工上报</span>
-                  <span className={(ifEquipment?"bg-primary":"bg-default")+" btn-default text-blue"} onClick={()=>this.setState({ifEquipment: true})}>设备上报</span></p>
+                    <span className={(ifEquipment?"bg-default":"bg-primary")+" btn-default text-blue"}
+                          onClick={()=>this.setState({ifEquipment: false})}>
+                      员工上报
+                    </span>
+                    <span className={(ifEquipment?"bg-primary":"bg-default")+" btn-default text-blue"}
+                          onClick={()=>this.setState({ifEquipment: true})}
+                     >
+                      设备上报
+                    </span>
+                  </p>
                 </Grid>
               </Grid>
         </Toolbar>
@@ -1014,27 +1126,53 @@ class DutyIndentInfo extends React.Component {
                         {n.finishTime?(new Date(n.finishTime).format('yyyy-MM-dd hh:mm:ss')):''}
                       </TableCell>
                       <TableCell align="center" component="th" scope="row" padding="none">
-                        {n.status==2?'已完成':(n.status==-1?'已报废':(n.status==1?'已完成':'进行中'))}
+                        { n.status==2?'已完成':
+                            (n.status==-1?
+                            '已报废':
+                            (n.status==1?'已完成':'进行中')
+                         )}
                       </TableCell>
                       <TableCell align="center" component="th" scope="row" padding="none">
                         {n.remark}
                       </TableCell>
                       <TableCell align="center" id={n.status}>
-
-                        {pageUserType==2?(<span className="pointer btn text-red" onClick={()=>this.deleteProcedureDetail(n, index)}>删除</span>):('')}
-
+                        {pageUserType==2?(
+                          <span className="pointer btn text-red"
+                                onClick={()=>this.deleteProcedureDetail(n, index)}>
+                              删除
+                          </span>):''}
                         {!allPower && data.status==1?
-                          (n.status==0?<span className='pointer btn text-red' onClick={()=>this.scrapProcedureDetail(n, index)}>设为报废</span>:(<span className={n.status==-1?'text-notice':''}>{n.status== 1?'':''}</span>) )
+                          (n.status==0?
+                          <span className='pointer btn text-red'
+                                onClick={()=>this.scrapProcedureDetail(n, index)}>
+                              设为报废
+                          </span>:
+                          <span className={n.status==-1?'text-notice':''}>
+                              {n.status== 1?'':''}
+                          </span>)
                         :('')}
+                        {!allPower && data.status==1?
+                          (n.status==0?
+                              <span className="pointer btn text-blue"
+                                    onClick={()=>{this.addProcedureInfo(1, n, index)}}>
+                                修改
+                              </span>
+                              :
+                              <span className={n.status==1?'text-success':''}>
+                                {n.status== 1?'':''}
+                              </span>)
+                        :<span className=""></span>}
 
                         {!allPower && data.status==1?
-                          (n.status==0?(<span className="pointer btn text-blue" onClick={()=>{this.addProcedureInfo(1, n, index)}}>修改</span>):(<span  className={n.status==1?'text-success':''}>{n.status== 1?'':''}</span>))
+                          (n.status==0?
+                            <span className="pointer btn text-success"
+                                  onClick={()=>this.finishProcedureDetail(n, index)}>
+                                设为完成
+                            </span>:
+                            <span className={n.status==1?'text-success':''}>
+                                {n.status== 1?'':''}
+                            </span>)
                         :(<span className=""></span>)}
-
-                        {!allPower && data.status==1?
-                          (n.status==0?(<span className="pointer btn text-success" onClick={()=>this.finishProcedureDetail(n, index)}>设为完成</span>):(<span  className={n.status==1?'text-success':''}>{n.status== 1?'':''}</span>))
-                        :(<span className=""></span>)}
-
                       </TableCell>
                     </TableRow>
                   );
@@ -1071,27 +1209,59 @@ class DutyIndentInfo extends React.Component {
                           {n.finishTime?(new Date(n.finishTime).format('yyyy-MM-dd hh:mm:ss')):''}
                         </TableCell>
                         <TableCell align="center" component="th" scope="row" padding="none">
-                          {n.status==2?'已完成':(n.status==-1?'已报废':(n.status==1?'已完成':'进行中'))}
+                          {n.status==2?
+                            '已完成':
+                            (n.status==-1?
+                              '已报废':
+                              (n.status==1?'已完成':'进行中')
+                         )}
                         </TableCell>
                         <TableCell align="center" component="th" scope="row" padding="none">
                           {n.remark}
                         </TableCell>
                         <TableCell align="center" id={n.status}>
 
-                          {pageUserType==2?(<span className="pointer btn text-red" onClick={()=>this.deleteProcedureDetail(n, index)}>删除</span>):('')}
+                          {pageUserType==2?(
+                            <span className="pointer btn text-red" onClick={()=>this.deleteProcedureDetail(n, index)}>删除</span>)
+                            :''}
+                          {!allPower && data.status==1?
+                            (n.status==0?
+                              <span className='pointer btn text-red'
+                                    onClick={()=>this.scrapProcedureDetail(n, index)}
+                                >
+                                  设为报废
+                              </span>
+                            :
+                              <span className={n.status==-1?'text-notice':''}>
+                                  {n.status== 1?'':''}
+                               </span> )
+                          :''}
 
                           {!allPower && data.status==1?
-                            (n.status==0?<span className='pointer btn text-red' onClick={()=>this.scrapProcedureDetail(n, index)}>设为报废</span>:(<span className={n.status==-1?'text-notice':''}>{n.status== 1?'':''}</span>) )
-                          :('')}
-
-                          {!allPower && data.status==1?
-                            (n.status==0?(<span className="pointer btn text-blue" onClick={()=>{this.addProcedureInfo(1, n, index)}}>修改</span>):(<span  className={n.status==1?'text-success':''}>{n.status== 1?'':''}</span>))
+                            (n.status==0?
+                            <span className="pointer btn text-blue"
+                                  onClick={()=>{this.addProcedureInfo(1, n, index)}}
+                                  >
+                                  修改
+                            </span>
+                            :
+                            <span className={n.status==1?'text-success':''}>
+                                {n.status== 1?'':''}
+                            </span>)
                           :(<span className=""></span>)}
 
                           {!allPower && data.status==1?
-                            (n.status==0?(<span className="pointer btn text-success" onClick={()=>this.finishProcedureDetail(n, index)}>设为完成</span>):(<span  className={n.status==1?'text-success':''}>{n.status== 1?'':''}</span>))
+                            (n.status==0?
+                            <span className="pointer btn text-success"
+                                  onClick={()=>this.finishProcedureDetail(n, index)}
+                              >
+                              设为完成
+                            </span>
+                            :
+                            <span  className={n.status==1?'text-success':''}>
+                              {n.status== 1?'':''}
+                            </span>)
                           :(<span className=""></span>)}
-
                         </TableCell>
                       </TableRow>
                     );

@@ -269,7 +269,10 @@ class EnhancedTableToolbar extends React.Component{
       <DialogTitle id="customized-dialog-title"  onClose={this.handleClose}>
         {ifAdd?'添加设备':'编辑设备'}
       </DialogTitle>
-      <form className={classes.container} noValidate autoComplete="off" style={{padding:"2rem 6rem 3rem"}}>
+      <form className={classes.container}
+            noValidate autoComplete="off"
+            style={{padding:"2rem 6rem 3rem"}}
+      >
           <Grid container >
           {/*{ifAdd?(
             <Grid item xs={12} style={{paddingTop:'.5rem'}}>
@@ -316,9 +319,21 @@ class EnhancedTableToolbar extends React.Component{
           </Grid>
 
           <Grid item xs={12} align="center" style={{marginTop:'1rem'}}>
-            <Button variant="outlined" onClick={this.addEquipmentSure} style={{marginRight: 1+"rem"}} color="primary" className={classes.button}>
-            提交</Button>
-            <Button variant="outlined" style={{marginRight: 1+"rem"}} color="secondary" className={classes.button}>重置</Button>
+            <Button variant="outlined"
+                onClick={this.addEquipmentSure}
+                style={{marginRight: 1+"rem"}}
+                color="primary"
+                className={classes.button}
+            >
+              提交
+            </Button>
+            <Button variant="outlined"
+              style={{marginRight: 1+"rem"}}
+              color="secondary"
+              className={classes.button}
+            >
+              重置
+            </Button>
           </Grid>
           </Grid>
 
@@ -339,7 +354,12 @@ class EnhancedTableToolbar extends React.Component{
         </Toolbar>
           <Grid container>
                 <Grid xs = {12} item align="right">
-                  <span className="btn text-blue"  onClick={()=>this.addEquipment(0)} style={{display: 'inline-block', margin: "1rem 12rem 2rem"}}>添加设备</span>
+                  <span className="btn text-blue"
+                    onClick={()=>this.addEquipment(0)}
+                    style={{display: 'inline-block', margin: "1rem 12rem 2rem"}}
+                  >
+                    添加设备
+                  </span>
                 </Grid>
               </Grid>
           <div className={classes.spacer} />{this.addEquipmentModal()}
@@ -521,7 +541,11 @@ class HandleEquipment extends React.Component {
 
     return (
       <Paper className={classes.root} style={{padding:"0 2rem",width:"auto"}}>
-        <EnhancedTableToolbar changeTemplateData = {this.changeTemplateData} ref="modalMethod" initQueryData={this.initQueryData} tips={this.tips} />
+        <EnhancedTableToolbar changeTemplateData={this.changeTemplateData}
+                ref="modalMethod"
+                initQueryData={this.initQueryData}
+                tips={this.tips}
+         />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -550,8 +574,17 @@ class HandleEquipment extends React.Component {
                         {n.remark}
                       </TableCell>
                       <TableCell align="center">
-                        <span className="pointer btn text-blue" onClick={()=>this.updateTemplate(n, page * rowsPerPage+index)}>修改</span>
-                        <span className="pointer btn text-red" onClick={()=>this.deleteTemplate(n, page * rowsPerPage+index)}>删除</span>
+                        <span className="pointer btn text-blue"
+                              onClick={()=>this.updateTemplate(n, page * rowsPerPage+index)}
+                        >
+                          修改
+                        </span>
+                        <span className="pointer btn text-red"
+                              onClick={
+                                ()=>this.deleteTemplate(n, page * rowsPerPage+index)
+                              }>
+                          删除
+                        </span>
                       </TableCell>
                     </TableRow>
                   );
@@ -581,7 +614,12 @@ class HandleEquipment extends React.Component {
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
-         <Confirm open = {this.state.confirmOpen} title = {this.state.title} content={this.state.content} closeFun = {this.confirmClose} sureFun = {this.confirmSure} />
+         <Confirm open = {this.state.confirmOpen}
+                   title = {this.state.title}
+                   content={this.state.content}
+                   closeFun = {this.confirmClose}
+                   sureFun = {this.confirmSure}
+          />
          <Snackbar style={{marginTop:'70px'}} key = {new Date().getTime()+Math.random()}
           anchorOrigin={{horizontal:"center",vertical:"top"}}
           open={this.state.tipsOpen}

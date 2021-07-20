@@ -299,19 +299,39 @@ class ProduceShowPage extends React.Component {
     return (
       <div  style = {this.state.style.table} className = "showPage">
         <div style={style1}>
-          <Button variant="outlined" id="fullScr" style={{display:this.state.btnVisible?'block':'none',marginBottom: this.state.marginBottom}} variant = 'contained' color="primary" onClick={this.handleClickFull}>
+          <Button variant="outlined"
+                id="fullScr"
+                style={{display:this.state.btnVisible?'block':'none',marginBottom: this.state.marginBottom}}
+                variant = 'contained'
+                color="primary"
+                onClick={this.handleClickFull}
+          >
             全屏
           </Button>
-          <Button variant="outlined" style={{display:this.state.btnVisible?'none':'block',opacity: 0.0,marginBottom: this.state.marginBottom}} variant = 'contained' color="secondary" onMouseEnter = {(e)=>{return;e.persist();e.target.style.opacity = 1}}  onMouseLeave = {(e)=>{return;e.persist();e.target.style.opacity = 1.0}} onClick={this.handleClickFullCancel}>
+          <Button variant="outlined"
+              style={{display:this.state.btnVisible?'none':'block',opacity: 0.0,marginBottom: this.state.marginBottom}}
+              variant = 'contained'
+              color="secondary"
+              onMouseEnter = {(e)=>{return;e.persist();e.target.style.opacity = 1}}
+              onMouseLeave = {(e)=>{return;e.persist();e.target.style.opacity = 1.0}}
+              onClick={this.handleClickFullCancel}
+          >
             退出全屏
           </Button>
-          <span className="btn bg-primary inline-block hide" style={{marginLeft:'160px',marginBottom:'-2.5rem',position:'relative',zIndex:77}} onClick={()=>this.setState({per: per?0:1})}>{per === 1?'男声':'女声'}</span>
+          <span className="btn bg-primary inline-block hide"
+                style={{marginLeft:'160px',marginBottom:'-2.5rem',position:'relative',zIndex:77}}
+                onClick={()=>this.setState({per: per?0:1})}>
+            {per === 1?'男声':'女声'}
+          </span>
           {/*<span onClick={()=>this.setState({stopSpeak: !stopSpeak})}>{stopSpeak?'播放':'暂停'}</span>*/}
-          <span className="inline-block hide" style={{left:'14vw',top:'.7rem',position:'absolute',zIndex:77}}>
+          <span className="inline-block hide"
+                style={{left:'14vw',top:'.7rem',position:'absolute',zIndex:77}}>
              <Switch
               checked={this.state.pstatus}
               color="primary"
-              onChange={()=>this.setState({pstatus: !this.state.pstatus})} /> <small className="small">订单进行中</small>
+              onChange={()=>this.setState({pstatus: !this.state.pstatus})}
+            />
+              <small className="small">订单进行中</small>
           </span>
 
           <Grid container>
@@ -323,13 +343,17 @@ class ProduceShowPage extends React.Component {
               <div align="right" style={{paddingRight:'2rem'}}>
                 <span className="rect border bg-success"></span><span className="inline-block">已完成</span>
                 <span className="rect border bg-notice"></span><span className="inline-block">新品</span>
-                <span className="rect border bg-red"></span><span className="inline-block">加急</span>
+                <span className="rect border bg-red"></span>
+                <span className="inline-block">加急</span>
               </div>
             </Grid>
 
           </Grid>
         </div>
-        <table id="produceShowTableHead" className="produceShowTable pointer" style={{width:'100%',textAlign: 'center'}}>
+        <table id="produceShowTableHead"
+              className="produceShowTable pointer"
+              style={{width:'100%',textAlign: 'center'}}
+        >
         <thead onDoubleClick={this.toogleLoop}><tr>
             <th>序号</th>
             <th>ERP号</th>
@@ -343,10 +367,14 @@ class ProduceShowPage extends React.Component {
             </tr></thead>
           </table>
           <div style={{overflowY: 'scroll',height: 'calc(100vh - 138px)'}}>
-        <table id="produceShowTable" className="produceShowTable" style={{width:'100%',textAlign: 'center'}}><tbody>
+        <table id="produceShowTable"
+          className="produceShowTable"
+          style={{width:'100%',textAlign: 'center'}}
+        >
+        <tbody>
 
         {data.map((single, index)=>(
-          <tr key={'tr'+index}  className={single.priority?'bg-red':(single.ifNew?'bg-notice':(single.status === 2?'bg-success':''))}>
+          <tr key={'tr'+index} className={single.priority?'bg-red':(single.ifNew?'bg-notice':(single.status === 2?'bg-success':''))}>
             <td style={{padding: '12px 0'}}>{index+1}</td>
             <td title={single.erp} style={{padding: '12px 0'}}>{single.erp}</td>
             <td title={single.materialCode}>{single.materialCode}</td>

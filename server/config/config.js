@@ -11,6 +11,7 @@ var config = {
       wait_timeout: 3000,
       multipleStatements: true //允许多次运行多条查询语句
   },
+  port: 2070,
   baiduAudioAPI: {
     id: "EPZZcrsFYYPUPqhDiq6APbKZ",
     secret: "BGyMaGYUAiFoCdB71mmxtNIYRGmH7Myg"
