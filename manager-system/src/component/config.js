@@ -1,4 +1,4 @@
-var serverIP = "http://"+window.location.hostname+':2070/produceMS';
+var serverIP = "http://"+window.location.host+'/produceMS';
 // var serverIP = "http://"+window.location.host+'/produceMS';
 // var serverIP = 'http://127.0.0.1:2030/produceMS';
 // var serverIP = 'http://101.200.62.233:2030/produceMS';
